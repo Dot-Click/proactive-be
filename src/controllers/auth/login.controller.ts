@@ -1,0 +1,173 @@
+import { Request, Response } from "express";
+import { database } from "@/configs/connection.config";
+import { users } from "@/schema/schema";
+import { verifyPassword } from "@/utils/password.util";
+import { generateAccessToken, generateRefreshToken } from "@/utils/token.util";
+import { sendSuccess, sendError } from "@/utils/response.util";
+import { loginSchema } from "@/types/auth.types";
+import status from "http-status";
+import { eq } from "drizzle-orm";
+
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Login user
+ *     description: Authenticate user with email and password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: Password123
+ *     responses:
+ *       200:
+ *         description: User successfully logged in
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Login successful
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         email:
+ *                           type: string
+ *                         role:
+ *                           type: string
+ *                         emailVerified:
+ *                           type: boolean
+ *                     accessToken:
+ *                       type: string
+ *       401:
+ *         description: Invalid credentials
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Internal server error
+ */
+export const login = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    // Validate request body
+    const validationResult = loginSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      const errors: Record<string, string[]> = {};
+      validationResult.error.errors.forEach((err) => {
+        const path = err.path.join(".");
+        if (!errors[path]) {
+          errors[path] = [];
+        }
+        errors[path].push(err.message);
+      });
+      return sendError(
+        res,
+        "Validation failed",
+        status.BAD_REQUEST,
+        undefined,
+        errors
+      );
+    }
+
+    const { email, password } = validationResult.data;
+    const db = await database();
+
+    // Find user by email
+    const userResults = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    if (userResults.length === 0) {
+      return sendError(res, "Invalid email or password", status.UNAUTHORIZED);
+    }
+
+    const user = userResults[0];
+
+    // Verify password
+    const isPasswordValid = await verifyPassword(password, user.password);
+    if (!isPasswordValid) {
+      return sendError(res, "Invalid email or password", status.UNAUTHORIZED);
+    }
+
+    // Check if email is verified - required for login
+    // Set REQUIRE_EMAIL_VERIFICATION=false in .env to disable this check
+    const requireEmailVerification =
+      process.env.REQUIRE_EMAIL_VERIFICATION !== "false";
+    if (requireEmailVerification && !user.emailVerified) {
+      return sendError(
+        res,
+        "Please verify your email address before logging in. Check your inbox for the verification link, or use the resend verification endpoint.",
+        status.FORBIDDEN
+      );
+    }
+
+    // Generate tokens
+    const accessToken = generateAccessToken({
+      userId: user.id,
+      email: user.email,
+      role: user.userRoles || "user",
+    });
+
+    const refreshToken = generateRefreshToken({
+      userId: user.id,
+      email: user.email,
+      role: user.userRoles || "user",
+    });
+
+    // Set refresh token as HTTP-only cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    return sendSuccess(
+      res,
+      "Login successful",
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.userRoles || "user",
+          emailVerified: user.emailVerified || false,
+        },
+        accessToken,
+      },
+      status.OK
+    );
+  } catch (error) {
+    console.error("Login error:", error);
+    return sendError(
+      res,
+      "An error occurred during login",
+      status.INTERNAL_SERVER_ERROR
+    );
+  }
+};

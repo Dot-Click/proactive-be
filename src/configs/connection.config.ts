@@ -8,7 +8,8 @@ import { env } from "@/utils/env.utils";
 export const database = async (logger = false) =>
   drizzle({
     client: neon(env.CONNECTION_URL),
-    casing: "snake_case",
+    // Removed casing option to use exact column names from schema
+    // If your database uses snake_case, add: casing: "snake_case"
     logger,
     schema,
   });

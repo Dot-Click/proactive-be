@@ -8,6 +8,20 @@
       "when": 1762934247995,
       "tag": "0000_stormy_scarecrow",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1763186273213,
+      "tag": "0001_typical_sleeper",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763187105157,
+      "tag": "0002_right_doorman",
+      "breakpoints": true
     }
   ]
 }

@@ -35,7 +35,7 @@ export const users = pgTable("users", {
   emailVerified: boolean()
     .$defaultFn(() => false)
     .notNull(),
-  userRoles: varchar(["user", "admin"]).default("user"),
+  userRoles: varchar({ length: 20 }).default("user"), // Allowed values: "user", "coordinator", "admin"
   ...timeStamps,
 });
 

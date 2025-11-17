@@ -6,15 +6,14 @@ import { throttle } from "./middlewares/throttle.middleware";
 import { registerEvents } from "@/utils/registerevents.util";
 import { sessionOptions } from "./configs/session.config";
 import unknownRoutes from "@/routes/unknown.routes";
+import authRoutes from "@/routes/auth.routes";
 import { swagger } from "@/configs/swagger.config";
-import { toNodeHandler } from "better-auth/node";
 import { logger } from "@/utils/logger.util";
 import cors, { CorsOptions } from "cors";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { auth } from "./lib/auth";
 import status from "http-status";
 import { config } from "dotenv";
 import express from "express";
@@ -57,8 +56,11 @@ app.use(express.json());
 io.use(authorizeUser);
 
 app.use(morgan("dev"));
-app.all("/api/auth/*", toNodeHandler(auth));
 app.use(throttle(50, "1m")); // For global apis( light traffic )
+
+// API Routes
+app.use("/api/auth", authRoutes);
+
 app.use(unknownRoutes);
 
 httpServer.listen(port as number, () => {
