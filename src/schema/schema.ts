@@ -29,6 +29,13 @@ export const users = pgTable("users", {
   id: uuid().primaryKey(),
   firstName: varchar({ length: 100 }),
   lastName: varchar({ length: 100 }),
+  name: varchar({ length: 200 }), // Full name field
+  alias: varchar({ length: 100 }), // Alias/nickname
+  fullHomeAddress: text(), // Full home address
+  phone: varchar({ length: 20 }), // Phone number
+  gender: varchar({ length: 20 }), // Gender field
+  specialDiet: varchar({ length: 20 }), // Special diet: "vegetarian", "vegan", "gluten-free", "other"
+  specialDietOther: text(), // Custom diet description when specialDiet is "other"
   profilePic: varchar({ length: 256 }),
   password: varchar({ length: 100 }).notNull(),
   email: varchar({ length: 100 }).notNull().unique(),
@@ -75,6 +82,62 @@ export const verification = pgTable("verification", {
   expiresAt: timestamp().notNull(),
   createdAt: timestamp().$defaultFn(() => new Date()),
   updatedAt: timestamp().$defaultFn(() => new Date()),
+});
+
+export const chats = pgTable("chats", {
+  id: uuid().primaryKey(),
+  name: varchar({ length: 255 }),
+  description: text(),
+  coordinatorId: foreignkeyRef("coordinator_id", () => users.id, {
+    onDelete: "cascade",
+  }),
+  createdBy: foreignkeyRef("created_by", () => users.id, {
+    onDelete: "cascade",
+  }).notNull(),
+  ...timeStamps,
+});
+
+export const chatParticipants = pgTable("chat_participants", {
+  id: uuid().primaryKey(),
+  chatId: foreignkeyRef("chat_id", () => chats.id, {
+    onDelete: "cascade",
+  }).notNull(),
+  userId: foreignkeyRef("user_id", () => users.id, {
+    onDelete: "cascade",
+  }).notNull(),
+  role: varchar({ length: 20 }).default("participant"), // participant, admin
+  joinedAt: timestamp().defaultNow(),
+  ...timeStamps,
+});
+
+export const messages = pgTable("messages", {
+  id: uuid().primaryKey(),
+  chatId: foreignkeyRef("chat_id", () => chats.id, {
+    onDelete: "cascade",
+  }).notNull(),
+  senderId: foreignkeyRef("sender_id", () => users.id, {
+    onDelete: "cascade",
+  }).notNull(),
+  content: text().notNull(),
+  editedAt: timestamp(),
+  deletedAt: timestamp(),
+  ...timeStamps,
+});
+
+export const faqs = pgTable("faqs", {
+  id: uuid().primaryKey(),
+  question: text().notNull(),
+  answers: text().notNull(),
+  ...timeStamps,
+});
+
+export const categories = pgTable("categories", {
+  id: uuid().primaryKey(),
+  name: varchar({ length: 255 }).notNull(),
+  isActive: boolean()
+    .$defaultFn(() => true)
+    .notNull(),
+  ...timeStamps,
 });
 
 export const userInsertSchema = createInsertSchema(users);

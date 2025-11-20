@@ -39,6 +39,11 @@ A TypeScript-based backend API for the Proactive project, featuring authenticati
 - ✅ Drizzle ORM for database operations
 - ✅ NeonDB (PostgreSQL) database
 - ✅ Rate limiting with Upstash Redis (optional)
+- ✅ Group chat system with role-based access
+- ✅ Real-time messaging via Socket.IO
+- ✅ Chat management (create, update, delete chats)
+- ✅ Message management (send, edit, delete messages)
+- ✅ Participant management
 
 ## Tech Stack
 
@@ -380,11 +385,251 @@ proactive-be/
 │   │   ├── token.util.ts
 │   │   ├── brevo.util.ts
 │   │   ├── env.utils.ts
-│   │   └── logger.util.ts
+│   │   ├── logger.util.ts
+│   │   ├── socket-chat.util.ts
+│   │   └── registerevents.util.ts
+│   ├── controllers/       # Route controllers
+│   │   ├── auth/
+│   │   └── chat/          # Chat controllers
+│   │       ├── create-chat.controller.ts
+│   │       ├── get-chats.controller.ts
+│   │       ├── get-chat.controller.ts
+│   │       ├── update-chat.controller.ts
+│   │       ├── delete-chat.controller.ts
+│   │       ├── add-participant.controller.ts
+│   │       ├── remove-participant.controller.ts
+│   │       ├── send-message.controller.ts
+│   │       ├── get-messages.controller.ts
+│   │       ├── update-message.controller.ts
+│   │       └── delete-message.controller.ts
+│   ├── events/            # Socket event handlers
+│   │   ├── example.event.ts
+│   │   └── chat.event.ts
+│   ├── routes/            # Route definitions
+│   │   ├── auth.routes.ts
+│   │   └── chat.routes.ts
 │   └── server.ts          # Application entry point
 ├── drizzle/               # Database migrations
 ├── package.json
 └── README.md
+```
+
+## Chat Module
+
+The chat module provides a complete group chat system with role-based access control and real-time messaging capabilities.
+
+### Chat Features
+
+- **Group Chats**: Create group chats with multiple participants
+- **Role-Based Access**:
+  - **Admin**: Can view all chats in the system
+  - **Coordinator**: Can view chats where they are the coordinator
+  - **User**: Can view chats where they are a participant
+- **Real-time Messaging**: Messages are delivered instantly via Socket.IO
+- **Message Management**: Send, edit, and delete messages
+- **Participant Management**: Add and remove participants from chats
+
+### Socket.IO Setup
+
+#### Client Connection
+
+To connect to the Socket.IO server, include the JWT access token in the connection:
+
+```javascript
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:3000", {
+  auth: {
+    token: "your_jwt_access_token"
+  },
+  // Or use headers
+  extraHeaders: {
+    Authorization: "Bearer your_jwt_access_token"
+  }
+});
+```
+
+#### Server Socket Events
+
+##### Client → Server Events
+
+| Event | Description | Payload |
+|-------|-------------|---------|
+| `chat:join` | Join a chat room | `{ chatId: string }` |
+| `chat:leave` | Leave a chat room | `{ chatId: string }` |
+| `message:send` | Send a message via socket | `{ chatId: string, content: string }` |
+
+##### Server → Client Events
+
+| Event | Description | Payload |
+|-------|-------------|---------|
+| `chat:joined` | Confirmation of joining chat | `{ chatId: string }` |
+| `chat:left` | Confirmation of leaving chat | `{ chatId: string }` |
+| `message:new` | New message received | `{ message: MessageObject }` |
+| `message:sent` | Confirmation of message sent | `{ message: MessageObject }` |
+| `error` | Error occurred | `{ message: string, errors?: any }` |
+
+#### Socket Event Examples
+
+**Join a Chat Room:**
+```javascript
+socket.emit("chat:join", { chatId: "chat123" });
+
+socket.on("chat:joined", (data) => {
+  console.log("Joined chat:", data.chatId);
+});
+```
+
+**Send a Message:**
+```javascript
+socket.emit("message:send", {
+  chatId: "chat123",
+  content: "Hello everyone!"
+});
+
+socket.on("message:new", (data) => {
+  console.log("New message:", data.message);
+});
+```
+
+**Leave a Chat Room:**
+```javascript
+socket.emit("chat:leave", { chatId: "chat123" });
+```
+
+### Chat REST API Endpoints
+
+#### Chat Management
+
+##### Create Chat
+- **POST** `/api/chat`
+- **Description**: Create a new group chat
+- **Body**:
+  ```json
+  {
+    "name": "Trip to Paris",
+    "description": "Group chat for Paris trip participants",
+    "coordinatorId": "coord123",
+    "participantIds": ["user1", "user2"]
+  }
+  ```
+- **Response**: Chat object with details
+- **Status Codes**: 201 (Created), 400 (Bad Request), 404 (Not Found)
+
+##### Get All Chats
+- **GET** `/api/chat`
+- **Description**: Get all chats based on user role
+  - Admin: All chats
+  - Coordinator: Chats where they are coordinator
+  - User: Chats where they are participant
+- **Response**: Array of chat objects with participant counts
+- **Status Codes**: 200 (OK), 401 (Unauthorized)
+
+##### Get Single Chat
+- **GET** `/api/chat/:chatId`
+- **Description**: Get detailed information about a specific chat
+- **Response**: Chat object with participants and coordinator details
+- **Status Codes**: 200 (OK), 403 (Forbidden), 404 (Not Found)
+
+##### Update Chat
+- **PUT** `/api/chat/:chatId`
+- **Description**: Update chat name or description (admin or coordinator only)
+- **Body**:
+  ```json
+  {
+    "name": "Updated Chat Name",
+    "description": "Updated description"
+  }
+  ```
+- **Status Codes**: 200 (OK), 403 (Forbidden), 404 (Not Found)
+
+##### Delete Chat
+- **DELETE** `/api/chat/:chatId`
+- **Description**: Delete a chat (admin or coordinator only)
+- **Status Codes**: 200 (OK), 403 (Forbidden), 404 (Not Found)
+
+#### Participant Management
+
+##### Add Participant
+- **POST** `/api/chat/:chatId/participants`
+- **Description**: Add a user as participant (admin or coordinator only)
+- **Body**:
+  ```json
+  {
+    "userId": "user123"
+  }
+  ```
+- **Status Codes**: 200 (OK), 400 (Bad Request), 403 (Forbidden), 404 (Not Found)
+
+##### Remove Participant
+- **DELETE** `/api/chat/:chatId/participants/:userId`
+- **Description**: Remove a participant (admin, coordinator, or self)
+- **Status Codes**: 200 (OK), 403 (Forbidden), 404 (Not Found)
+
+#### Message Management
+
+##### Get Messages
+- **GET** `/api/chat/:chatId/messages?page=1&limit=50`
+- **Description**: Get paginated messages from a chat
+- **Query Parameters**:
+  - `page`: Page number (default: 1)
+  - `limit`: Messages per page (default: 50, max: 100)
+- **Response**: Array of messages with sender details and pagination info
+- **Status Codes**: 200 (OK), 403 (Forbidden), 404 (Not Found)
+
+##### Send Message (REST)
+- **POST** `/api/chat/:chatId/messages`
+- **Description**: Send a message via REST API (also emits socket event)
+- **Body**:
+  ```json
+  {
+    "content": "Hello everyone!"
+  }
+  ```
+- **Response**: Message object with sender details
+- **Status Codes**: 201 (Created), 400 (Bad Request), 403 (Forbidden), 404 (Not Found)
+
+##### Update Message
+- **PUT** `/api/chat/:chatId/messages/:messageId`
+- **Description**: Update a message (sender only)
+- **Body**:
+  ```json
+  {
+    "content": "Updated message content"
+  }
+  ```
+- **Status Codes**: 200 (OK), 400 (Bad Request), 403 (Forbidden), 404 (Not Found)
+
+##### Delete Message
+- **DELETE** `/api/chat/:chatId/messages/:messageId`
+- **Description**: Soft delete a message (sender or admin)
+- **Status Codes**: 200 (OK), 403 (Forbidden), 404 (Not Found)
+
+### Chat Workflow
+
+1. **Create Chat**: Coordinator or admin creates a chat with participants
+2. **Join Chat Room**: Participants connect via Socket.IO and join the chat room
+3. **Send Messages**: Messages can be sent via REST API or Socket.IO
+4. **Real-time Updates**: All participants receive new messages instantly via Socket.IO
+5. **Manage Participants**: Add or remove participants as needed
+6. **Edit/Delete Messages**: Users can edit their own messages, admins can delete any message
+
+### Message Object Structure
+
+```typescript
+{
+  id: string;
+  chatId: string;
+  senderId: string;
+  senderFirstName: string;
+  senderLastName: string;
+  senderEmail: string;
+  senderProfilePic: string;
+  content: string;
+  editedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
 ```
 
 ## API Endpoints

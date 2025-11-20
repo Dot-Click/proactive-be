@@ -46,6 +46,35 @@ import { createId } from "@paralleldrive/cuid2";
  *                 type: string
  *                 enum: [user, coordinator]
  *                 example: user
+ *               name:
+ *                 type: string
+ *                 maxLength: 200
+ *                 example: John Doe
+ *               alias:
+ *                 type: string
+ *                 maxLength: 100
+ *                 example: Johnny
+ *               fullHomeAddress:
+ *                 type: string
+ *                 maxLength: 500
+ *                 example: 123 Main St, City, State 12345
+ *               phone:
+ *                 type: string
+ *                 maxLength: 20
+ *                 example: +1-555-123-4567
+ *               gender:
+ *                 type: string
+ *                 maxLength: 20
+ *                 example: Male
+ *               specialDiet:
+ *                 type: string
+ *                 enum: [vegetarian, vegan, gluten-free, other]
+ *                 example: vegetarian
+ *               specialDietOther:
+ *                 type: string
+ *                 maxLength: 500
+ *                 description: Required when specialDiet is "other"
+ *                 example: Keto diet
  *     responses:
  *       201:
  *         description: User successfully registered
@@ -106,7 +135,18 @@ export const register = async (
       );
     }
 
-    const { email, password, role } = validationResult.data;
+    const {
+      email,
+      password,
+      role,
+      name,
+      alias,
+      fullHomeAddress,
+      phone,
+      gender,
+      specialDiet,
+      specialDietOther,
+    } = validationResult.data;
     const db = await database();
 
     // Check if user already exists
@@ -136,11 +176,19 @@ export const register = async (
         password: hashedPassword,
         userRoles: role,
         emailVerified: false,
+        name: name || undefined,
+        alias: alias || undefined,
+        fullHomeAddress: fullHomeAddress || undefined,
+        phone: phone || undefined,
+        gender: gender || undefined,
+        specialDiet: specialDiet || undefined,
+        specialDietOther: specialDietOther || undefined,
       })
       .returning({
         id: users.id,
         email: users.email,
         firstName: users.firstName,
+        name: users.name,
         userRoles: users.userRoles,
         emailVerified: users.emailVerified,
       });
@@ -165,7 +213,7 @@ export const register = async (
     await sendVerificationEmail(
       email,
       verificationToken,
-      user.firstName || undefined
+      user.name || user.firstName || undefined
     );
 
     // Generate tokens

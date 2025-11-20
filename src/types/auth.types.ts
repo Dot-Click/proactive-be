@@ -12,21 +12,68 @@ export enum UserRole {
 /**
  * Register request body schema
  */
-export const registerSchema = z.object({
-  email: z.string().email("Invalid email format"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters long")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-    ),
-  role: z.enum(["user", "coordinator"], {
-    errorMap: () => ({
-      message: "Role must be either 'user' or 'coordinator'",
+export const registerSchema = z
+  .object({
+    email: z.string().email("Invalid email format"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters long")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+      ),
+    role: z.enum(["user", "coordinator"], {
+      errorMap: () => ({
+        message: "Role must be either 'user' or 'coordinator'",
+      }),
     }),
-  }),
-});
+    name: z
+      .string()
+      .max(200, "Name must be less than 200 characters")
+      .optional(),
+    alias: z
+      .string()
+      .max(100, "Alias must be less than 100 characters")
+      .optional(),
+    fullHomeAddress: z
+      .string()
+      .max(500, "Address must be less than 500 characters")
+      .optional(),
+    phone: z
+      .string()
+      .max(20, "Phone number must be less than 20 characters")
+      .regex(/^[\d\s\-\+\(\)]+$/, "Invalid phone number format")
+      .optional(),
+    gender: z
+      .string()
+      .max(20, "Gender must be less than 20 characters")
+      .optional(),
+    specialDiet: z
+      .enum(["vegetarian", "vegan", "gluten-free", "other"], {
+        errorMap: () => ({
+          message:
+            "Special diet must be one of: vegetarian, vegan, gluten-free, or other",
+        }),
+      })
+      .optional(),
+    specialDietOther: z
+      .string()
+      .max(500, "Special diet description must be less than 500 characters")
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      // If specialDiet is "other", specialDietOther should be provided
+      if (data.specialDiet === "other" && !data.specialDietOther) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Special diet description is required when diet type is 'other'",
+      path: ["specialDietOther"],
+    }
+  );
 
 /**
  * Login request body schema

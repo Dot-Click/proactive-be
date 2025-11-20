@@ -44,6 +44,23 @@ import { eq } from "drizzle-orm";
  *                           type: string
  *                         lastName:
  *                           type: string
+ *                         name:
+ *                           type: string
+ *                         alias:
+ *                           type: string
+ *                         fullHomeAddress:
+ *                           type: string
+ *                         phone:
+ *                           type: string
+ *                         gender:
+ *                           type: string
+ *                         specialDiet:
+ *                           type: string
+ *                           enum: [vegetarian, vegan, gluten-free, other]
+ *                         specialDietOther:
+ *                           type: string
+ *                         profilePic:
+ *                           type: string
  *                         role:
  *                           type: string
  *                         emailVerified:
@@ -76,6 +93,13 @@ export const getCurrentUser = async (
         email: users.email,
         firstName: users.firstName,
         lastName: users.lastName,
+        name: users.name,
+        alias: users.alias,
+        fullHomeAddress: users.fullHomeAddress,
+        phone: users.phone,
+        gender: users.gender,
+        specialDiet: users.specialDiet,
+        specialDietOther: users.specialDietOther,
         profilePic: users.profilePic,
         userRoles: users.userRoles,
         emailVerified: users.emailVerified,
@@ -100,6 +124,13 @@ export const getCurrentUser = async (
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
+          name: user.name,
+          alias: user.alias,
+          fullHomeAddress: user.fullHomeAddress,
+          phone: user.phone,
+          gender: user.gender,
+          specialDiet: user.specialDiet,
+          specialDietOther: user.specialDietOther,
           profilePic: user.profilePic,
           role: user.userRoles || "user",
           emailVerified: user.emailVerified || false,

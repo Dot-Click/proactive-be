@@ -4,7 +4,7 @@ import type { Request } from "express";
 
 export type SocketEventHandler<
   Data = { [p in string]: any },
-  WithSocketObject = { socket: Socket } & Data
+  WithSocketObject = { socket: Socket; io?: IO } & Data
 > = (params: WithSocketObject) => any;
 
 export type IO = Server<
@@ -16,4 +16,15 @@ export type IO = Server<
 
 export interface RequestWithIO extends Request {
   io: IO;
+}
+
+// Extend Socket to include user data
+declare module "socket.io" {
+  interface Socket {
+    data: {
+      userId?: string;
+      email?: string;
+      role?: string;
+    };
+  }
 }

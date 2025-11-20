@@ -7,6 +7,9 @@ import { registerEvents } from "@/utils/registerevents.util";
 import { sessionOptions } from "./configs/session.config";
 import unknownRoutes from "@/routes/unknown.routes";
 import authRoutes from "@/routes/auth.routes";
+import chatRoutes from "@/routes/chat.routes";
+import faqRoutes from "@/routes/faq.routes";
+import categoryRoutes from "@/routes/category.routes";
 import { swagger } from "@/configs/swagger.config";
 import { logger } from "@/utils/logger.util";
 import cors, { CorsOptions } from "cors";
@@ -43,7 +46,7 @@ prepareMigration(isProduction);
 
 app.use(helmet());
 app.use(express.json({ limit: "50mb" }));
-io.on("connection", registerEvents);
+io.on("connection", (socket) => registerEvents(socket, io));
 app.options("*", cors(corsOptions));
 app.use(express.static("public"));
 io.engine.use(sessionMiddleware);
@@ -60,6 +63,9 @@ app.use(throttle(50, "1m")); // For global apis( light traffic )
 
 // API Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/faqs", faqRoutes);
+app.use("/api/categories", categoryRoutes);
 
 app.use(unknownRoutes);
 

@@ -16,7 +16,8 @@ const options: Options = {
     info: {
       title: "Proactive API",
       version: "1.0.0",
-      description: "Proactive backend API documentation with authentication endpoints",
+      description:
+        "Proactive backend API documentation with authentication endpoints",
       contact: {
         name: "API Support",
       },
@@ -35,6 +36,14 @@ const options: Options = {
       {
         name: "Authentication",
         description: "User authentication and authorization endpoints",
+      },
+      {
+        name: "FAQs",
+        description: "FAQ management endpoints",
+      },
+      {
+        name: "Categories",
+        description: "Category management endpoints",
       },
     ],
     components: {
@@ -168,11 +177,246 @@ const options: Options = {
             },
           },
         },
+        CreateFaqRequest: {
+          type: "object",
+          required: ["question", "answers"],
+          properties: {
+            question: {
+              type: "string",
+              minLength: 1,
+              maxLength: 1000,
+              example: "What is the return policy?",
+              description: "The FAQ question",
+            },
+            answers: {
+              type: "string",
+              minLength: 1,
+              maxLength: 5000,
+              example:
+                "Our return policy allows returns within 30 days of purchase.",
+              description: "The FAQ answer",
+            },
+          },
+        },
+        UpdateFaqRequest: {
+          type: "object",
+          properties: {
+            question: {
+              type: "string",
+              minLength: 1,
+              maxLength: 1000,
+              example: "What is the updated return policy?",
+              description: "The FAQ question (optional)",
+            },
+            answers: {
+              type: "string",
+              minLength: 1,
+              maxLength: 5000,
+              example:
+                "Our updated return policy allows returns within 45 days of purchase.",
+              description: "The FAQ answer (optional)",
+            },
+          },
+        },
+        Faq: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              example: "clx1234567890",
+              description: "Unique FAQ identifier",
+            },
+            question: {
+              type: "string",
+              example: "What is the return policy?",
+              description: "The FAQ question",
+            },
+            answers: {
+              type: "string",
+              example:
+                "Our return policy allows returns within 30 days of purchase.",
+              description: "The FAQ answer",
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-01-15T10:30:00Z",
+              description: "FAQ creation timestamp",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-01-15T10:30:00Z",
+              description: "FAQ last update timestamp",
+            },
+          },
+        },
+        FaqsResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "FAQs retrieved successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                faqs: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/Faq",
+                  },
+                },
+              },
+            },
+          },
+        },
+        FaqResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "FAQ retrieved successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                faq: {
+                  $ref: "#/components/schemas/Faq",
+                },
+              },
+            },
+          },
+        },
+        CreateCategoryRequest: {
+          type: "object",
+          required: ["name"],
+          properties: {
+            name: {
+              type: "string",
+              minLength: 1,
+              maxLength: 255,
+              example: "Electronics",
+              description: "The category name",
+            },
+            isActive: {
+              type: "boolean",
+              default: true,
+              example: true,
+              description: "Whether the category is active",
+            },
+          },
+        },
+        UpdateCategoryRequest: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+              minLength: 1,
+              maxLength: 255,
+              example: "Updated Electronics",
+              description: "The category name (optional)",
+            },
+            isActive: {
+              type: "boolean",
+              example: false,
+              description: "Whether the category is active (optional)",
+            },
+          },
+        },
+        Category: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              example: "clx1234567890",
+              description: "Unique category identifier",
+            },
+            name: {
+              type: "string",
+              example: "Electronics",
+              description: "The category name",
+            },
+            isActive: {
+              type: "boolean",
+              example: true,
+              description: "Whether the category is active",
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-01-15T10:30:00Z",
+              description: "Category creation timestamp",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-01-15T10:30:00Z",
+              description: "Category last update timestamp",
+            },
+          },
+        },
+        CategoriesResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Categories retrieved successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                categories: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/Category",
+                  },
+                },
+              },
+            },
+          },
+        },
+        CategoryResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Category retrieved successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                category: {
+                  $ref: "#/components/schemas/Category",
+                },
+              },
+            },
+          },
+        },
       },
     },
   },
   apis: [
     route("auth.routes.ts"),
+    route("chat.routes.ts"),
+    route("faq.routes.ts"),
+    route("category.routes.ts"),
     route("example.routes.ts"),
     routeController("*.controller.ts"),
   ],
