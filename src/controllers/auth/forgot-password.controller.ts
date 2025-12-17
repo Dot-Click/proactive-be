@@ -120,7 +120,7 @@ export const forgotPassword = async (
     await sendPasswordResetEmail(
       email,
       resetToken,
-      user.firstName || undefined
+      user.FirstName || undefined
     );
 
     return sendSuccess(

@@ -27,17 +27,18 @@ const foreignkeyRef = (
 
 export const users = pgTable("users", {
   id: uuid().primaryKey(),
-  firstName: varchar({ length: 100 }),
-  lastName: varchar({ length: 100 }),
-  name: varchar({ length: 200 }), // Full name field
-  alias: varchar({ length: 100 }), // Alias/nickname
-  fullHomeAddress: text(), // Full home address
-  phone: varchar({ length: 20 }), // Phone number
-  gender: varchar({ length: 20 }), // Gender field
-  specialDiet: varchar({ length: 20 }), // Special diet: "vegetarian", "vegan", "gluten-free", "other"
-  specialDietOther: text(), // Custom diet description when specialDiet is "other"
-  profilePic: varchar({ length: 256 }),
-  password: varchar({ length: 100 }).notNull(),
+  FirstName: varchar({ length: 100 }),
+  LastName: varchar({ length: 100 }),
+  NickName: varchar({ length: 200 }), // Full name field
+  // alias: varchar({ length: 100 }), // Alias/nickname
+  Address: text(), // Full home address
+  PhoneNumber: varchar({ length: 20 }), // Phone number
+  DOB: varchar({ length: 20 }), // Date of birth
+  Gender: varchar({ length: 20 }), // Gender field
+  // specialDiet: varchar({ length: 20 }), // Special diet: "vegetarian", "vegan", "gluten-free", "other"
+  // specialDietOther: text(), // Custom diet description when specialDiet is "other"
+  // profilePic: varchar({ length: 256 }),
+  Password: varchar({ length: 100 }).notNull(),
   email: varchar({ length: 100 }).notNull().unique(),
   emailVerified: boolean()
     .$defaultFn(() => false)

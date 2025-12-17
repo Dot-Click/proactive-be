@@ -93,7 +93,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
       );
     }
 
-    const { email, password } = validationResult.data;
+    const { email, Password } = validationResult.data;
     const db = await database();
 
     // Find user by email
@@ -110,7 +110,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     const user = userResults[0];
 
     // Verify password
-    const isPasswordValid = await verifyPassword(password, user.password);
+    const isPasswordValid = await verifyPassword(Password, user.Password);
     if (!isPasswordValid) {
       return sendError(res, "Invalid email or password", status.UNAUTHORIZED);
     }

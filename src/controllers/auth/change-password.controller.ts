@@ -111,7 +111,7 @@ export const changePassword = async (
     const user = userResults[0];
 
     // Verify current password
-    const isPasswordValid = await verifyPassword(currentPassword, user.password);
+    const isPasswordValid = await verifyPassword(currentPassword, user.Password);
     if (!isPasswordValid) {
       return sendError(
         res,
@@ -121,7 +121,7 @@ export const changePassword = async (
     }
 
     // Check if new password is different from current password
-    const isSamePassword = await verifyPassword(newPassword, user.password);
+    const isSamePassword = await verifyPassword(newPassword, user.Password);
     if (isSamePassword) {
       return sendError(
         res,
@@ -136,7 +136,7 @@ export const changePassword = async (
     // Update user password
     await db
       .update(users)
-      .set({ password: hashedPassword })
+      .set({ Password: hashedPassword })
       .where(eq(users.id, user.id));
 
     return sendSuccess(

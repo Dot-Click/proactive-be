@@ -131,7 +131,7 @@ export const resetPassword = async (
     // Update user password
     await db
       .update(users)
-      .set({ password: hashedPassword })
+      .set({ Password: hashedPassword })
       .where(eq(users.id, userResults[0].id));
 
     // Delete verification record

@@ -137,15 +137,14 @@ export const register = async (
 
     const {
       email,
-      password,
-      role,
-      name,
-      alias,
-      fullHomeAddress,
-      phone,
-      gender,
-      specialDiet,
-      specialDietOther,
+      Password,
+      FirstName,
+      LastName,
+      NickName,
+      Address,
+      PhoneNumber,
+      Gender,
+      DOB,
     } = validationResult.data;
     const db = await database();
 
@@ -165,7 +164,7 @@ export const register = async (
     }
 
     // Hash password
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await hashPassword(Password);
 
     // Create new user
     const newUser = await db
@@ -173,22 +172,22 @@ export const register = async (
       .values({
         id: createId(),
         email,
-        password: hashedPassword,
-        userRoles: role,
+        Password: hashedPassword,
+        userRoles: "user",
         emailVerified: false,
-        name: name || undefined,
-        alias: alias || undefined,
-        fullHomeAddress: fullHomeAddress || undefined,
-        phone: phone || undefined,
-        gender: gender || undefined,
-        specialDiet: specialDiet || undefined,
-        specialDietOther: specialDietOther || undefined,
+        FirstName: FirstName || undefined,
+        LastName: LastName || undefined,
+        NickName: NickName || undefined,
+        Address: Address || undefined,
+        PhoneNumber: PhoneNumber || undefined,
+        Gender: Gender || undefined,
+        DOB: DOB || undefined
       })
       .returning({
         id: users.id,
         email: users.email,
-        firstName: users.firstName,
-        name: users.name,
+        FirstName: users.FirstName,
+        NickName: users.NickName,
         userRoles: users.userRoles,
         emailVerified: users.emailVerified,
       });
@@ -213,7 +212,7 @@ export const register = async (
     await sendVerificationEmail(
       email,
       verificationToken,
-      user.name || user.firstName || undefined
+      user.FirstName || undefined
     );
 
     // Generate tokens

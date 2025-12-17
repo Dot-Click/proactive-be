@@ -17,7 +17,7 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import status from "http-status";
+// import status from "http-status";
 import { config } from "dotenv";
 import express from "express";
 import morgan from "morgan";
@@ -30,12 +30,36 @@ const port = Number(process.env.PORT) || 3000;
 const sessionMiddleware = session(sessionOptions);
 const isProduction = app.get("env") === "production";
 
+
+app.set("trust proxy", 1);
+
+const allowedOrigins = [
+  process.env.FRONTEND_DOMAIN,
+  "http://localhost:4000",
+  "https://proactive-fe.vercel.app",
+].filter(Boolean) as string[];
+
+
 const corsOptions: CorsOptions = {
-  optionsSuccessStatus: status.NO_CONTENT,
-  origin: process.env.FRONTEND_DOMAIN,
+  origin: allowedOrigins,
   credentials: true,
 };
-
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+app.use((req, res, next) => {
+  const origin = req.headers.origin as string | undefined;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Vary", "Origin");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(204);
+    }
+  }
+  next();
+});
 const io = new Server(httpServer, {
   cors: corsOptions,
 });
@@ -43,17 +67,14 @@ const io = new Server(httpServer, {
 swagger(app);
 prepareProductionStance({ isProduction, app, sessionOptions });
 prepareMigration(isProduction);
-
 app.use(helmet());
 app.use(express.json({ limit: "50mb" }));
 io.on("connection", (socket) => registerEvents(socket, io));
-app.options("*", cors(corsOptions));
 app.use(express.static("public"));
 io.engine.use(sessionMiddleware);
 app.use(assignSocketToReqIO(io));
 app.use(express.static("dist"));
 app.use(sessionMiddleware);
-app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 io.use(authorizeUser);
