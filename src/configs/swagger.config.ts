@@ -627,40 +627,57 @@ const options: Options = {
         },
         CreateTripRequest: {
           type: "object",
-          required: ["title", "description", "location", "startDate", "endDate", "duration", "longDesc", "groupSize", "rhythm", "sportLvl", "weekendTt", "included", "notIncluded", "shortDesc", "instaLink", "likedinLink", "promotionalVideo", "galleryImages", "bestPriceMsg", "perHeadPrice"],
+          required: ["title", "description", "location", "startDate", "endDate", "duration"],
           properties: {
             title: {
               type: "string",
               minLength: 1,
               maxLength: 255,
-              example: "Trip to the beach",
+              example: "Adventure Trip to Morocco",
               description: "The trip title",
             },
             description: {
               type: "string",
               minLength: 1,
               maxLength: 1000,
-              example: "A trip to the beach with friends",
+              example: "Experience the vibrant culture and stunning landscapes of Morocco",
               description: "The trip description",
+            },
+            cover_img: {
+              type: "string",
+              format: "binary",
+              description: "Cover image file",
+            },
+            type: {
+              type: "string",
+              minLength: 1,
+              maxLength: 100,
+              example: "Wild Weekend",
+              description: "The trip type",
             },
             location: {
               type: "string",
               minLength: 1,
               maxLength: 255,
-              example: "Miami, FL",
+              example: "Barcelona, Spain",
               description: "The trip location",
+            },
+            map_coordinates: {
+              type: "string",
+              example: "31.6295,-7.9811",
+              description: "Map coordinates in format 'latitude,longitude'",
             },
             startDate: {
               type: "string",
-              format: "date-time",
-              example: "2024-01-15T10:30:00Z",
-              description: "The trip start date",
+              format: "date",
+              example: "2024-12-25",
+              description: "The trip start date (YYYY-MM-DD)",
             },
             endDate: {
               type: "string",
-              format: "date-time",
-              example: "2024-01-15T10:30:00Z",
-              description: "The trip end date",
+              format: "date",
+              example: "2024-12-30",
+              description: "The trip end date (YYYY-MM-DD)",
             },
             duration: {
               type: "string",
@@ -669,92 +686,91 @@ const options: Options = {
               example: "7 days",
               description: "The trip duration",
             },
-            longDesc: {
+            long_desc: {
               type: "string",
-              minLength: 1,
-              maxLength: 5000,
-              example: "A long description of the trip",
+              example: "Join us for an unforgettable 7-day adventure through Morocco. Explore the bustling souks of Marrakech, trek through the Atlas Mountains, and experience the magic of the Sahara Desert.",
               description: "The trip long description",
             },
-            groupSize: {
+            group_size: {
               type: "string",
-              minLength: 1,
-              maxLength: 50,
-              example: "10",
+              example: "10-15 people",
               description: "The trip group size",
             },
             rhythm: {
               type: "string",
               minLength: 1,
               maxLength: 100,
-              example: "Rhythmic",
+              example: "Moderate",
               description: "The trip rhythm",
             },
-            sportLvl: {
+            sport_lvl: {
               type: "string",
-              minLength: 1,
-              maxLength: 100,
-              example: "Sport level",
+              example: "Intermediate",
               description: "The trip sport level",
             },
-            weekendTt: {
+            tt_img: {
               type: "string",
-              minLength: 1,
-              maxLength: 100,
-              example: "Weekend timetable",
-              description: "The trip weekend timetable",
+              format: "binary",
+              description: "Weekend timetable image file",
             },
             included: {
-              type: "array",
-              items: {
-                type: "string",
-              },
-            },
-            notIncluded: {
-            },
-            shortDesc: {
               type: "string",
-              minLength: 1,
-              maxLength: 1000,
-              example: "Short description",
+              example: '[{"title":"check","description":"hehehe","img":"https://res.cloudinary.com/doo6wulo2/image/upload/v1765321563/contactusimg_z3qfnw.png"}]',
+              description: "JSON string array of included items with title, description, and img",
+            },
+            not_included: {
+              type: "string",
+              example: '[{"title":"check","description":"hehehe","img":"https://res.cloudinary.com/doo6wulo2/image/upload/v1765321563/contactusimg_z3qfnw.png"}]',
+              description: "JSON string array of not included items with title, description, and img",
+            },
+            discounts: {
+              type: "string",
+              example: '{"discount_code":"DIS_7722","discount_percentage":"10%","amount":"226","valid_till":"21/09/2025","description":"ac..."}',
+              description: "JSON string or object with discount information",
+            },
+            short_desc: {
+              type: "string",
+              example: "7-day adventure through Morocco's most iconic destinations",
               description: "The trip short description",
             },
-            instaLink: {
+            promotional_video: {
               type: "string",
-              url: "https://www.instagram.com/example",
-              example: "https://www.instagram.com/example",
-              description: "The trip instagram link",
+              format: "binary",
+              description: "Promotional video file",
             },
-            likedinLink: {
+            coordinators: {
               type: "string",
-              url: "https://www.linkedin.com/company/example",
-              example: "https://www.linkedin.com/company/example",
-              description: "The trip linkedin link",
+              example: '["ew5dhm5kade4zuz5546qqjkh"]',
+              description: "JSON string array of coordinator user IDs",
             },
-            promotionalVideo: {
-              type: "string",
-              url: "https://www.youtube.com/watch?v=example",
-              example: "https://www.youtube.com/watch?v=example",
-              description: "The trip promotional video",
-            },
-            galleryImages: {
+            gallery_images: {
               type: "array",
               items: {
                 type: "string",
+                format: "binary",
               },
+              description: "Array of gallery image files",
             },
-            bestPriceMsg: {
+            insta_link: {
               type: "string",
-              minLength: 1,
-              maxLength: 1000,
-              example: "Best price message",
+              format: "uri",
+              example: "https://instagram.com/proactive_trips",
+              description: "The trip instagram link",
+            },
+            likedin_link: {
+              type: "string",
+              format: "uri",
+              example: "https://linkedin.com/company/proactive-trips",
+              description: "The trip linkedin link",
+            },
+            best_price_msg: {
+              type: "string",
+              example: "Book now and save 15%! Early bird discount available until March 31st.",
               description: "The trip best price message",
             },
-            perHeadPrice: {
+            per_head_price: {
               type: "string",
-              minLength: 1,
-              maxLength: 100,
-              example: "Per head price",
+              example: "$1,299",
               description: "The trip per head price",
             },
           },
