@@ -8,6 +8,7 @@ import { sessionOptions } from "./configs/session.config";
 import unknownRoutes from "@/routes/unknown.routes";
 import authRoutes from "@/routes/auth.routes";
 import chatRoutes from "@/routes/chat.routes";
+import tripRoutes from "@/routes/trip.routes";
 import faqRoutes from "@/routes/faq.routes";
 import categoryRoutes from "@/routes/category.routes";
 import { swagger } from "@/configs/swagger.config";
@@ -87,6 +88,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/trips", tripRoutes);
 
 app.use(unknownRoutes);
 

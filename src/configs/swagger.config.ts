@@ -45,6 +45,10 @@ const options: Options = {
         name: "Categories",
         description: "Category management endpoints",
       },
+      {
+        name: "Trips",
+        description: "Trip management endpoints",
+      },
     ],
     components: {
       securitySchemes: {
@@ -409,6 +413,352 @@ const options: Options = {
             },
           },
         },
+        Trip: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              example: "j1kwhiwkamn0e8tk5xz4srct",
+              description: "Unique trip identifier",
+            },
+            title: {
+              type: "string",
+              example: "Adventure Trip to Morocco",
+              description: "The trip title",
+            },
+            description: {
+              type: "string",
+              example: "Experience the vibrant culture and stunning landscapes of Morocco",
+              description: "The trip description",
+            },
+            coverImage: {
+              type: "string",
+              format: "uri",
+              example: "https://placeholder.com/uploads/trip1-DVzyU79l.png",
+              description: "The trip cover image URL",
+            },
+            type: {
+              type: "string",
+              example: "Wild Weekend",
+              description: "The trip type",
+            },
+            location: {
+              type: "string",
+              example: "Barcelona, Spain",
+              description: "The trip location",
+            },
+            mapCoordinates: {
+              type: "string",
+              example: "41.3825802,2.1770730",
+              description: "The trip map coordinates (latitude,longitude)",
+            },
+            startDate: {
+              type: "string",
+              format: "date-time",
+              example: "2024-12-25T00:00:00.000Z",
+              description: "The trip start date",
+            },
+            endDate: {
+              type: "string",
+              format: "date-time",
+              example: "2024-12-30T00:00:00.000Z",
+              description: "The trip end date",
+            },
+            duration: {
+              type: "string",
+              example: "7 days",
+              description: "The trip duration",
+            },
+            longDesc: {
+              type: "string",
+              example: "",
+              description: "The trip long description",
+            },
+            groupSize: {
+              type: "string",
+              example: "",
+              description: "The trip group size",
+            },
+            rhythm: {
+              type: "string",
+              example: "Moderate",
+              description: "The trip rhythm",
+            },
+            sportLvl: {
+              type: "string",
+              example: "",
+              description: "The trip sport level",
+            },
+            weekendTt: {
+              type: "string",
+              format: "uri",
+              example: "https://placeholder.com/uploads/5hcaq2.jpg",
+              description: "The trip weekend timetable image URL",
+            },
+            included: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  img: {
+                    type: "string",
+                    format: "uri",
+                    example: "https://res.cloudinary.com/doo6wulo2/image/upload/v1765321563/contactusimg_z3qfnw.png",
+                  },
+                  title: {
+                    type: "string",
+                    example: "check",
+                  },
+                  description: {
+                    type: "string",
+                    example: "hehehe",
+                  },
+                },
+                required: ["img", "title", "description"],
+              },
+            },
+            status: {
+              type: "string",
+              enum: ["pending", "active", "completed", "cancelled"],
+              example: "pending",
+              description: "The trip status",
+            },
+            notIncluded: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  img: {
+                    type: "string",
+                    format: "uri",
+                  },
+                  title: {
+                    type: "string",
+                  },
+                  description: {
+                    type: "string",
+                  },
+                },
+                required: ["img", "title", "description"],
+              },
+            },
+            shortDesc: {
+              type: "string",
+              example: "",
+              description: "The trip short description",
+            },
+            instaLink: {
+              type: "string",
+              format: "uri",
+              nullable: true,
+              example: null,
+              description: "The trip instagram link",
+            },
+            likedinLink: {
+              type: "string",
+              format: "uri",
+              nullable: true,
+              example: null,
+              description: "The trip linkedin link",
+            },
+            promotionalVideo: {
+              type: "string",
+              format: "uri",
+              example: "https://placeholder.com/uploads/video1.mp4",
+              description: "The trip promotional video URL",
+            },
+            galleryImages: {
+              type: "array",
+              items: {
+                type: "string",
+                format: "uri",
+              },
+              example: [
+                "https://placeholder.com/uploads/detailtrip1-D55mxc9M.png",
+                "https://placeholder.com/uploads/detailtrip2-DkPK3tQE.png",
+                "https://placeholder.com/uploads/detailtrip3-BrR-grLz.png",
+              ],
+              description: "Array of gallery image URLs",
+            },
+            bestPriceMsg: {
+              type: "string",
+              example: "",
+              description: "The trip best price message",
+            },
+            perHeadPrice: {
+              type: "string",
+              example: "",
+              description: "The trip per head price",
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2025-12-18T00:27:28.969Z",
+              description: "The trip creation timestamp",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              example: "2025-12-18T00:27:28.138Z",
+              description: "The trip last update timestamp",
+            },
+          },
+        },
+        TripResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Trip created successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                trip: {
+                  $ref: "#/components/schemas/Trip",
+                },
+              },
+            },
+          },
+        },
+        CreateTripRequest: {
+          type: "object",
+          required: ["title", "description", "location", "startDate", "endDate", "duration", "longDesc", "groupSize", "rhythm", "sportLvl", "weekendTt", "included", "notIncluded", "shortDesc", "instaLink", "likedinLink", "promotionalVideo", "galleryImages", "bestPriceMsg", "perHeadPrice"],
+          properties: {
+            title: {
+              type: "string",
+              minLength: 1,
+              maxLength: 255,
+              example: "Trip to the beach",
+              description: "The trip title",
+            },
+            description: {
+              type: "string",
+              minLength: 1,
+              maxLength: 1000,
+              example: "A trip to the beach with friends",
+              description: "The trip description",
+            },
+            location: {
+              type: "string",
+              minLength: 1,
+              maxLength: 255,
+              example: "Miami, FL",
+              description: "The trip location",
+            },
+            startDate: {
+              type: "string",
+              format: "date-time",
+              example: "2024-01-15T10:30:00Z",
+              description: "The trip start date",
+            },
+            endDate: {
+              type: "string",
+              format: "date-time",
+              example: "2024-01-15T10:30:00Z",
+              description: "The trip end date",
+            },
+            duration: {
+              type: "string",
+              minLength: 1,
+              maxLength: 100,
+              example: "7 days",
+              description: "The trip duration",
+            },
+            longDesc: {
+              type: "string",
+              minLength: 1,
+              maxLength: 5000,
+              example: "A long description of the trip",
+              description: "The trip long description",
+            },
+            groupSize: {
+              type: "string",
+              minLength: 1,
+              maxLength: 50,
+              example: "10",
+              description: "The trip group size",
+            },
+            rhythm: {
+              type: "string",
+              minLength: 1,
+              maxLength: 100,
+              example: "Rhythmic",
+              description: "The trip rhythm",
+            },
+            sportLvl: {
+              type: "string",
+              minLength: 1,
+              maxLength: 100,
+              example: "Sport level",
+              description: "The trip sport level",
+            },
+            weekendTt: {
+              type: "string",
+              minLength: 1,
+              maxLength: 100,
+              example: "Weekend timetable",
+              description: "The trip weekend timetable",
+            },
+            included: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+            notIncluded: {
+            },
+            shortDesc: {
+              type: "string",
+              minLength: 1,
+              maxLength: 1000,
+              example: "Short description",
+              description: "The trip short description",
+            },
+            instaLink: {
+              type: "string",
+              url: "https://www.instagram.com/example",
+              example: "https://www.instagram.com/example",
+              description: "The trip instagram link",
+            },
+            likedinLink: {
+              type: "string",
+              url: "https://www.linkedin.com/company/example",
+              example: "https://www.linkedin.com/company/example",
+              description: "The trip linkedin link",
+            },
+            promotionalVideo: {
+              type: "string",
+              url: "https://www.youtube.com/watch?v=example",
+              example: "https://www.youtube.com/watch?v=example",
+              description: "The trip promotional video",
+            },
+            galleryImages: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+            bestPriceMsg: {
+              type: "string",
+              minLength: 1,
+              maxLength: 1000,
+              example: "Best price message",
+              description: "The trip best price message",
+            },
+            perHeadPrice: {
+              type: "string",
+              minLength: 1,
+              maxLength: 100,
+              example: "Per head price",
+              description: "The trip per head price",
+            },
+          },
+        },
       },
     },
   },
@@ -417,6 +767,7 @@ const options: Options = {
     route("chat.routes.ts"),
     route("faq.routes.ts"),
     route("category.routes.ts"),
+    route("trip.routes.ts"),
     route("example.routes.ts"),
     routeController("*.controller.ts"),
   ],

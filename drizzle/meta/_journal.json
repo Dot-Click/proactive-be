@@ -36,6 +36,20 @@
       "when": 1765960384970,
       "tag": "0004_thick_shadowcat",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1766014989215,
+      "tag": "0005_smiling_misty_knight",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1766019194263,
+      "tag": "0006_mean_rage",
+      "breakpoints": true
     }
   ]
 }
