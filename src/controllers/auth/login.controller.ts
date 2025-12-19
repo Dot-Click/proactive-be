@@ -110,7 +110,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     const user = userResults[0];
 
     // Verify password
-    const isPasswordValid = await verifyPassword(Password, user.Password);
+    const isPasswordValid = await verifyPassword(Password, user.password);
     if (!isPasswordValid) {
       return sendError(res, "Invalid email or password", status.UNAUTHORIZED);
     }

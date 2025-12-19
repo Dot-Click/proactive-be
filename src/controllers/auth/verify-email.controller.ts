@@ -152,7 +152,7 @@ export const verifyEmail = async (
 
     // Send welcome email if this is the first time verifying
     if (!wasAlreadyVerified) {
-      await sendWelcomeEmail(user.email, user.FirstName || undefined);
+      await sendWelcomeEmail(user.email, user.firstName || undefined);
     }
 
     return sendSuccess(

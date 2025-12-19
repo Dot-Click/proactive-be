@@ -172,22 +172,22 @@ export const register = async (
       .values({
         id: createId(),
         email,
-        Password: hashedPassword,
+        password: hashedPassword,
         userRoles: "user",
         emailVerified: false,
-        FirstName: FirstName || undefined,
-        LastName: LastName || undefined,
-        NickName: NickName || undefined,
-        Address: Address || undefined,
-        PhoneNumber: PhoneNumber || undefined,
-        Gender: Gender || undefined,
-        DOB: DOB || undefined
+        firstName: FirstName || undefined,
+        lastName: LastName || undefined,
+        nickName: NickName || undefined,
+        address: Address || undefined,
+        phoneNumber: PhoneNumber || undefined,
+        gender: Gender || undefined,
+        dob: DOB || undefined
       })
       .returning({
         id: users.id,
         email: users.email,
-        FirstName: users.FirstName,
-        NickName: users.NickName,
+        FirstName: users.firstName,
+        NickName: users.nickName,
         userRoles: users.userRoles,
         emailVerified: users.emailVerified,
       });

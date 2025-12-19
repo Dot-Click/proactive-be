@@ -72,24 +72,21 @@ export const applicationStatusEnum = pgEnum("application_status", [
 
 export const users = pgTable("users", {
   id: uuid().primaryKey(),
-  FirstName: varchar({ length: 100 }),
-  LastName: varchar({ length: 100 }),
-  NickName: varchar({ length: 200 }), // Full name field
-  // alias: varchar({ length: 100 }), // Alias/nickname
-  Address: text(), // Full home address
-  PhoneNumber: varchar({ length: 20 }), // Phone number
-  DOB: varchar({ length: 20 }), // Date of birth
-  Gender: varchar({ length: 20 }), // Gender field
-  // specialDiet: varchar({ length: 20 }), // Special diet: "vegetarian", "vegan", "gluten-free", "other"
-  // specialDietOther: text(), // Custom diet description when specialDiet is "other"
-  // profilePic: varchar({ length: 256 }),
-  Password: varchar({ length: 100 }).notNull(),
-  email: varchar({ length: 100 }).notNull().unique(),
-  emailVerified: boolean()
+  firstName: varchar("firstName", { length: 100 }),
+  lastName: varchar("lastName", { length: 100 }),
+  nickName: varchar("nickName", { length: 200 }),
+  address: text("address"),
+  phoneNumber: varchar("phoneNumber", { length: 20 }),
+  dob: varchar("dob", { length: 20 }),
+  gender: varchar("gender", { length: 20 }),
+  password: varchar("password", { length: 100 }).notNull(),
+  email: varchar("email", { length: 100 }).notNull().unique(),
+  emailVerified: boolean("emailVerified")
     .$defaultFn(() => false)
     .notNull(),
-  userRoles: varchar({ length: 20 }).default("user"), // Allowed values: "user", "coordinator", "admin"
-  ...timeStamps,
+  userRoles: varchar("userRoles", { length: 20 }).default("user"),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").$onUpdateFn(() => new Date()),
 });
 
 export const session = pgTable("session", {

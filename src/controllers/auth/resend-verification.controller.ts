@@ -120,7 +120,7 @@ export const resendVerification = async (
     await sendVerificationEmail(
       email,
       verificationToken,
-      user.FirstName || undefined
+      user.firstName || undefined
     );
 
     return sendSuccess(
