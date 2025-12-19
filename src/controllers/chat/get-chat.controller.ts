@@ -99,8 +99,8 @@ export const getChat = async (
         userId: chatParticipants.userId,
         role: chatParticipants.role,
         joinedAt: chatParticipants.joinedAt,
-        firstName: users.FirstName,
-        lastName: users.LastName,
+        firstName: users.firstName,
+        lastName: users.lastName,
         email: users.email,
         userRole: users.userRoles,
       })
