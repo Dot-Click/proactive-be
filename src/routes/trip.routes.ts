@@ -2,6 +2,9 @@ import { Router } from "express";
 import { createTrip } from "@/controllers/trips/create-trip.controller";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { upload } from "@/middlewares/multer.middleware";
+import { getTrips } from "@/controllers/trips/get-trips.controller";
+import { getTripById } from "@/controllers/trips/get-unique-tripe.controller";
+import { updateTrip } from "@/controllers/trips/update-trip.controller";
 
 const tripRoutes = Router();
 
@@ -25,4 +28,36 @@ const tripRoutes = Router();
  */
 tripRoutes.post("/", authenticate, authorize("admin", "coordinator"), upload(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'video/mp4', 'video/mov']), createTrip);
 
+/**
+ * @swagger
+ * /api/trip:
+ *   get:
+ *     tags:
+ *       - Trips
+ *     summary: Get all trips
+ *     description: Get all trips
+ */
+tripRoutes.get("/", authenticate, authorize("admin", "coordinator"), getTrips);
+
+/**
+ * @swagger
+ * /api/trip/{id}:
+ *   get:
+ *     tags:
+ *       - Trips
+ *     summary: Get a trip by ID
+ *     description: Get a trip by ID
+ */
+tripRoutes.get("/:id", authenticate, authorize("admin", "coordinator"), getTripById);
+
+/**
+ * @swagger
+ * /api/trip/{id}:
+ *   patch:
+ *     tags:
+ *       - Trips
+ *     summary: Update a trip by ID
+ *     description: Update a trip by ID
+ */
+tripRoutes.patch("/:id", authenticate, authorize("admin", "coordinator"),upload(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'video/mp4', 'video/mov']), updateTrip);
 export default tripRoutes;

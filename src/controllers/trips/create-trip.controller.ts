@@ -9,6 +9,7 @@ import { trips, discounts, tripCoordinators } from "@/schema/schema";
 import { createId } from "@paralleldrive/cuid2";
 import { ZodError } from "zod";
 import { createTripSchema } from "@/types/trip.types";
+import { eq } from "drizzle-orm";
 
 // Type augmentation for file uploads with multer
 declare global {
@@ -85,8 +86,7 @@ export const createTrip = async (
     const { id } = req.user as any;
     const { ...payload }: any = req.body;
 
-    // Parse coordinator_ids if it's a string
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     let coordinatorIds: string[] = [];
     if (payload.coordinators) {
       if (typeof payload.coordinators === "string") {
@@ -103,7 +103,7 @@ export const createTrip = async (
     }
 
     if (req.files) {
-      // Handle promotional video (field name: promotional_video)
+
       if ((req.files as any).promotional_video && (req.files as any).promotional_video[0]) {
         const video = await cloudinaryUploader(
           (req.files as any).promotional_video[0].path
@@ -111,7 +111,7 @@ export const createTrip = async (
         payload.promotionalVideo = video.secure_url;
       }
 
-      // Handle gallery images (field name: gallery_images)
+
       if ((req.files as any).gallery_images && Array.isArray((req.files as any).gallery_images) && (req.files as any).gallery_images.length > 0) {
         const galleryPaths = (req.files as any).gallery_images.map(
           (file: any) => file.path
@@ -125,7 +125,7 @@ export const createTrip = async (
         payload.galleryImages = gallery_images_urls;
       }
 
-      // Handle cover image (field name: cover_img)
+
       if ((req.files as any).cover_img && (req.files as any).cover_img[0]) {
         const cover_image = (await cloudinaryUploader(
           (req.files as any).cover_img[0].path
@@ -133,7 +133,7 @@ export const createTrip = async (
         payload.coverImage = cover_image.secure_url;
       }
 
-      // Handle weekend timetable image (field name: tt_img)
+
       if ((req.files as any).tt_img && (req.files as any).tt_img[0]) {
         const weekend_tt = (await cloudinaryUploader(
           (req.files as any).tt_img[0].path
@@ -145,17 +145,16 @@ export const createTrip = async (
     const map_coord = await fetchCorrd(payload.location);
     payload.mapCoordinates = `${map_coord.lat},${map_coord.lon}`;
 
-    // Prepare coordinator IDs list for future trip_coordinator junction table
-    // Filter out any invalid/empty IDs and ensure uniqueness
+
     const validCoordinatorIds = coordinatorIds.filter(
       (cid: string) => cid && typeof cid === "string" && cid.trim() !== ""
     );
     const coordinatorIdsList = [
       ...(id && typeof id === "string" ? [id] : []),
       ...validCoordinatorIds,
-    ].filter((cid, index, self) => cid && self.indexOf(cid) === index); // Remove duplicates and invalid entries
+    ].filter((cid, index, self) => cid && self.indexOf(cid) === index);
     
-    // Validate payload with Zod schema
+    
     const validationResult = createTripSchema.safeParse(payload);
     if (!validationResult.success) {
       const errors: Record<string, string[]> = {};

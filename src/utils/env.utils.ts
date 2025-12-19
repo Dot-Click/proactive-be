@@ -4,9 +4,9 @@ import { z } from "zod";
 config();
 
 const schemaObject = z.object({
-  // CLOUDINARY_API_SECRET: z.string(),
-  // CLOUDINARY_CLOUD_NAME: z.string(),
-  // GOOGLE_CLIENT_SECRET: z.string(),
+  CLOUDINARY_API_SECRET: z.string(),
+  CLOUDINARY_CLOUD_NAME: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
   // GOOGLE_CLIENT_ID: z.string(),
   // BREVO_API_KEY: z.string(),
   // UPSTASH_REDIS_REST_TOKEN: z.string(),

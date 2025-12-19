@@ -38,12 +38,20 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "refunded",
 ]);
 
+// Trip Approval Status Enum
+export const tripApprovalStatusEnum = pgEnum("trip_approval_status", [
+  "pending",
+  "approved",
+  "unpublished",
+  "rejected",
+]);
 // Trip Status Enum
 export const tripStatusEnum = pgEnum("trip_status", [
   "pending",
   "active",
   "completed",
-  "cancelled",
+  "open",
+  "live",
 ]);
 
 // Discount Status Enum
@@ -197,6 +205,7 @@ export const trips = pgTable("trips", {
   weekendTt: varchar({ length: 100 }).notNull(),
   included: jsonb("included"),
   status: tripStatusEnum("status").default("pending").notNull(),
+  approvalStatus: tripApprovalStatusEnum("approval_status").default("pending").notNull(),
   notIncluded: jsonb("not_included"),
   shortDesc: text("short_desc").notNull(),
   instaLink: varchar({ length: 500 }),

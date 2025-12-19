@@ -44,6 +44,7 @@
     "@upstash/vector": "^1.2.1",
     "axios": "^1.5.1",
     "bcrypt": "^5.1.1",
+    "cloudinary": "^2.8.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "device-detector-js": "^3.0.3",

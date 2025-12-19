@@ -6,6 +6,7 @@ import {
   messages,
   faqs,
   categories,
+  trips,
 } from "./schema";
 import { hashPassword } from "@/utils/password.util";
 
@@ -208,6 +209,63 @@ const seed = async () => {
       },
     ]);
 
+    // Seed Trips
+    console.log("🚗 Seeding trips...");
+    await db.insert(trips).values([
+      {
+          title: "Trip 1",
+          description: "A trip to the mountains",
+          coverImage: "https://www.instagram.com/mountains",
+          type: "Mountain",
+          location: "Mountains",
+          startDate: new Date(),
+          endDate: new Date(),
+          duration: "1 week",
+          longDesc: "A trip to the mountains",
+          groupSize: "10",
+          rhythm: "Mountain",
+          sportLvl: "Mountain",
+          weekendTt: "Mountain",
+          included: null,
+          notIncluded: null,
+          shortDesc: "A trip to the mountains",
+          instaLink: "https://www.instagram.com/mountains",
+          likedinLink: "https://www.linkedin.com/mountains",
+          promotionalVideo: "https://www.youtube.com/mountains",
+          galleryImages: ["https://www.instagram.com/mountains"],
+          bestPriceMsg: "Best price message",
+          perHeadPrice: "100",
+          status: "active",
+          approvalStatus: "approved",
+      },
+      {
+        title: "Trip 2",
+        description: "A trip to the beach",
+        coverImage: "https://www.instagram.com/beach",
+        type: "Beach",
+        location: "Beach",
+        longDesc: "A trip to the beach",
+        groupSize: "10",
+        rhythm: "Beach",
+        sportLvl: "Beach",
+        weekendTt: "Beach",
+        included: null,
+        notIncluded: null,
+        shortDesc: "A trip to the beach",
+        instaLink: "https://www.instagram.com/beach",
+        likedinLink: "https://www.linkedin.com/beach",
+        promotionalVideo: "https://www.youtube.com/beach",
+        galleryImages: ["https://www.instagram.com/beach"],
+        bestPriceMsg: "Best price message",
+        perHeadPrice: "100",
+        status: "active",
+        approvalStatus: "approved",
+        duration: "1 week",
+        startDate: new Date(),
+        endDate: new Date(),
+      },
+    ]);
+
     console.log("✅ Database seeding completed successfully!");
     console.log("\n📊 Seeded data summary:");
     console.log(`   - Users: 4 (1 admin, 1 coordinator, 2 regular users)`);
@@ -216,6 +274,7 @@ const seed = async () => {
     console.log(`   - Chats: 2`);
     console.log(`   - Chat Participants: 5`);
     console.log(`   - Messages: 5`);
+    console.log(`   - Trips: 2`);
     console.log("\n🔑 Default password for all users: Password123!");
   } catch (error) {
     console.error("❌ Error seeding database:", error);

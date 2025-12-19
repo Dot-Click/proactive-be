@@ -9,6 +9,7 @@ import unknownRoutes from "@/routes/unknown.routes";
 import authRoutes from "@/routes/auth.routes";
 import chatRoutes from "@/routes/chat.routes";
 import tripRoutes from "@/routes/trip.routes";
+import paymentRoutes from "@/routes/payment.routes";
 import faqRoutes from "@/routes/faq.routes";
 import categoryRoutes from "@/routes/category.routes";
 import { swagger } from "@/configs/swagger.config";
@@ -23,6 +24,7 @@ import { config } from "dotenv";
 import express from "express";
 import morgan from "morgan";
 import helmet from "helmet";
+import { cloudinaryConfig } from "@/configs/cloudinary.config";
 
 config();
 const app = express();
@@ -79,6 +81,7 @@ app.use(sessionMiddleware);
 app.use(cookieParser());
 app.use(express.json());
 io.use(authorizeUser);
+cloudinaryConfig();
 
 app.use(morgan("dev"));
 app.use(throttle(50, "1m")); // For global apis( light traffic )
@@ -89,6 +92,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/trips", tripRoutes);
+app.use("/api/payment", paymentRoutes);
 
 app.use(unknownRoutes);
 

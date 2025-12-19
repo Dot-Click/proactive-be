@@ -49,6 +49,10 @@ const options: Options = {
         name: "Trips",
         description: "Trip management endpoints",
       },
+      {
+        name: "Payment",
+        description: "Payment and membership management endpoints",
+      },
     ],
     components: {
       securitySchemes: {
@@ -775,6 +779,317 @@ const options: Options = {
             },
           },
         },
+        PaymentRequest: {
+          type: "object",
+          required: ["payment_method_id"],
+          properties: {
+            payment_method_id: {
+              type: "string",
+              example: "pm_1ABC123def456GHI789jkl",
+              description: "The Stripe payment method ID",
+            },
+            amount: {
+              type: "number",
+              example: 950.0,
+              description: "The amount to charge (default: 950.0)",
+            },
+            currency: {
+              type: "string",
+              example: "eur",
+              default: "eur",
+              description: "The currency code (default: eur)",
+            },
+            return_url: {
+              type: "string",
+              format: "uri",
+              example: "https://example.com/payment/return",
+              description: "The URL to redirect to after payment completion",
+            },
+            trip_id: {
+              type: "string",
+              example: "clx123abc456def789",
+              description: "Optional trip ID associated with the payment",
+            },
+          },
+        },
+        MembershipRequest: {
+          type: "object",
+          required: ["payment_method_id", "membership_type"],
+          properties: {
+            payment_method_id: {
+              type: "string",
+              example: "pm_1ABC123def456GHI789jkl",
+              description: "The Stripe payment method ID",
+            },
+            amount: {
+              type: "number",
+              example: 950.0,
+              description: "The amount to charge",
+            },
+            currency: {
+              type: "string",
+              example: "eur",
+              default: "eur",
+              description: "The currency code (default: eur)",
+            },
+            return_url: {
+              type: "string",
+              format: "uri",
+              example: "https://example.com/payment/return",
+              description: "The URL to redirect to after payment completion",
+            },
+            membership_type: {
+              type: "string",
+              example: "premium",
+              description: "The type of membership",
+            },
+          },
+        },
+        PaymentResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Payment processed successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                paymentIntentId: {
+                  type: "string",
+                  example: "clx123abc456def789",
+                  description: "The payment ID",
+                },
+                stripePaymentIntentId: {
+                  type: "string",
+                  example: "pi_1ABC123def456GHI789jkl",
+                  description: "The Stripe payment intent ID",
+                },
+                customerId: {
+                  type: "string",
+                  example: "cus_1ABC123def456GHI789jkl",
+                  description: "The Stripe customer ID",
+                },
+                status: {
+                  type: "string",
+                  enum: ["paid", "unpaid", "pending", "failed", "refunded"],
+                  example: "paid",
+                  description: "The payment status",
+                },
+                amount: {
+                  type: "number",
+                  example: 950.0,
+                  description: "The payment amount",
+                },
+                currency: {
+                  type: "string",
+                  example: "EUR",
+                  description: "The payment currency",
+                },
+              },
+            },
+          },
+        },
+        MembershipResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Membership created successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                membershipId: {
+                  type: "string",
+                  example: "PA-123456",
+                  description: "The membership ID",
+                },
+                paymentId: {
+                  type: "string",
+                  example: "clx123abc456def789",
+                  description: "The payment ID",
+                },
+                stripePaymentIntentId: {
+                  type: "string",
+                  example: "pi_1ABC123def456GHI789jkl",
+                  description: "The Stripe payment intent ID",
+                },
+                customerId: {
+                  type: "string",
+                  example: "cus_1ABC123def456GHI789jkl",
+                  description: "The Stripe customer ID",
+                },
+                status: {
+                  type: "string",
+                  enum: ["paid", "unpaid", "pending", "failed", "refunded"],
+                  example: "paid",
+                  description: "The payment status",
+                },
+                membershipType: {
+                  type: "string",
+                  example: "premium",
+                  description: "The membership type",
+                },
+                membershipExpiry: {
+                  type: "string",
+                  format: "date-time",
+                  example: "2025-12-31T23:59:59.000Z",
+                  description: "The membership expiry date (1 year from creation)",
+                },
+                amount: {
+                  type: "number",
+                  example: 950.0,
+                  description: "The payment amount",
+                },
+                currency: {
+                  type: "string",
+                  example: "EUR",
+                  description: "The payment currency",
+                },
+                membershipAvailable: {
+                  type: "boolean",
+                  example: true,
+                  description: "Whether the membership is available",
+                },
+              },
+            },
+          },
+        },
+        PaymentsListResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Payments retrieved successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                payments: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      id: {
+                        type: "string",
+                        example: "clx123abc456def789",
+                      },
+                      userId: {
+                        type: "string",
+                        example: "clx123abc456def789",
+                      },
+                      tripId: {
+                        type: "string",
+                        nullable: true,
+                        example: "clx123abc456def789",
+                      },
+                      amount: {
+                        type: "string",
+                        example: "950.0000",
+                      },
+                      status: {
+                        type: "string",
+                        enum: ["paid", "unpaid", "pending", "failed", "refunded"],
+                        example: "paid",
+                      },
+                      last4: {
+                        type: "string",
+                        example: "4242",
+                      },
+                      currency: {
+                        type: "string",
+                        example: "EUR",
+                      },
+                      membershipType: {
+                        type: "string",
+                        nullable: true,
+                        example: "premium",
+                      },
+                      membershipExpiry: {
+                        type: "string",
+                        format: "date-time",
+                        nullable: true,
+                        example: "2025-12-31T23:59:59.000Z",
+                      },
+                      method: {
+                        type: "string",
+                        example: "VISA",
+                      },
+                      cardExpiry: {
+                        type: "string",
+                        nullable: true,
+                        example: "12/2025",
+                      },
+                      stripeCustomerId: {
+                        type: "string",
+                        nullable: true,
+                        example: "cus_1ABC123def456GHI789jkl",
+                      },
+                      membershipId: {
+                        type: "string",
+                        nullable: true,
+                        example: "PA-123456",
+                      },
+                      membershipAvailable: {
+                        type: "boolean",
+                        example: true,
+                      },
+                      discountAvailable: {
+                        type: "boolean",
+                        example: false,
+                      },
+                      stripePaymentId: {
+                        type: "string",
+                        example: "pi_1ABC123def456GHI789jkl",
+                      },
+                      createdAt: {
+                        type: "string",
+                        format: "date-time",
+                      },
+                      updatedAt: {
+                        type: "string",
+                        format: "date-time",
+                        nullable: true,
+                      },
+                      trip: {
+                        type: "object",
+                        nullable: true,
+                        properties: {
+                          id: {
+                            type: "string",
+                            example: "clx123abc456def789",
+                          },
+                          title: {
+                            type: "string",
+                            example: "Morocco Adventure Trip",
+                          },
+                          end_date: {
+                            type: "string",
+                            format: "date-time",
+                            example: "2025-06-15T00:00:00.000Z",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     },
   },
@@ -784,6 +1099,7 @@ const options: Options = {
     route("faq.routes.ts"),
     route("category.routes.ts"),
     route("trip.routes.ts"),
+    route("payment.routes.ts"),
     route("example.routes.ts"),
     routeController("*.controller.ts"),
   ],
