@@ -15,7 +15,7 @@ import { createInsertSchema } from "drizzle-zod";
 
 const timeStamps = {
   createdAt: timestamp().defaultNow(),
-  updatedAt: timestamp().$onUpdateFn(() => new Date()),
+  updatedAt: timestamp().$onUpdateFn((): Date => new Date()),
 };
 
 type UUIDOptions = Exclude<Parameters<typeof varchar>[1], undefined>;
@@ -86,7 +86,24 @@ export const users = pgTable("users", {
     .notNull(),
   userRoles: varchar("userRoles", { length: 20 }).default("user"),
   createdAt: timestamp("createdAt").defaultNow(),
-  updatedAt: timestamp("updatedAt").$onUpdateFn(() => new Date()),
+  coordinatorDetails: foreignkeyRef("coordinator_details_id", (): any => coordinatorDetails.id, { onDelete: "cascade" }),
+  updatedAt: timestamp("updatedAt").$onUpdateFn((): Date => new Date()),
+});
+
+export const coordinatorDetails = pgTable("coordinator_details", {
+  id: uuid().primaryKey(),
+  userId: foreignkeyRef("user_id", (): any => users.id, { onDelete: "cascade" }).unique().notNull(),
+  fullName: varchar("fullName", { length: 200 }),
+  phoneNumber: varchar("phoneNumber", { length: 20 }),
+  bio: text("bio"),
+  profilePicture: varchar("profilePicture", { length: 255 }),
+  specialities: text("specialities").array(),
+  languages: text("languages").array(),
+  certificateLvl: varchar("certificateLvl", { length: 20 }),
+  yearsOfExperience: integer("yearsOfExperience"),
+  type: varchar("type", { length: 20 }),
+  accessLvl: varchar("accessLvl", { length: 20 }),
+  ...timeStamps,
 });
 
 export const session = pgTable("session", {

@@ -64,6 +64,20 @@
       "when": 1766164018415,
       "tag": "0008_complex_pet_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1766184897081,
+      "tag": "0009_perpetual_franklin_storm",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1766185092809,
+      "tag": "0010_wild_zarek",
+      "breakpoints": true
     }
   ]
 }

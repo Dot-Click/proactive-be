@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { database } from "@/configs/connection.config";
-import { users } from "@/schema/schema";
+import { coordinatorDetails, users } from "@/schema/schema";
 import { sendSuccess, sendError } from "@/utils/response.util";
 import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
 import status from "http-status";
@@ -111,23 +111,59 @@ export const getCurrentUser = async (
 
     const user = userResults[0];
 
+    // Fetch coordinator details if user is a coordinator
+    let coordDetails = null;
+    if (user.userRoles === "coordinator") {
+      const coordDetailsResults = await db
+        .select()
+        .from(coordinatorDetails)
+        .where(eq(coordinatorDetails.userId, user.id))
+        .limit(1);
+      
+      if (coordDetailsResults.length > 0) {
+        coordDetails = coordDetailsResults[0];
+      }
+    }
+
+    // Build user response object
+    const userResponse: any = {
+      id: user.id,
+      email: user.email,
+      FirstName: user.FirstName,
+      LastName: user.LastName,
+      NickName: user.NickName,
+      Address: user.Address,
+      PhoneNumber: user.PhoneNumber,
+      Gender: user.Gender,
+      role: user.userRoles || "user",
+      emailVerified: user.emailVerified || false,
+      createdAt: user.createdAt,
+    };
+
+    // Add coordinator details if available
+    if (coordDetails) {
+      userResponse.coordinatorDetails = {
+        id: coordDetails.id,
+        fullName: coordDetails.fullName,
+        phoneNumber: coordDetails.phoneNumber,
+        bio: coordDetails.bio,
+        profilePicture: coordDetails.profilePicture,
+        specialities: coordDetails.specialities,
+        languages: coordDetails.languages,
+        certificateLvl: coordDetails.certificateLvl,
+        yearsOfExperience: coordDetails.yearsOfExperience,
+        type: coordDetails.type,
+        accessLvl: coordDetails.accessLvl,
+        createdAt: coordDetails.createdAt,
+        updatedAt: coordDetails.updatedAt,
+      };
+    }
+
     return sendSuccess(
       res,
       "User information retrieved successfully",
       {
-        user: {
-          id: user.id,
-          email: user.email,
-          FirstName: user.FirstName,
-          LastName: user.LastName,
-          NickName: user.NickName,
-          Address: user.Address,
-          PhoneNumber: user.PhoneNumber,
-          Gender: user.Gender,
-          role: user.userRoles || "user",
-          emailVerified: user.emailVerified || false,
-          createdAt: user.createdAt,
-        },
+        user: userResponse,
       },
       status.OK
     );

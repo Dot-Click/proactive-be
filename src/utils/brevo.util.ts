@@ -106,24 +106,24 @@ export const sendVerificationEmail = async (
 
   const textContent = `Hello ${userName || "User"},
 
-Please verify your email address by clicking the link below:
-${verificationLink}
+    Please verify your email address by clicking the link below:
+    ${verificationLink}
 
-Or use this verification token: ${token}
+    Or use this verification token: ${token}
 
-This link will expire in 24 hours.
+    This link will expire in 24 hours.
 
-If you didn't create an account, please ignore this email.
+    If you didn't create an account, please ignore this email.
 
-Best regards,
-Proactive Team`;
+    Best regards,
+    Proactive Team`;
 
-  return sendEmail({
-    to: email,
-    subject,
-    htmlContent,
-    textContent,
-  });
+      return sendEmail({
+        to: email,
+        subject,
+        htmlContent,
+        textContent,
+      });
 };
 
 /**
@@ -461,4 +461,43 @@ const getWelcomeEmailTemplate = (
 </body>
 </html>
   `.trim();
+};
+
+
+export const sendCoordinatorWelcomeEmail = async (
+  email: string,
+  userName?: string,
+  password?: string
+): Promise<boolean> => {
+  const subject = "Welcome to Proactive!";
+  const frontendUrl = process.env.FRONTEND_DOMAIN || "http://localhost:5173";
+
+    const htmlContent = `
+    <h2>Welcome to Proactive 👋</h2>
+
+    <p>Hi ${userName || "there"},</p>
+
+    <p>Your email has been successfully verified, and your account is now active.</p>
+
+    <p><strong>Account details:</strong></p>
+    <ul>
+      <li>Email: <strong>${email}</strong></li>
+      <li>Password: <strong>${password}</strong></li>
+    </ul>
+
+    <p>You can now log in and start managing your tasks and projects with Proactive.</p>
+
+    <p style="margin-top:16px;">
+      For security reasons, we recommend changing your password after your first login.
+    </p>
+
+    <p>Best regards,<br/>
+    <strong>Proactive Team</strong></p>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject,
+    htmlContent,
+  });
 };

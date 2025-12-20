@@ -53,6 +53,10 @@ const options: Options = {
         name: "Payment",
         description: "Payment and membership management endpoints",
       },
+      {
+        name: "Admin",
+        description: "Admin endpoints for managing coordinators",
+      },
     ],
     components: {
       securitySchemes: {
@@ -127,6 +131,235 @@ const options: Options = {
               type: "string",
               enum: ["user", "coordinator"],
               example: "user",
+            },
+          },
+        },
+        CreateCoordinatorRequest: {
+          type: "object",
+          required: ["coordinatorDetails", "email", "password"],
+          properties: {
+            coordinatorDetails: {
+              type: "object",
+              description: "Coordinator details object. Can be sent as JSON string in multipart/form-data or as object in application/json",
+              properties: {
+                fullName: {
+                  type: "string",
+                  example: "John Doe",
+                  description: "Coordinator's full name",
+                },
+                phoneNumber: {
+                  type: "string",
+                  example: "+1234567890",
+                  description: "Coordinator's phone number",
+                },
+                bio: {
+                  type: "string",
+                  example: "Experienced program coordinator with a background in education and project management.",
+                  description: "Coordinator's biography",
+                },
+                specialities: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                  },
+                  example: ["Adventure Travel", "Group Management", "Safety"],
+                  description: "List of coordinator's specialities",
+                },
+                languages: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                  },
+                  example: ["English", "Spanish", "French"],
+                  description: "List of languages the coordinator speaks",
+                },
+                certificateLvl: {
+                  type: "string",
+                  example: "Level 2",
+                  description: "Certificate level",
+                },
+                yearsOfExperience: {
+                  type: "integer",
+                  example: 5,
+                  description: "Years of experience",
+                },
+                type: {
+                  type: "string",
+                  example: "senior-coordinator",
+                  description: "Type of coordinator",
+                },
+                accessLvl: {
+                  type: "string",
+                  example: "admin",
+                  description: "Access level",
+                },
+              },
+              required: ["fullName", "phoneNumber", "bio", "specialities", "languages", "certificateLvl", "yearsOfExperience", "type", "accessLvl"],
+            },
+            email: {
+              type: "string",
+              format: "email",
+              example: "coordinator@example.com",
+              description: "Coordinator's email address (will be used for login)",
+            },
+            password: {
+              type: "string",
+              format: "password",
+              example: "StrongPass123!",
+              description: "Password for the coordinator account",
+            },
+            prof_pic: {
+              type: "string",
+              format: "binary",
+              description: "Profile picture file (optional, accepts image/jpeg, image/png, image/jpg)",
+            },
+          },
+        },
+        Coordinator: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              example: "clx123abc456def789",
+              description: "Coordinator details ID",
+            },
+            userId: {
+              type: "string",
+              example: "clx123abc456def789",
+              description: "Associated user ID",
+            },
+            fullName: {
+              type: "string",
+              example: "John Doe",
+              description: "Coordinator's full name",
+            },
+            phoneNumber: {
+              type: "string",
+              example: "+1234567890",
+              description: "Coordinator's phone number",
+            },
+            bio: {
+              type: "string",
+              example: "Experienced program coordinator with a background in education and project management.",
+              description: "Coordinator's biography",
+            },
+            profilePicture: {
+              type: "string",
+              format: "uri",
+              nullable: true,
+              example: "https://example.com/images/jane-doe.jpg",
+              description: "URL to coordinator's profile picture",
+            },
+            specialities: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+              example: ["Adventure Travel", "Group Management", "Safety"],
+              description: "List of coordinator's specialities",
+            },
+            languages: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+              example: ["English", "Spanish", "French"],
+              description: "List of languages the coordinator speaks",
+            },
+            certificateLvl: {
+              type: "string",
+              example: "Level 2",
+              description: "Certificate level",
+            },
+            yearsOfExperience: {
+              type: "integer",
+              example: 5,
+              description: "Years of experience",
+            },
+            type: {
+              type: "string",
+              example: "senior-coordinator",
+              description: "Type of coordinator",
+            },
+            accessLvl: {
+              type: "string",
+              example: "admin",
+              description: "Access level",
+            },
+            email: {
+              type: "string",
+              format: "email",
+              example: "coordinator@example.com",
+              description: "Coordinator's email address (from users table)",
+            },
+            emailVerified: {
+              type: "boolean",
+              example: true,
+              description: "Whether the email is verified",
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2025-12-20T00:00:00.000Z",
+              description: "Coordinator details creation timestamp",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              nullable: true,
+              example: "2025-12-20T00:00:00.000Z",
+              description: "Coordinator details last update timestamp",
+            },
+            userCreatedAt: {
+              type: "string",
+              format: "date-time",
+              example: "2025-12-20T00:00:00.000Z",
+              description: "User account creation timestamp",
+            },
+          },
+        },
+        CoordinatorResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Coordinator fetched successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                coordinator: {
+                  $ref: "#/components/schemas/Coordinator",
+                },
+              },
+            },
+          },
+        },
+        CoordinatorsListResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Coordinators fetched successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                coordinators: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/Coordinator",
+                  },
+                },
+              },
             },
           },
         },
@@ -1100,6 +1333,7 @@ const options: Options = {
     route("category.routes.ts"),
     route("trip.routes.ts"),
     route("payment.routes.ts"),
+    route("admin.routes.ts"),
     route("example.routes.ts"),
     routeController("*.controller.ts"),
   ],

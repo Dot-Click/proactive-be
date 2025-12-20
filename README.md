@@ -170,6 +170,250 @@ Run this command twice to generate both `JWT_SECRET` and `COOKIE_SECRET`.
    ```
    This will open Drizzle Studio at `http://localhost:5000`
 
+```mermaid
+erDiagram
+    User {
+        string id PK
+        string name
+        string email UK
+        string role
+        boolean emailVerified
+        boolean twoFactorEnabled
+        string nickName
+        string phoneNumber
+        string address
+        string gender
+        datetime dateOfBirth
+        boolean email_notf
+        boolean app_notf
+        boolean review_notf
+        string status
+        bigint adventure_points
+        bigint progress_points
+        string badges
+        string bio
+        string coordinator_type
+        string access_lvl
+        string certific_lvl
+        int experience
+        string languages
+        string specialties
+        string position
+        string image
+        decimal ratings
+        datetime last_active
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    TwoFactor {
+        string id PK
+        string userId FK
+        string secret
+        string backupCodes
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Session {
+        string id PK
+        datetime expiresAt
+        string token UK
+        datetime createdAt
+        datetime updatedAt
+        string ipAddress
+        string userAgent
+        string userId FK
+    }
+
+    Account {
+        string id PK
+        string accountId
+        string providerId
+        string userId FK
+        string accessToken
+        string refreshToken
+        string idToken
+        datetime accessTokenExpiresAt
+        datetime refreshTokenExpiresAt
+        string scope
+        string password
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Verification {
+        string id PK
+        string identifier
+        string value
+        datetime expiresAt
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Chat {
+        string id PK
+        string trip_id FK
+        string opened
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    ChatParticipant {
+        string id PK
+        string chatId FK
+        string userId FK
+    }
+
+    Message {
+        string id PK
+        string content
+        string chatId FK
+        string senderId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Trip {
+        string id PK
+        string title
+        string description
+        string cover_image
+        string type
+        string location
+        string map_coordinates
+        datetime start_date
+        datetime end_date
+        string duration
+        string long_desc
+        string group_size
+        string rhythm
+        string sport_lvl
+        string weekend_tt
+        string included
+        string not_included
+        string status
+        string short_desc
+        string insta_link
+        string likedin_link
+        string promotional_video
+        string gallery_images
+        string best_price_msg
+        string per_head_price
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Application {
+        string id PK
+        string user_id FK
+        string trip_id FK
+        string short_intro
+        string intro_video
+        string status
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Reviews {
+        string id PK
+        string user_id FK
+        string trip_id FK
+        int rating
+        string review
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Payment_And_Membership {
+        string id PK
+        string user_id FK
+        string trip_id FK
+        decimal amount
+        string status
+        string last4
+        string currency
+        string membership_type
+        string method
+        string card_expiry
+        string stripe_customer_id
+        string membership_id
+        boolean discount_available
+        string valid_till
+        string stripe_payment_id
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Settings {
+        string id PK
+        string platform_name
+        string time_zone
+        string logo
+        string default_language
+        string currency
+        boolean chat_widget
+        string trip_categories
+        string default_approval
+        int default_max_participants
+        int default_min_participants
+        boolean email_notification
+        int reminder_days
+        boolean send_sms
+        boolean two_factor_enabled
+        int session_timeout
+        int max_logins
+        int min_password_length
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Notification {
+        string id PK
+        string user_id FK
+        string title
+        string description
+        string type
+        boolean read
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    %% Relationships
+    User ||--o{ Session : has
+    User ||--o{ Account : has
+    User ||--o{ Application : applied
+    User ||--o{ Payment_And_Membership : pays
+    User ||--o{ Reviews : writes
+    User ||--o{ Notification : receives
+    User ||--o{ ChatParticipant : joins
+    User ||--o{ Message : sends
+    User ||--|| TwoFactor : has
+
+    TwoFactor }o--|| User : belongsTo
+    Session }o--|| User : belongsTo
+    Account }o--|| User : belongsTo
+    Application }o--|| User : by
+    Application }o--|| Trip : for
+    Reviews }o--|| User : by
+    Reviews }o--|| Trip : for
+    Payment_And_Membership }o--|| User : by
+    Payment_And_Membership }o--|| Trip : for
+    Notification }o--|| User : for
+    ChatParticipant }o--|| User : user
+    ChatParticipant }o--|| Chat : chat
+    Message }o--|| Chat : chat
+    Message }o--|| User : sender
+    Chat }o--|| Trip : of
+    Chat ||--o{ Message : messages
+    Chat ||--o{ ChatParticipant : participants
+    Trip ||--o{ Application : takes
+    Trip ||--o{ Payment_And_Membership : has
+    Trip ||--o{ Reviews : gets
+    Trip ||--o{ Chat : has
+
+```
+
 ## Running the Application
 
 ### Development Mode

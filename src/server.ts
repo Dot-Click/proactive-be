@@ -9,6 +9,7 @@ import unknownRoutes from "@/routes/unknown.routes";
 import authRoutes from "@/routes/auth.routes";
 import chatRoutes from "@/routes/chat.routes";
 import tripRoutes from "@/routes/trip.routes";
+import adminRoutes from "@/routes/admin.routes";
 import paymentRoutes from "@/routes/payment.routes";
 import faqRoutes from "@/routes/faq.routes";
 import categoryRoutes from "@/routes/category.routes";
@@ -39,6 +40,7 @@ app.set("trust proxy", 1);
 const allowedOrigins = [
   process.env.FRONTEND_DOMAIN,
   "http://localhost:4000",
+  "http://127.0.0.1:5500",
   "https://proactive-fe.vercel.app",
 ].filter(Boolean) as string[];
 
@@ -93,7 +95,7 @@ app.use("/api/faqs", faqRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/trips", tripRoutes);
 app.use("/api/payment", paymentRoutes);
-
+app.use("/api/admin", adminRoutes);
 app.use(unknownRoutes);
 
 httpServer.listen(port as number, () => {
