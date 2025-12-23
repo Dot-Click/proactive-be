@@ -1,0 +1,1 @@
+ALTER TABLE "discount" ADD COLUMN "state" text;
