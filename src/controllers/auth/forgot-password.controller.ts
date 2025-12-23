@@ -125,7 +125,7 @@ export const forgotPassword = async (
 
     return sendSuccess(
       res,
-      "If an account with that email exists, a password reset link has been sent",
+      "Password reset link has been sent To Yout Email",
       undefined,
       status.OK
     );

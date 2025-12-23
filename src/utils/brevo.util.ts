@@ -75,7 +75,7 @@ export const sendEmail = async (
  * Generate email verification link
  */
 const getVerificationLink = (token: string): string => {
-  const frontendUrl = process.env.FRONTEND_DOMAIN || "http://localhost:3000";
+  const frontendUrl = process.env.FRONTEND_DOMAIN || "http://localhost:4000";
   return `${frontendUrl}/verify-email?token=${token}`;
 };
 
@@ -83,7 +83,7 @@ const getVerificationLink = (token: string): string => {
  * Generate password reset link
  */
 const getPasswordResetLink = (token: string): string => {
-  const frontendUrl = process.env.FRONTEND_DOMAIN || "http://localhost:3000";
+  const frontendUrl = process.env.FRONTEND_DOMAIN || "http://localhost:4000";
   return `${frontendUrl}/reset-password?token=${token}`;
 };
 
@@ -173,7 +173,7 @@ export const sendWelcomeEmail = async (
   userName?: string
 ): Promise<boolean> => {
   const subject = "Welcome to Proactive!";
-  const frontendUrl = process.env.FRONTEND_DOMAIN || "http://localhost:3000";
+  const frontendUrl = process.env.FRONTEND_DOMAIN || "http://localhost:4000";
 
   const htmlContent = getWelcomeEmailTemplate(userName || "User", frontendUrl);
 
@@ -470,7 +470,7 @@ export const sendCoordinatorWelcomeEmail = async (
   password?: string
 ): Promise<boolean> => {
   const subject = "Welcome to Proactive!";
-  const frontendUrl = process.env.FRONTEND_DOMAIN || "http://localhost:5173";
+  const frontendUrl = process.env.FRONTEND_DOMAIN || "http://localhost:4000";
 
     const htmlContent = `
     <h2>Welcome to Proactive 👋</h2>

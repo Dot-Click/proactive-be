@@ -20,6 +20,7 @@ export const createCoordinatorSchema = z.object({
   })),
   email: z.string().email(),
   password: z.string(),
+  
 });
 
 export type CreateCoordinatorRequest = z.infer<typeof createCoordinatorSchema>;
