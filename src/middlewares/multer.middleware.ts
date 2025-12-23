@@ -21,7 +21,7 @@ const upload = (allowedMimeTypes: any = null) => (req: Request, res: Response, n
   multer({
     storage,
     limits: {
-      fileSize: 12 * 1024 * 1024, // 50MB
+      fileSize: 100 * 1024 * 1024, // 100MB
     },
     fileFilter: (_req, file, cb) => {
       // If specific MIME types are allowed, validate them
@@ -42,6 +42,7 @@ const upload = (allowedMimeTypes: any = null) => (req: Request, res: Response, n
     { name: "cover_img", maxCount: 1 },
     { name: "tt_img", maxCount: 1 },
     { name: "gallery_images", maxCount: 8 },
+    { name: "introVideo", maxCount: 1 },
     { name: "promotional_video", maxCount: 1 },
     { name: "file4", maxCount: 1 },
   ])(req, res, (err) => {

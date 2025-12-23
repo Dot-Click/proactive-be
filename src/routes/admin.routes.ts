@@ -2,6 +2,7 @@ import { createCoordinator } from "@/controllers/admin/create.coordinator.contro
 import { deleteCoordinator } from "@/controllers/admin/delete.coordinator.controller";
 import { getCoordinatorById } from "@/controllers/admin/get-unique.coordinators.controller";
 import { getCoordinators } from "@/controllers/admin/get.coordinators.controller";
+import { getSettings, updateSettings } from "@/controllers/admin/settings.controller";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { upload } from "@/middlewares/multer.middleware";
 import { Router } from "express";
@@ -227,5 +228,24 @@ adminRoutes.get("/coordinator/:id", authenticate, authorize("admin"), getCoordin
  *               $ref: "#/components/schemas/ErrorResponse"
  */
 adminRoutes.delete("/coordinator/:id", authenticate, authorize("admin"), deleteCoordinator);
-
+/**
+ * @swagger
+ * /api/admin/settings:
+ *   get:
+ *     tags:
+ *       - Admin
+ *     summary: Get settings
+ *     description: Get settings
+ */
+adminRoutes.get("/settings", authenticate, authorize("admin"), getSettings);
+/**
+ * @swagger
+ * /api/admin/settings:
+ *   patch:
+ *     tags:
+ *       - Admin
+ *     summary: Update settings
+ *     description: Update settings
+ */
+adminRoutes.patch("/settings", authenticate, authorize("admin"), updateSettings);
 export default adminRoutes;

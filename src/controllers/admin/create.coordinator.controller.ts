@@ -20,7 +20,6 @@ export const createCoordinator = async (req: Request, res: Response) => {
     
     const { coordinatorDetails: coordDetails, email, password } = valid.data;
     
-    // Handle profile picture upload if file exists
     if (req.files && (req.files as any).prof_pic && (req.files as any).prof_pic[0]) {
       const prof_pic = await cloudinaryUploader((req.files as any).prof_pic[0].path) as any;
       coordDetails.profilePicture = prof_pic.secure_url as string;

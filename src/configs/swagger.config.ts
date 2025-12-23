@@ -55,7 +55,15 @@ const options: Options = {
       },
       {
         name: "Admin",
-        description: "Admin endpoints for managing coordinators",
+        description: "Admin endpoints for managing coordinators and settings",
+      },
+      {
+        name: "Applications",
+        description: "Application submission and management endpoints",
+      },
+      {
+        name: "User",
+        description: "User endpoints for Instagram info and reviews",
       },
     ],
     components: {
@@ -1211,115 +1219,532 @@ const options: Options = {
             data: {
               type: "object",
               properties: {
-                payments: {
+                tripPayments: {
                   type: "array",
                   items: {
                     type: "object",
-                    properties: {
-                      id: {
-                        type: "string",
-                        example: "clx123abc456def789",
-                      },
-                      userId: {
-                        type: "string",
-                        example: "clx123abc456def789",
-                      },
-                      tripId: {
-                        type: "string",
-                        nullable: true,
-                        example: "clx123abc456def789",
-                      },
-                      amount: {
-                        type: "string",
-                        example: "950.0000",
-                      },
-                      status: {
-                        type: "string",
-                        enum: ["paid", "unpaid", "pending", "failed", "refunded"],
-                        example: "paid",
-                      },
-                      last4: {
-                        type: "string",
-                        example: "4242",
-                      },
-                      currency: {
-                        type: "string",
-                        example: "EUR",
-                      },
-                      membershipType: {
-                        type: "string",
-                        nullable: true,
-                        example: "premium",
-                      },
-                      membershipExpiry: {
-                        type: "string",
-                        format: "date-time",
-                        nullable: true,
-                        example: "2025-12-31T23:59:59.000Z",
-                      },
-                      method: {
-                        type: "string",
-                        example: "VISA",
-                      },
-                      cardExpiry: {
-                        type: "string",
-                        nullable: true,
-                        example: "12/2025",
-                      },
-                      stripeCustomerId: {
-                        type: "string",
-                        nullable: true,
-                        example: "cus_1ABC123def456GHI789jkl",
-                      },
-                      membershipId: {
-                        type: "string",
-                        nullable: true,
-                        example: "PA-123456",
-                      },
-                      membershipAvailable: {
-                        type: "boolean",
-                        example: true,
-                      },
-                      discountAvailable: {
-                        type: "boolean",
-                        example: false,
-                      },
-                      stripePaymentId: {
-                        type: "string",
-                        example: "pi_1ABC123def456GHI789jkl",
-                      },
-                      createdAt: {
-                        type: "string",
-                        format: "date-time",
-                      },
-                      updatedAt: {
-                        type: "string",
-                        format: "date-time",
-                        nullable: true,
-                      },
-                      trip: {
+                  },
+                },
+                membershipPayments: {
+                  type: "object",
+                  properties: {
+                    payments: {
+                      type: "array",
+                      items: {
                         type: "object",
-                        nullable: true,
-                        properties: {
-                          id: {
-                            type: "string",
-                            example: "clx123abc456def789",
-                          },
-                          title: {
-                            type: "string",
-                            example: "Morocco Adventure Trip",
-                          },
-                          end_date: {
-                            type: "string",
-                            format: "date-time",
-                            example: "2025-06-15T00:00:00.000Z",
-                          },
+                      },
+                    },
+                    keyStates: {
+                      type: "object",
+                      properties: {
+                        totalActiveMemberships: {
+                          type: "integer",
+                          example: 134,
+                        },
+                        expiringSoon: {
+                          type: "integer",
+                          example: 25,
+                        },
+                        averageDuration: {
+                          type: "string",
+                          example: "365 days",
+                        },
+                        monthlyRenewals: {
+                          type: "integer",
+                          example: 18,
                         },
                       },
                     },
                   },
                 },
+                discounts: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                  },
+                },
               },
+            },
+          },
+        },
+        Application: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              example: "clx123abc456def789",
+              description: "Unique application identifier",
+            },
+            userId: {
+              type: "string",
+              example: "clx123abc456def789",
+              description: "User ID who submitted the application",
+            },
+            tripId: {
+              type: "string",
+              example: "clx123abc456def789",
+              description: "Trip ID the application is for",
+            },
+            shortIntro: {
+              type: "string",
+              example: "I am a 20 year old male from the United States.",
+              description: "Short introduction about the applicant",
+            },
+            introVideo: {
+              type: "string",
+              format: "uri",
+              example: "https://cloudinary.com/video/upload/v1234567890/intro.mp4",
+              description: "URL to the introduction video",
+            },
+            dietaryRestrictions: {
+              type: "string",
+              nullable: true,
+              example: "I am a vegetarian.",
+              description: "Dietary restrictions or preferences",
+            },
+            status: {
+              type: "string",
+              enum: ["pending", "approved", "rejected", "cancelled"],
+              example: "pending",
+              description: "Application status",
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-01-15T10:30:00Z",
+              description: "Application creation timestamp",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              nullable: true,
+              example: "2024-01-15T10:30:00Z",
+              description: "Application last update timestamp",
+            },
+          },
+        },
+        ApplicationResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Application submitted successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                application: {
+                  $ref: "#/components/schemas/Application",
+                },
+              },
+            },
+          },
+        },
+        CreateApplicationRequest: {
+          type: "object",
+          required: ["tripId", "shortIntro", "introVideo"],
+          properties: {
+            tripId: {
+              type: "string",
+              minLength: 1,
+              example: "clx123abc456def789",
+              description: "Trip ID to apply for",
+            },
+            shortIntro: {
+              type: "string",
+              minLength: 1,
+              example: "I am a 20 year old male from the United States.",
+              description: "Short introduction about yourself",
+            },
+            introVideo: {
+              type: "string",
+              format: "uri",
+              example: "https://cloudinary.com/video/upload/v1234567890/intro.mp4",
+              description: "URL to introduction video",
+            },
+            dietaryRestrictions: {
+              type: "string",
+              nullable: true,
+              example: "I am a vegetarian.",
+              description: "Dietary restrictions or preferences (optional)",
+            },
+          },
+        },
+        InstagramInfo: {
+          type: "object",
+          properties: {
+            user: {
+              type: "object",
+              nullable: true,
+              properties: {
+                username: {
+                  type: "string",
+                  example: "proactivefuture_eu",
+                },
+                full_name: {
+                  type: "string",
+                  example: "Proactive Future",
+                },
+                profile_pic_url: {
+                  type: "string",
+                  format: "uri",
+                  example: "https://instagram.com/pic.jpg",
+                },
+                profile_link: {
+                  type: "string",
+                  format: "uri",
+                  example: "https://www.instagram.com/proactivefuture_eu/",
+                },
+              },
+            },
+            posts: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id: {
+                    type: "string",
+                    example: "123456789",
+                  },
+                  code: {
+                    type: "string",
+                    example: "ABC123",
+                  },
+                  caption: {
+                    type: "string",
+                    example: "Amazing adventure!",
+                  },
+                  taken_at: {
+                    type: "integer",
+                    example: 1234567890,
+                  },
+                  thumbnail_url: {
+                    type: "string",
+                    format: "uri",
+                    nullable: true,
+                    example: "https://instagram.com/image.jpg",
+                  },
+                  link: {
+                    type: "string",
+                    format: "uri",
+                    example: "https://www.instagram.com/p/ABC123/",
+                  },
+                  like_count: {
+                    type: "integer",
+                    example: 150,
+                  },
+                  comment_count: {
+                    type: "integer",
+                    example: 25,
+                  },
+                },
+              },
+            },
+          },
+        },
+        InstagramResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Insta info fetched successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                user: {
+                  $ref: "#/components/schemas/InstagramInfo/properties/user",
+                },
+                posts: {
+                  $ref: "#/components/schemas/InstagramInfo/properties/posts",
+                },
+              },
+            },
+          },
+        },
+        Review: {
+          type: "object",
+          properties: {
+            link: {
+              type: "string",
+              format: "uri",
+              example: "https://www.google.com/maps/review/123",
+            },
+            userImage: {
+              type: "string",
+              format: "uri",
+              nullable: true,
+              example: "https://lh3.googleusercontent.com/photo.jpg",
+            },
+            userName: {
+              type: "string",
+              example: "John Doe",
+            },
+            review: {
+              type: "string",
+              example: "Great experience! Highly recommended.",
+            },
+          },
+        },
+        ReviewsResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Reviews fetched successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                reviews: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/Review",
+                  },
+                },
+              },
+            },
+          },
+        },
+        Settings: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              example: "clx123abc456def789",
+              description: "Settings ID",
+            },
+            platformName: {
+              type: "string",
+              example: "Proactive Future",
+              description: "Platform name",
+            },
+            timeZone: {
+              type: "string",
+              example: "Europe/Berlin",
+              description: "Platform timezone",
+            },
+            logo: {
+              type: "string",
+              format: "uri",
+              example: "https://cloudinary.com/image/upload/logo.png",
+              description: "Platform logo URL",
+            },
+            defaultLanguage: {
+              type: "string",
+              example: "en",
+              description: "Default language code",
+            },
+            currency: {
+              type: "string",
+              example: "EUR",
+              description: "Default currency",
+            },
+            chatWidget: {
+              type: "boolean",
+              example: true,
+              description: "Whether chat widget is enabled",
+            },
+            tripCategories: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id: {
+                    type: "string",
+                    example: "clx123abc456def789",
+                  },
+                  name: {
+                    type: "string",
+                    example: "Adventure",
+                  },
+                  description: {
+                    type: "string",
+                    nullable: true,
+                    example: "Adventure trips",
+                  },
+                  enabled: {
+                    type: "boolean",
+                    nullable: true,
+                    example: true,
+                  },
+                },
+              },
+              description: "Array of trip categories",
+            },
+            defaultApproval: {
+              type: "string",
+              example: "automatic",
+              description: "Default approval method",
+            },
+            defaultMaxParticipants: {
+              type: "integer",
+              example: 20,
+              description: "Default maximum participants",
+            },
+            defaultMinParticipants: {
+              type: "integer",
+              example: 5,
+              description: "Default minimum participants",
+            },
+            emailNotification: {
+              type: "boolean",
+              example: true,
+              description: "Whether email notifications are enabled",
+            },
+            reminderDays: {
+              type: "integer",
+              example: 7,
+              description: "Days before trip to send reminder",
+            },
+            sendSms: {
+              type: "boolean",
+              example: false,
+              description: "Whether SMS notifications are enabled",
+            },
+            twoFactorEnabled: {
+              type: "boolean",
+              example: true,
+              description: "Whether two-factor authentication is enabled",
+            },
+            sessionTimeout: {
+              type: "integer",
+              example: 3600,
+              description: "Session timeout in seconds",
+            },
+            maxLogins: {
+              type: "integer",
+              example: 5,
+              description: "Maximum concurrent logins",
+            },
+            minPasswordLength: {
+              type: "integer",
+              example: 8,
+              description: "Minimum password length",
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2024-01-15T10:30:00Z",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              nullable: true,
+              example: "2024-01-15T10:30:00Z",
+            },
+          },
+        },
+        SettingsResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+              type: "string",
+              example: "Settings fetched successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                settings: {
+                  $ref: "#/components/schemas/Settings",
+                },
+              },
+            },
+          },
+        },
+        UpdateSettingsRequest: {
+          type: "object",
+          properties: {
+            platformName: {
+              type: "string",
+              maxLength: 255,
+              example: "Proactive Future",
+            },
+            timeZone: {
+              type: "string",
+              maxLength: 100,
+              example: "Europe/Berlin",
+            },
+            logo: {
+              type: "string",
+              format: "binary",
+              description: "Logo image file (optional)",
+            },
+            defaultLanguage: {
+              type: "string",
+              maxLength: 50,
+              example: "en",
+            },
+            currency: {
+              type: "string",
+              maxLength: 10,
+              example: "EUR",
+            },
+            chatWidget: {
+              type: "boolean",
+              example: true,
+            },
+            tripCategories: {
+              type: "string",
+              example: '[{"name":"Adventure","description":"Adventure trips"}]',
+              description: "JSON string array of trip categories (id will be auto-generated)",
+            },
+            defaultApproval: {
+              type: "string",
+              maxLength: 50,
+              example: "automatic",
+            },
+            defaultMaxParticipants: {
+              type: "integer",
+              example: 20,
+            },
+            defaultMinParticipants: {
+              type: "integer",
+              example: 5,
+            },
+            emailNotification: {
+              type: "boolean",
+              example: true,
+            },
+            reminderDays: {
+              type: "integer",
+              example: 7,
+            },
+            sendSms: {
+              type: "boolean",
+              example: false,
+            },
+            twoFactorEnabled: {
+              type: "boolean",
+              example: true,
+            },
+            sessionTimeout: {
+              type: "integer",
+              example: 3600,
+            },
+            maxLogins: {
+              type: "integer",
+              example: 5,
+            },
+            minPasswordLength: {
+              type: "integer",
+              example: 8,
             },
           },
         },
@@ -1334,8 +1759,12 @@ const options: Options = {
     route("trip.routes.ts"),
     route("payment.routes.ts"),
     route("admin.routes.ts"),
+    route("user.routes.ts"),
+    route("coordinator.routes.ts"),
     route("example.routes.ts"),
-    routeController("*.controller.ts"),
+    "./src/controllers/user/applications.submit.controller.ts",
+    "./src/controllers/user/insta&reviews.controller.ts",
+    "./src/controllers/coordinators/get.all.applications.ts",
   ],
 };
 

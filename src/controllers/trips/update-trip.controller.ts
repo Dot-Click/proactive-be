@@ -1,11 +1,12 @@
 import { database } from "@/configs/connection.config";
-import { trips } from "@/schema/schema";
+import { trips, discounts } from "@/schema/schema";
 import { updateTripSchema } from "@/types/trip.types";
 import { cloudinaryUploader } from "@/utils/cloudinary.util";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { eq } from "drizzle-orm";
 import { Request, Response } from "express";
 import status from "http-status";
+import { createId } from "@paralleldrive/cuid2";
 
 /**
  * @swagger
@@ -71,9 +72,52 @@ export const updateTrip = async (req: Request, res: Response): Promise<Response>
       });
       return sendError(res, "Validation failed", status.BAD_REQUEST, undefined, errors);
     }
+
+    const validatedPayload = validationResult.data;
+    const { discounts: tripDiscounts, ...tripData } = validatedPayload;
+
     const db = await database();
-    const trip = await db.update(trips).set(validationResult.data as any).where(eq(trips.id, id)).returning();
-    return sendSuccess(res, "Trip updated successfully", { trip }, status.OK);
+
+    // Update trip (excluding discounts from trip update)
+    const trip = await db
+      .update(trips)
+      .set(tripData as any)
+      .where(eq(trips.id, id))
+      .returning();
+
+    if (trip.length === 0) {
+      return sendError(res, "Trip not found", status.NOT_FOUND);
+    }
+
+    // Handle discounts update - add new discounts to existing ones if provided
+    if (tripDiscounts !== undefined && Array.isArray(tripDiscounts) && tripDiscounts.length > 0) {
+      try {
+        const discountValues = tripDiscounts.map((discount: any) => {
+          return {
+            id: createId(),
+            tripId: id,
+            discountCode: discount.discount_code, // schema uses discount_code
+            discountPercentage: discount.discount_percentage, // schema uses discount_percentage
+            amount: discount.amount?.toString() || "0",
+            validTill: discount.valid_till instanceof Date ? discount.valid_till : new Date(discount.valid_till), // schema uses valid_till
+            description: discount.description,
+            status: (discount.status as any) || "active",
+            maxUsage: discount.maxUsage?.toString() || discount.max_usage?.toString() || "0",
+          };
+        });
+
+        await db.insert(discounts).values(discountValues);
+      } catch (discountError: any) {
+        console.error("Error adding discounts:", discountError);
+        console.error("Discount data:", JSON.stringify(tripDiscounts, null, 2));
+      }
+    } else if (tripDiscounts !== undefined && Array.isArray(tripDiscounts) && tripDiscounts.length === 0) {
+      console.log(`Empty discounts array provided for trip ${id} - no discounts added, existing discounts preserved`);
+    } else {
+      console.log(`Discounts field not provided in update for trip ${id} - keeping existing discounts`);
+    }
+
+    return sendSuccess(res, "Trip updated successfully", { trip: trip[0] }, status.OK);
   } catch (error) {
     console.error("Update trip error:", error);
     return sendError(res, "An error occurred while updating trip", status.INTERNAL_SERVER_ERROR);

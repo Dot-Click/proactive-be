@@ -216,19 +216,31 @@ export const createTrip = async (
 
     // Create discounts if provided
     if (tripDiscounts && Array.isArray(tripDiscounts) && tripDiscounts.length > 0) {
-      const discountValues = tripDiscounts.map((discount: any) => ({
-        id: createId(),
-        tripId: trip.id,
-        discountCode: discount.discountCode,
-        discountPercentage: discount.discountPercentage,
-        amount: discount.amount,
-        validTill: new Date(discount.validTill),
-        description: discount.description,
-        status: discount.status || "active",
-        maxUsage: discount.maxUsage || "0",
-      }));
+      try {
+        const discountValues = tripDiscounts.map((discount: any) => {
+          // Map from schema field names (snake_case) to database model fields (camelCase)
+          return {
+            id: createId(),
+            tripId: trip.id,
+            discountCode: discount.discount_code, // schema uses discount_code
+            discountPercentage: discount.discount_percentage, // schema uses discount_percentage
+            amount: discount.amount?.toString() || "0",
+            validTill: discount.valid_till instanceof Date ? discount.valid_till : new Date(discount.valid_till), // schema uses valid_till
+            description: discount.description,
+            status: (discount.status as any) || "active",
+            maxUsage: discount.maxUsage?.toString() || discount.max_usage?.toString() || "0",
+          };
+        });
 
-      await db.insert(discounts).values(discountValues);
+        await db.insert(discounts).values(discountValues);
+      } catch (discountError: any) {
+        console.error("Error creating discounts:", discountError);
+        console.error("Discount data:", JSON.stringify(tripDiscounts, null, 2));
+        // Don't fail the entire trip creation if discounts fail
+        // Just log the error
+      }
+    } else {
+      console.log(`No discounts provided for trip ${trip.id} (tripDiscounts: ${JSON.stringify(tripDiscounts)})`);
     }
 
     // Handle coordinators relationship - create entries in junction table

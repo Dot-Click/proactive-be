@@ -161,36 +161,19 @@ export const createTripSchema = z.object({
       z.array(z.string()),
     ])
     .optional(),
-  discounts: z
-    .array(discountSchema)
+  discounts: z.any().transform((val: any) => {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string') {
+        try {
+            return JSON.parse(val);
+        } catch {
+            return [];
+        }
+    }
+    return [];
+}).pipe(z.array(discountSchema))
     .optional(),
 })
-.refine(
-  (data) => data.startDate,
-  {
-    message: "Start date is required",
-    path: ["startDate"],
-  }
-)
-.refine(
-  (data) => data.endDate,
-  {
-    message: "End date is required",
-    path: ["endDate"],
-  }
-)
-.refine(
-  (data) => {
-    if (data.startDate && data.endDate) {
-      return new Date(data.endDate) > new Date(data.startDate);
-    }
-    return true;
-  },
-  {
-    message: "End date must be after start date",
-    path: ["endDate"],
-  }
-);
 
 /**
  * Update trip request body schema
@@ -322,9 +305,18 @@ export const updateTripSchema = z.object({
     } catch {
         return Array.isArray(val) ? val : [];
     }
-}).pipe(z.array(z.string())),
-  discounts: z
-    .array(discountSchema)
+  }).pipe(z.array(z.string())),
+  discounts: z.any().transform((val: any) => {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string') {
+        try {
+            return JSON.parse(val);
+        } catch {
+            return [];
+        }
+    }
+    return [];
+  }).pipe(z.array(discountSchema))
     .optional(),
 });
 

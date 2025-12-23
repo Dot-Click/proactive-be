@@ -1,0 +1,1 @@
+ALTER TABLE "Application" ADD COLUMN "dietary_restrictions" text;

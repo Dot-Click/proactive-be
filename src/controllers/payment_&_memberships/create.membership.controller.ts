@@ -76,7 +76,7 @@ export const createMembership = async (
       return_url,
       membership_type,
     } = req.body;
-
+    console.log("req.body", req.body);
     if (!userId) {
       return sendError(res, "User ID not found in authentication token", 400);
     }
