@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import { database } from "@/configs/connection.config";
 import { categories } from "@/schema/schema";
 import { sendSuccess, sendError } from "@/utils/response.util";
@@ -51,7 +51,7 @@ import { desc } from "drizzle-orm";
  *         description: Internal server error
  */
 export const getCategories = async (
-  //   req: Request,
+  _req: Request,
   res: Response
 ): Promise<Response> => {
   try {
