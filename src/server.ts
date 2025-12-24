@@ -80,7 +80,7 @@ io.use(authorizeUser);
 cloudinaryConfig();
 
 app.use(morgan("dev"));
-app.use(throttle(50, "1m")); // For global apis( light traffic )
+app.use(throttle(50, "1m")); 
 
 // API Routes
 app.use(apiRoutes);
