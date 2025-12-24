@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { Request, Response } from "express";
 import status from "http-status";
 import { createId } from "@paralleldrive/cuid2";
+import { createNotification } from "@/services/notifications.services";
 
 /**
  * @swagger
@@ -20,6 +21,10 @@ import { createId } from "@paralleldrive/cuid2";
 export const updateTrip = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
+    const userId = req.user?.userId;
+    if (!userId) {
+      return sendError(res, "User not found", status.NOT_FOUND);
+    }
     const { ...payload }: any = req.body;
     if (req.files) {
 
@@ -116,6 +121,13 @@ export const updateTrip = async (req: Request, res: Response): Promise<Response>
     } else {
       console.log(`Discounts field not provided in update for trip ${id} - keeping existing discounts`);
     }
+
+    await createNotification({
+      userId,
+      title: "Trip updated",
+      description: "Trip updated successfully",
+      type: "trip",
+    });
 
     return sendSuccess(res, "Trip updated successfully", { trip: trip[0] }, status.OK);
   } catch (error) {

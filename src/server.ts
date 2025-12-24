@@ -6,15 +6,7 @@ import { throttle } from "./middlewares/throttle.middleware";
 import { registerEvents } from "@/utils/registerevents.util";
 import { sessionOptions } from "./configs/session.config";
 import unknownRoutes from "@/routes/unknown.routes";
-import authRoutes from "@/routes/auth.routes";
-import chatRoutes from "@/routes/chat.routes";
-import coordinatorRoutes from "@/routes/coordinator.routes";
-import tripRoutes from "@/routes/trip.routes";
-import adminRoutes from "@/routes/admin.routes";
-import paymentRoutes from "@/routes/payment.routes";
-import userRoutes from "@/routes/user.routes";
-import faqRoutes from "@/routes/faq.routes";
-import categoryRoutes from "@/routes/category.routes";
+import apiRoutes from "@/routes";
 import { swagger } from "@/configs/swagger.config";
 import { logger } from "@/utils/logger.util";
 import cors, { CorsOptions } from "cors";
@@ -91,15 +83,7 @@ app.use(morgan("dev"));
 app.use(throttle(50, "1m")); // For global apis( light traffic )
 
 // API Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/chat", chatRoutes);
-app.use("/api/faqs", faqRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/trips", tripRoutes);
-app.use("/api/payment", paymentRoutes);
-app.use("/api/user", userRoutes);
-app.use("/api/coordinator", coordinatorRoutes);
-app.use("/api/admin", adminRoutes);
+app.use(apiRoutes);
 app.use(unknownRoutes);
 
 httpServer.listen(port as number, () => {

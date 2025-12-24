@@ -9,6 +9,7 @@ import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
 import status from "http-status";
 import { eq, and } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
+import { createNotification } from "@/services/notifications.services";
 
 /**
  * @swagger
@@ -149,7 +150,12 @@ export const sendMessage = async (
         message: messageWithSender,
       });
     }
-
+    await createNotification({
+      userId,
+      title: "A new message recieved",
+      description: `You have a new message from ${messageWithSender.senderFirstName + " " + messageWithSender.senderLastName}`,
+      type: "chat",
+    });
     return sendSuccess(
       res,
       "Message sent successfully",

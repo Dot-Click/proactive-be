@@ -6,6 +6,7 @@ import { database } from "@/configs/connection.config";
 import { payments } from "@/schema/schema";
 import { createId } from "@paralleldrive/cuid2";
 import Stripe from "stripe";
+import { createNotification } from "@/services/notifications.services";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-12-15.clover",
@@ -149,6 +150,13 @@ export const createPayment = async (
       .returning();
 
     const payment = newPayment[0];
+
+    await createNotification({
+      userId: userId,
+      title: "Payment successful",
+      description: "Payment successful for " + payment.tripId + " has been successful",
+      type: "trip",
+    });
 
     return sendSuccess(
       res,

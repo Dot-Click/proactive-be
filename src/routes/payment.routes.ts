@@ -99,7 +99,7 @@ paymentRoutes.post("/",authenticate,  createPayment);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-paymentRoutes.post("/membership", authenticate, createMembership);
+paymentRoutes.post("/membership", authenticate, authorize("user"), createMembership);
 
 
 /**

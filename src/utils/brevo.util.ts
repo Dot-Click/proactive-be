@@ -501,3 +501,47 @@ export const sendCoordinatorWelcomeEmail = async (
     htmlContent,
   });
 };
+
+export const sendSMS = async (
+  phoneNumber: string,
+  message: string
+): Promise<boolean> => {
+  try {
+    const apiKey = process.env.BREVO_API_KEY;
+
+    if (!apiKey) {
+      logger.warn("BREVO_API_KEY not set. SMS not sent.");
+      return false;
+    }
+
+    const res = await fetch(
+      "https://api.brevo.com/v3/transactionalSMS/sms",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": apiKey,
+        },
+        body: JSON.stringify({
+          sender: "Proactive",
+          recipient: phoneNumber,
+          content: message,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      logger.error("Brevo SMS error:", data);
+      console.log('data', data)
+      return false;
+    }
+
+    logger.info(`SMS sent to ${phoneNumber}`);
+    return true;
+  } catch (err) {
+    logger.error(`Failed to send SMS to ${phoneNumber}`, err);
+    return false;
+  }
+};

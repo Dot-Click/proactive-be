@@ -7,6 +7,7 @@ import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
 import status from "http-status";
 import { eq, and } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
+import { createNotification } from "@/services/notifications.services";
 
 /**
  * @swagger
@@ -144,7 +145,12 @@ export const addParticipant = async (
         role: "participant",
       })
       .returning();
-
+    await createNotification({
+      userId: currentUserId,
+      title: "You are added to a new chat",
+      description: `You are added to a new chat ${chat.name} by ${userResults[0].firstName + " " + userResults[0].lastName}`,
+      type: "chat",
+    });
     return sendSuccess(
       res,
       "Participant added successfully",

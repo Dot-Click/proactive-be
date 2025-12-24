@@ -29,7 +29,6 @@ const foreignkeyRef = (
   actions?: ReferenceConfig["actions"]
 ) => varchar(columnName, { length: 128 }).references(refColumn, actions);
 
-// Payment Status Enum
 export const paymentStatusEnum = pgEnum("payment_status", [
   "paid",
   "unpaid",
@@ -38,14 +37,13 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "refunded",
 ]);
 
-// Trip Approval Status Enum
 export const tripApprovalStatusEnum = pgEnum("trip_approval_status", [
   "pending",
   "approved",
   "unpublished",
   "rejected",
 ]);
-// Trip Status Enum
+
 export const tripStatusEnum = pgEnum("trip_status", [
   "pending",
   "active",
@@ -54,7 +52,6 @@ export const tripStatusEnum = pgEnum("trip_status", [
   "live",
 ]);
 
-// Discount Status Enum
 export const discountStatusEnum = pgEnum("discount_status", [
   "active",
   "inactive",
@@ -62,7 +59,13 @@ export const discountStatusEnum = pgEnum("discount_status", [
   "used",
 ]);
 
-// Application Status Enum
+export const achievementsBadgesEnum = pgEnum("achievements_badges", [
+  "Mountain Climber",
+  "Culture Explorer",
+  "Nature Lover",
+  "Leader",
+]);
+
 export const applicationStatusEnum = pgEnum("application_status", [
   "pending",
   "approved",
@@ -200,7 +203,6 @@ export const categories = pgTable("categories", {
   ...timeStamps,
 });
 
-// Trip table
 export const trips = pgTable("trips", {
   id: uuid().primaryKey(),
   title: varchar({ length: 255 }).notNull(),
@@ -231,7 +233,6 @@ export const trips = pgTable("trips", {
   ...timeStamps,
 });
 
-// Trip Coordinators junction table (many-to-many relationship)
 export const tripCoordinators = pgTable("trip_coordinators", {
   id: uuid().primaryKey(),
   tripId: foreignkeyRef("trip_id", () => trips.id, {
@@ -243,7 +244,6 @@ export const tripCoordinators = pgTable("trip_coordinators", {
   ...timeStamps,
 });
 
-// Payment table
 export const payments = pgTable("payments", {
   id: uuid().primaryKey(),
   userId: foreignkeyRef("user_id", () => users.id, {
@@ -273,7 +273,6 @@ export const payments = pgTable("payments", {
   ...timeStamps,
 });
 
-// Discount table
 export const discounts = pgTable("discount", {
   id: uuid().primaryKey(),
   tripId: foreignkeyRef("trip_id", () => trips.id, {
@@ -290,7 +289,6 @@ export const discounts = pgTable("discount", {
   ...timeStamps,
 });
 
-// Application table
 export const applications = pgTable("Application", {
   id: uuid().primaryKey(),
   userId: foreignkeyRef("user_id", () => users.id, {
@@ -306,7 +304,6 @@ export const applications = pgTable("Application", {
   ...timeStamps,
 });
 
-// Reviews table
 export const reviews = pgTable("Reviews", {
   id: uuid().primaryKey(),
   userId: foreignkeyRef("user_id", () => users.id, {
@@ -320,10 +317,38 @@ export const reviews = pgTable("Reviews", {
   ...timeStamps,
 });
 
-// Global Settings table
+
+export const achievements = pgTable("achievements", {
+  id: uuid().primaryKey(),
+  points: integer().notNull().default(0),
+  progress: integer().default(0),
+  level: varchar({ length: 255 }).notNull(),
+  badges: achievementsBadgesEnum("badges").notNull(),
+  unlocked: boolean().default(false).notNull(),
+  userId: foreignkeyRef("user_id", () => users.id, {
+    onDelete: "cascade",
+  }).notNull(),
+  tripId: foreignkeyRef("trip_id", () => trips.id, {
+    onDelete: "cascade",
+  }).notNull(),
+  role: varchar({ length: 50 }),
+  ...timeStamps,
+});
+
+export const notifications = pgTable("notifications", {
+  id: uuid().primaryKey(),
+  userId: foreignkeyRef("user_id", () => users.id, {
+    onDelete: "cascade",
+  }).notNull(),
+  title: varchar({ length: 255 }).notNull(),
+  description: text().notNull(),
+  type: varchar({ length: 50 }).notNull(),
+  read: boolean().default(false).notNull(),
+  ...timeStamps,
+});
+
 export const globalSettings = pgTable("settings", {
   id: uuid().primaryKey(),
-  // Platform settings
   platformName: varchar({ length: 255 }).notNull(),
   timeZone: varchar({ length: 100 }).notNull(),
   logo: varchar({ length: 500 }).notNull(),
@@ -332,16 +357,13 @@ export const globalSettings = pgTable("settings", {
   chatWidget: boolean()
     .$defaultFn(() => false)
     .notNull(),
-  // Trip settings
-  tripCategories: jsonb("trip_categories").notNull(), // Array of JSON objects
+  tripCategories: jsonb("trip_categories").notNull(),
   defaultApproval: varchar({ length: 50 }).notNull(),
   defaultMaxParticipants: integer("default_max_participants").notNull(),
   defaultMinParticipants: integer("default_min_participants").notNull(),
-  // Notification settings
   emailNotification: boolean("email_notification").notNull(),
   reminderDays: integer("reminder_days").notNull(),
   sendSms: boolean("send_sms").notNull(),
-  // Security settings
   twoFactorEnabled: boolean("two_factor_enabled").notNull(),
   sessionTimeout: integer("session_timeout").notNull(),
   maxLogins: integer("max_logins").notNull(),

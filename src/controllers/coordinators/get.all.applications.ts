@@ -11,8 +11,8 @@ import { Request, Response } from "express";
  *   get:
  *     tags:
  *       - Applications
- *     summary: Get all applications (Coordinator/Admin)
- *     description: Retrieve all applications. Requires coordinator or admin role.
+ *     summary: Get all applications
+ *     description: Retrieve all applications across all users. Requires coordinator or admin role. Used by coordinators to review and manage trip applications.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -33,6 +33,7 @@ import { Request, Response } from "express";
  *                   type: array
  *                   items:
  *                     $ref: "#/components/schemas/Application"
+ *                   description: Array of all applications with user and trip details
  *                   example:
  *                     - id: "clx123abc456def789"
  *                       userId: "clx123abc456def789"
@@ -44,7 +45,7 @@ import { Request, Response } from "express";
  *                       createdAt: "2024-01-15T10:30:00Z"
  *                       updatedAt: "2024-01-15T10:30:00Z"
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized - Authentication required
  *         content:
  *           application/json:
  *             schema:

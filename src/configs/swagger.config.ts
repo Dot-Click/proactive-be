@@ -63,7 +63,11 @@ const options: Options = {
       },
       {
         name: "User",
-        description: "User endpoints for Instagram info and reviews",
+        description: "User endpoints for Instagram info, reviews, trip applications, and achievements",
+      },
+      {
+        name: "Achievements",
+        description: "Achievement tracking and progress endpoints",
       },
     ],
     components: {
@@ -1226,11 +1230,11 @@ const options: Options = {
                   },
                 },
                 membershipPayments: {
-                  type: "object",
-                  properties: {
-                    payments: {
-                      type: "array",
-                      items: {
+              type: "object",
+              properties: {
+                payments: {
+                  type: "array",
+                  items: {
                         type: "object",
                       },
                     },
@@ -1268,56 +1272,56 @@ const options: Options = {
           },
         },
         Application: {
-          type: "object",
-          properties: {
-            id: {
-              type: "string",
-              example: "clx123abc456def789",
+                    type: "object",
+                    properties: {
+                      id: {
+                        type: "string",
+                        example: "clx123abc456def789",
               description: "Unique application identifier",
-            },
-            userId: {
-              type: "string",
-              example: "clx123abc456def789",
+                      },
+                      userId: {
+                        type: "string",
+                        example: "clx123abc456def789",
               description: "User ID who submitted the application",
-            },
-            tripId: {
-              type: "string",
-              example: "clx123abc456def789",
+                      },
+                      tripId: {
+                        type: "string",
+                        example: "clx123abc456def789",
               description: "Trip ID the application is for",
-            },
+                      },
             shortIntro: {
-              type: "string",
+                        type: "string",
               example: "I am a 20 year old male from the United States.",
               description: "Short introduction about the applicant",
-            },
+                      },
             introVideo: {
-              type: "string",
+                        type: "string",
               format: "uri",
               example: "https://cloudinary.com/video/upload/v1234567890/intro.mp4",
               description: "URL to the introduction video",
-            },
+                      },
             dietaryRestrictions: {
-              type: "string",
+                        type: "string",
               nullable: true,
               example: "I am a vegetarian.",
               description: "Dietary restrictions or preferences",
-            },
+                      },
             status: {
-              type: "string",
+                        type: "string",
               enum: ["pending", "approved", "rejected", "cancelled"],
               example: "pending",
               description: "Application status",
-            },
+                      },
             createdAt: {
-              type: "string",
+                        type: "string",
               format: "date-time",
               example: "2024-01-15T10:30:00Z",
               description: "Application creation timestamp",
-            },
+                      },
             updatedAt: {
-              type: "string",
-              format: "date-time",
-              nullable: true,
+                        type: "string",
+                        format: "date-time",
+                        nullable: true,
               example: "2024-01-15T10:30:00Z",
               description: "Application last update timestamp",
             },
@@ -1329,9 +1333,9 @@ const options: Options = {
             success: {
               type: "boolean",
               example: true,
-            },
+                      },
             message: {
-              type: "string",
+                        type: "string",
               example: "Application submitted successfully",
             },
             data: {
@@ -1353,7 +1357,7 @@ const options: Options = {
               minLength: 1,
               example: "clx123abc456def789",
               description: "Trip ID to apply for",
-            },
+                      },
             shortIntro: {
               type: "string",
               minLength: 1,
@@ -1367,11 +1371,11 @@ const options: Options = {
               description: "URL to introduction video",
             },
             dietaryRestrictions: {
-              type: "string",
-              nullable: true,
+                        type: "string",
+                        nullable: true,
               example: "I am a vegetarian.",
               description: "Dietary restrictions or preferences (optional)",
-            },
+                      },
           },
         },
         InstagramInfo: {
@@ -1382,7 +1386,7 @@ const options: Options = {
               nullable: true,
               properties: {
                 username: {
-                  type: "string",
+                        type: "string",
                   example: "proactivefuture_eu",
                 },
                 full_name: {
@@ -1425,11 +1429,11 @@ const options: Options = {
                   thumbnail_url: {
                     type: "string",
                     format: "uri",
-                    nullable: true,
+                        nullable: true,
                     example: "https://instagram.com/image.jpg",
-                  },
+                      },
                   link: {
-                    type: "string",
+                        type: "string",
                     format: "uri",
                     example: "https://www.instagram.com/p/ABC123/",
                   },
@@ -1481,9 +1485,9 @@ const options: Options = {
             userImage: {
               type: "string",
               format: "uri",
-              nullable: true,
+                        nullable: true,
               example: "https://lh3.googleusercontent.com/photo.jpg",
-            },
+                      },
             userName: {
               type: "string",
               example: "John Doe",
@@ -1498,9 +1502,9 @@ const options: Options = {
           type: "object",
           properties: {
             success: {
-              type: "boolean",
-              example: true,
-            },
+                        type: "boolean",
+                        example: true,
+                      },
             message: {
               type: "string",
               example: "Reviews fetched successfully",
@@ -1553,17 +1557,17 @@ const options: Options = {
               description: "Default currency",
             },
             chatWidget: {
-              type: "boolean",
+                        type: "boolean",
               example: true,
               description: "Whether chat widget is enabled",
-            },
+                      },
             tripCategories: {
               type: "array",
               items: {
                 type: "object",
                 properties: {
                   id: {
-                    type: "string",
+                        type: "string",
                     example: "clx123abc456def789",
                   },
                   name: {
@@ -1633,6 +1637,69 @@ const options: Options = {
               type: "integer",
               example: 8,
               description: "Minimum password length",
+                      },
+                      createdAt: {
+                        type: "string",
+                        format: "date-time",
+              example: "2024-01-15T10:30:00Z",
+                      },
+                      updatedAt: {
+                        type: "string",
+                        format: "date-time",
+                        nullable: true,
+              example: "2024-01-15T10:30:00Z",
+                      },
+          },
+        },
+        Achievement: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              example: "clx123abc456def789",
+              description: "Achievement record ID",
+            },
+            userId: {
+              type: "string",
+              example: "clx123abc456def789",
+              description: "User ID who earned the achievement",
+            },
+            tripId: {
+              type: "string",
+              example: "clx123abc456def789",
+              description: "Trip ID that contributed to the achievement",
+            },
+            badges: {
+              type: "string",
+              enum: ["Mountain Climber", "Culture Explorer", "Nature Lover", "Leader"],
+              example: "Mountain Climber",
+              description: "Badge type",
+            },
+            points: {
+              type: "integer",
+              example: 20,
+              description: "Points awarded for this achievement",
+            },
+            progress: {
+              type: "integer",
+              example: 1,
+              description: "Progress counter",
+            },
+            level: {
+              type: "string",
+              example: "Bronze",
+              description: "Achievement level",
+            },
+            unlocked: {
+              type: "boolean",
+              example: false,
+              description: "Whether the badge is unlocked",
+            },
+            role: {
+              type: "string",
+              enum: ["participant", "leader"],
+              example: "participant",
+              description: "User's role in the trip",
             },
             createdAt: {
               type: "string",
@@ -1647,7 +1714,42 @@ const options: Options = {
             },
           },
         },
-        SettingsResponse: {
+        AchievementProgress: {
+          type: "object",
+          properties: {
+            totalTrips: {
+              type: "number",
+              example: 3,
+              description: "Total number of trips completed for this badge",
+            },
+            unlocked: {
+              type: "boolean",
+              example: false,
+              description: "Whether the badge is unlocked",
+            },
+            progress: {
+              type: "number",
+              example: 3,
+              description: "Current progress count",
+            },
+            required: {
+              type: "number",
+              example: 5,
+              description: "Required trips/roles to unlock the badge",
+            },
+            percentage: {
+              type: "number",
+              example: 60,
+              description: "Progress percentage (0-100)",
+            },
+            points: {
+              type: "number",
+              example: 60,
+              description: "Total points earned for this badge",
+            },
+          },
+        },
+        UserAchievementsResponse: {
           type: "object",
           properties: {
             success: {
@@ -1656,6 +1758,61 @@ const options: Options = {
             },
             message: {
               type: "string",
+              example: "Achievements retrieved successfully",
+            },
+            data: {
+              type: "object",
+              properties: {
+                achievements: {
+                  type: "array",
+                  items: {
+                    $ref: "#/components/schemas/Achievement",
+                  },
+                  description: "All achievement records for the user",
+                },
+                badgeProgress: {
+                  type: "object",
+                  additionalProperties: {
+                    $ref: "#/components/schemas/AchievementProgress",
+                  },
+                  description: "Progress summary for each badge type",
+                  example: {
+                    "Mountain Climber": {
+                      totalTrips: 3,
+                      unlocked: false,
+                      progress: 3,
+                      required: 5,
+                      percentage: 60,
+                      points: 60,
+                    },
+                  },
+                },
+                totalPoints: {
+                  type: "number",
+                  example: 90,
+                  description: "Total points across all achievements",
+                },
+                unlockedBadges: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                  },
+                  example: ["Culture Explorer"],
+                  description: "List of unlocked badge names",
+                },
+              },
+            },
+          },
+        },
+        SettingsResponse: {
+                        type: "object",
+                        properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            message: {
+                            type: "string",
               example: "Settings fetched successfully",
             },
             data: {
@@ -1663,7 +1820,7 @@ const options: Options = {
               properties: {
                 settings: {
                   $ref: "#/components/schemas/Settings",
-                },
+                          },
               },
             },
           },
@@ -1672,12 +1829,12 @@ const options: Options = {
           type: "object",
           properties: {
             platformName: {
-              type: "string",
+                            type: "string",
               maxLength: 255,
               example: "Proactive Future",
-            },
+                          },
             timeZone: {
-              type: "string",
+                            type: "string",
               maxLength: 100,
               example: "Europe/Berlin",
             },
@@ -1758,13 +1915,17 @@ const options: Options = {
     route("category.routes.ts"),
     route("trip.routes.ts"),
     route("payment.routes.ts"),
+    route("notification.routes.ts"),
     route("admin.routes.ts"),
     route("user.routes.ts"),
     route("coordinator.routes.ts"),
     route("example.routes.ts"),
     "./src/controllers/user/applications.submit.controller.ts",
     "./src/controllers/user/insta&reviews.controller.ts",
+    "./src/controllers/user/get.achievements.controller.ts",
     "./src/controllers/coordinators/get.all.applications.ts",
+    "./src/controllers/coordinators/get.all.acheivemnets.ts",
+    "./src/controllers/coordinators/update.application.controller.ts",
   ],
 };
 

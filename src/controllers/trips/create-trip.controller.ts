@@ -10,6 +10,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { ZodError } from "zod";
 import { createTripSchema } from "@/types/trip.types";
 import { eq } from "drizzle-orm";
+import { createNotification } from "@/services/notifications.services";
 
 // Type augmentation for file uploads with multer
 declare global {
@@ -236,8 +237,6 @@ export const createTrip = async (
       } catch (discountError: any) {
         console.error("Error creating discounts:", discountError);
         console.error("Discount data:", JSON.stringify(tripDiscounts, null, 2));
-        // Don't fail the entire trip creation if discounts fail
-        // Just log the error
       }
     } else {
       console.log(`No discounts provided for trip ${trip.id} (tripDiscounts: ${JSON.stringify(tripDiscounts)})`);
@@ -264,6 +263,13 @@ export const createTrip = async (
         await db.insert(tripCoordinators).values(coordinatorValues);
       }
     }
+
+    await createNotification({
+      userId: id,
+      title: "Trip created",
+      description: "Trip created successfully",
+      type: "trip",
+    });
 
     return sendSuccess(
       res,

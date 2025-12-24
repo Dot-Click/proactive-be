@@ -10,6 +10,7 @@ import { eq } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { generateAccessToken, generateRefreshToken, generateVerificationToken } from "@/utils/token.util";
 import { sendCoordinatorWelcomeEmail, sendVerificationEmail } from "@/utils/brevo.util";
+import { createNotification } from "@/services/notifications.services";
 
 export const createCoordinator = async (req: Request, res: Response) => {
   try {
@@ -93,8 +94,12 @@ export const createCoordinator = async (req: Request, res: Response) => {
         coordDetail.fullName || undefined,
         password
       );
-
-
+    await createNotification({
+      userId: coordDetail.userId,
+      title: "Welcome to Proactive!",
+      description: "Welcome to the team " + coordDetail.fullName + "!",
+      type: "admin",
+    });
 
     // Return coordinator with user info
     const coordinatorResponse = {

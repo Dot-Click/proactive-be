@@ -14,9 +14,10 @@ import "@/middlewares/auth.middleware";
  * /api/user/applications:
  *   post:
  *     tags:
+ *       - User
  *       - Applications
  *     summary: Submit an application for a trip
- *     description: Submit an application for a trip. Video can be uploaded as a file (mp4/mov) or provided as a URL.
+ *     description: Submit an application for a trip. Video can be uploaded as a file (mp4/mov) or provided as a URL. Requires user or admin authentication.
  *     security:
  *       - bearerAuth: []
  *     requestBody:

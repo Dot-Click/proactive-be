@@ -6,6 +6,7 @@ import { database } from "@/configs/connection.config";
 import { payments } from "@/schema/schema";
 import { createId } from "@paralleldrive/cuid2";
 import Stripe from "stripe";
+import { createNotification } from "@/services/notifications.services";
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -170,7 +171,12 @@ export const createMembership = async (
       .returning();
 
     const membership = newMembership[0];
-
+    await createNotification({
+      userId: userId,
+      title: "Membership created",
+      description: "Membership created successfully for " + membership.amount + " " + membership.currency + " has been successful",
+      type: "payment",
+    });
     return sendSuccess(
       res,
       "Membership created successfully",

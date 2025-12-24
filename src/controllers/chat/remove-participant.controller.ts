@@ -5,6 +5,7 @@ import { sendSuccess, sendError } from "@/utils/response.util";
 import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
 import status from "http-status";
 import { eq, and } from "drizzle-orm";
+import { createNotification } from "@/services/notifications.services";
 
 /**
  * @swagger
@@ -102,7 +103,12 @@ export const removeParticipant = async (
           eq(chatParticipants.userId, userId)
         )
       );
-
+    await createNotification({
+      userId,
+      title: "You are removed from a chat",
+      description: `You are removed from a chat ${chat.name}`,
+      type: "chat",
+    });
     return sendSuccess(
       res,
       "Participant removed successfully",

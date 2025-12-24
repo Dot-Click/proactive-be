@@ -44,6 +44,8 @@ A TypeScript-based backend API for the Proactive project, featuring authenticati
 - ✅ Chat management (create, update, delete chats)
 - ✅ Message management (send, edit, delete messages)
 - ✅ Participant management
+- ✅ Achievement tracking system with automatic badge unlocking
+- ✅ Trip-based achievement progress tracking
 
 ## Tech Stack
 
@@ -379,6 +381,20 @@ erDiagram
         datetime updatedAt
     }
 
+    Achievement {
+        string id PK
+        string user_id FK
+        string trip_id FK
+        string badges
+        integer points
+        integer progress
+        string level
+        boolean unlocked
+        string role
+        datetime createdAt
+        datetime updatedAt
+    }
+
     %% Relationships
     User ||--o{ Session : has
     User ||--o{ Account : has
@@ -389,6 +405,7 @@ erDiagram
     User ||--o{ ChatParticipant : joins
     User ||--o{ Message : sends
     User ||--|| TwoFactor : has
+    User ||--o{ Achievement : earns
 
     TwoFactor }o--|| User : belongsTo
     Session }o--|| User : belongsTo
@@ -411,6 +428,9 @@ erDiagram
     Trip ||--o{ Payment_And_Membership : has
     Trip ||--o{ Reviews : gets
     Trip ||--o{ Chat : has
+    Trip ||--o{ Achievement : contributes
+    Achievement }o--|| User : earnedBy
+    Achievement }o--|| Trip : from
 
 ```
 
@@ -875,6 +895,282 @@ socket.emit("chat:leave", { chatId: "chat123" });
   updatedAt: Date;
 }
 ```
+
+## Achievements System
+
+The achievements system automatically tracks user progress based on trip participation and unlocks badges when specific criteria are met. Achievements are tracked per user-trip relationship, allowing users to earn badges by participating in different types of trips.
+
+### Achievement Badges
+
+The system supports four types of achievement badges:
+
+1. **Mountain Climber** 🏔️
+   - **Criteria**: Complete 5 hiking, trekking, or mountain-related trips
+   - **Points per trip**: 20 points
+   - **Trip types**: `hiking`, `trekking`, `mountain`, `mountaineering`, `climbing`
+
+2. **Culture Explorer** 🏛️
+   - **Criteria**: Complete 3 cultural, city tour, or heritage-related trips
+   - **Points per trip**: 15 points
+   - **Trip types**: `cultural`, `city tour`, `city tours`, `heritage`, `historical`, `museum`
+
+3. **Nature Lover** 🌿
+   - **Criteria**: Complete 3 eco-friendly, nature, or conservation-related trips
+   - **Points per trip**: 15 points
+   - **Trip types**: `eco-friendly`, `nature`, `conservation`, `wildlife`, `sustainability`, `environmental`
+
+4. **Leader** 👑
+   - **Criteria**: Take leadership role (as coordinator) in 1 trip
+   - **Points per role**: 50 points
+   - **Trigger**: User is assigned as a trip coordinator
+
+### How It Works
+
+#### Automatic Tracking
+
+Achievements are automatically tracked when:
+
+1. **Application Approval**: When a coordinator approves a user's application for a trip
+   - System checks the trip's `type` field
+   - Determines which badges this trip contributes to
+   - Creates achievement records for applicable badges
+   - Checks if user is a coordinator (for Leader badge)
+   - Updates progress counters
+   - Unlocks badges when criteria are met
+
+2. **Trip Type Matching**: The system automatically categorizes trips based on keywords in the `type` field:
+   ```typescript
+   // Example trip types that trigger Mountain Climber badge:
+   "Hiking Adventure"
+   "Mountain Trekking"
+   "Mountaineering Expedition"
+   
+   // Example trip types that trigger Culture Explorer badge:
+   "Cultural Tour"
+   "City Tours of Paris"
+   "Historical Heritage Walk"
+   
+   // Example trip types that trigger Nature Lover badge:
+   "Eco-Friendly Safari"
+   "Nature Conservation Project"
+   "Wildlife Sustainability Tour"
+   ```
+
+#### Achievement Record Structure
+
+Each achievement record represents one user's participation in one trip toward a specific badge:
+
+```typescript
+{
+  id: string;                    // Unique achievement ID
+  userId: string;                // User who earned the achievement
+  tripId: string;                // Trip that contributed to the achievement
+  badges: "Mountain Climber" | "Culture Explorer" | "Nature Lover" | "Leader";
+  points: number;                // Points awarded for this achievement
+  progress: number;              // Progress counter (usually 1 per record)
+  level: string;                 // Achievement level (e.g., "Bronze")
+  unlocked: boolean;            // Whether the badge is unlocked
+  role: "participant" | "leader"; // User's role in the trip
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+#### Badge Unlocking Logic
+
+- **Trip-based badges** (Mountain Climber, Culture Explorer, Nature Lover):
+  - System counts all achievement records for a user-badge combination
+  - When count reaches the required threshold (e.g., 5 for Mountain Climber), all records for that badge are marked as `unlocked: true`
+  - Badge remains unlocked even if user completes more trips
+
+- **Leader badge**:
+  - Unlocked when user takes coordinator role in at least 1 trip
+  - Tracked separately from participant achievements
+
+### Database Schema
+
+The achievements table structure:
+
+```sql
+CREATE TABLE "achievements" (
+  "id" varchar PRIMARY KEY NOT NULL,
+  "user_id" varchar(128) NOT NULL,
+  "trip_id" varchar(128) NOT NULL,
+  "badges" "achievements_badges" NOT NULL,
+  "points" integer NOT NULL DEFAULT 0,
+  "progress" integer DEFAULT 0,
+  "level" varchar(255) NOT NULL,
+  "unlocked" boolean DEFAULT false NOT NULL,
+  "role" varchar(50),
+  "createdAt" timestamp DEFAULT now(),
+  "updatedAt" timestamp
+);
+```
+
+### API Endpoints
+
+#### Get User Achievements
+
+- **GET** `/api/user/achievements`
+- **Description**: Get authenticated user's achievements and progress
+- **Authentication**: Required (User role)
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "message": "Achievements retrieved successfully",
+    "data": {
+      "achievements": [
+        {
+          "id": "ach123",
+          "userId": "user123",
+          "tripId": "trip123",
+          "badges": "Mountain Climber",
+          "points": 20,
+          "progress": 1,
+          "level": "Bronze",
+          "unlocked": false,
+          "role": "participant",
+          "createdAt": "2024-01-15T10:00:00Z",
+          "updatedAt": "2024-01-15T10:00:00Z"
+        }
+      ],
+      "badgeProgress": {
+        "Mountain Climber": {
+          "totalTrips": 3,
+          "unlocked": false,
+          "progress": 3,
+          "required": 5,
+          "percentage": 60,
+          "points": 60
+        },
+        "Culture Explorer": {
+          "totalTrips": 2,
+          "unlocked": false,
+          "progress": 2,
+          "required": 3,
+          "percentage": 66.67,
+          "points": 30
+        }
+      },
+      "totalPoints": 90,
+      "unlockedBadges": []
+    }
+  }
+  ```
+
+#### Get All Achievements (Admin/Coordinator)
+
+- **GET** `/api/coordinator/achievements`
+- **Description**: Get all achievements across all users (admin view)
+- **Authentication**: Required (Coordinator or Admin role)
+- **Response**: Array of all achievement records
+
+#### Update Application Status (Triggers Achievement Tracking)
+
+- **PATCH** `/api/coordinator/applications/:applicationId`
+- **Description**: Update application status. When status is set to "approved", achievements are automatically tracked.
+- **Authentication**: Required (Coordinator or Admin role)
+- **Body**:
+  ```json
+  {
+    "status": "approved"
+  }
+  ```
+- **Response**: Updated application object
+
+### Achievement Tracking Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Coordinator
+    participant API
+    participant AchievementService
+    participant Database
+
+    User->>API: Submit Application
+    API->>Database: Create Application (status: pending)
+    
+    Coordinator->>API: Approve Application
+    API->>Database: Update Application (status: approved)
+    API->>AchievementService: trackTripAchievement(userId, tripId, role)
+    
+    AchievementService->>Database: Get Trip Details
+    AchievementService->>AchievementService: Determine Applicable Badges
+    AchievementService->>Database: Check Existing Achievement Records
+    AchievementService->>Database: Create Achievement Records
+    AchievementService->>AchievementService: checkAndUnlockBadge()
+    AchievementService->>Database: Count User Progress
+    AchievementService->>Database: Update Badge Status (if unlocked)
+    
+    API->>Coordinator: Application Updated Successfully
+```
+
+### Example Scenarios
+
+#### Scenario 1: User Earns Mountain Climber Badge
+
+1. User applies for 5 hiking trips
+2. Coordinator approves all 5 applications
+3. System creates 5 achievement records for "Mountain Climber" badge
+4. After the 5th approval, system checks progress: `5 >= 5` ✅
+5. System unlocks the badge by setting `unlocked: true` on all records
+6. User can now see "Mountain Climber" badge in their achievements
+
+#### Scenario 2: User Takes Leadership Role
+
+1. Admin assigns user as coordinator for a trip
+2. User's application for that trip is approved
+3. System detects user is in `tripCoordinators` table
+4. System creates achievement record with `role: "leader"` and `badges: "Leader"`
+5. System checks progress: `1 >= 1` ✅
+6. Leader badge is immediately unlocked
+
+#### Scenario 3: Mixed Trip Types
+
+1. User completes:
+   - 2 hiking trips (Mountain Climber: 2/5)
+   - 3 cultural trips (Culture Explorer: 3/3 ✅ Unlocked)
+   - 1 eco-friendly trip (Nature Lover: 1/3)
+2. User sees:
+   - Culture Explorer badge: **Unlocked** ✅
+   - Mountain Climber badge: 40% progress (2/5)
+   - Nature Lover badge: 33% progress (1/3)
+
+### Integration Points
+
+The achievement system integrates with:
+
+1. **Application Approval Flow** (`src/controllers/coordinators/update.application.controller.ts`):
+   - Automatically calls `trackTripAchievement()` when application status changes to "approved"
+
+2. **Trip Coordinator Assignment** (`tripCoordinators` table):
+   - System checks if user is a coordinator to award Leader badge
+
+3. **Trip Type Field** (`trips.type`):
+   - Used to determine which badges a trip contributes to
+
+### Service Functions
+
+The achievement service (`src/services/achievement.service.ts`) provides:
+
+- `getAchievementBadgeForTrip(tripType)`: Maps trip types to applicable badges
+- `trackTripAchievement(userId, tripId, role)`: Creates achievement records and checks unlock status
+- `checkAndUnlockBadge(userId, badge)`: Checks progress and unlocks badges when criteria are met
+- `getUserAchievements(userId)`: Returns comprehensive achievement summary with progress percentages
+
+### Best Practices
+
+1. **Trip Type Naming**: Use descriptive trip types that include keywords matching badge categories (e.g., "Hiking Adventure", "Cultural Tour")
+
+2. **Achievement Tracking**: Achievements are automatically tracked - no manual intervention needed
+
+3. **Progress Monitoring**: Use the `getUserAchievements` endpoint to display progress bars and motivate users
+
+4. **Badge Display**: Show unlocked badges prominently and display progress for badges in progress
+
+5. **Leader Recognition**: Highlight users with Leader badges as they've demonstrated leadership capabilities
 
 ## API Endpoints
 

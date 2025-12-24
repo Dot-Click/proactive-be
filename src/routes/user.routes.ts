@@ -1,13 +1,18 @@
 import { submitApplication } from "@/controllers/user/applications.submit.controller";
 import { getInstaInfo, getReviews } from "@/controllers/user/insta&reviews.controller";
+import { getUserAchievementsController } from "@/controllers/user/get.achievements.controller";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { upload } from "@/middlewares/multer.middleware";
-import { Router } from "express";
+import { Request, Response, Router } from "express";
+import { sendSMS } from "@/utils/brevo.util";
+import { sendError, sendSuccess } from "@/utils/response.util";
+import status from "http-status";
 
 const userRoutes = Router();
 
 userRoutes.get("/insta-info", getInstaInfo);
 userRoutes.get("/reviews", getReviews);
-userRoutes.post("/applications", authenticate, authorize("user"),upload(['video/mp4', 'video/mov']), submitApplication);
+userRoutes.post("/applications", authenticate, authorize("user","admin"),upload(['video/mp4', 'video/mov']), submitApplication);
+userRoutes.get("/achievements", authenticate, authorize("user","admin"), getUserAchievementsController);
 
 export default userRoutes;
