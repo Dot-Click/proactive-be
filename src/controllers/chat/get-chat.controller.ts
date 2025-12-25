@@ -1,39 +1,11 @@
 import { Request, Response } from "express";
 import { database } from "@/configs/connection.config";
-import { chats, chatParticipants, users } from "@/schema/schema";
+import { chats, chatParticipants, users, messages, trips } from "@/schema/schema";
 import { sendSuccess, sendError } from "@/utils/response.util";
-import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
+import "@/middlewares/auth.middleware";
 import status from "http-status";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 
-/**
- * @swagger
- * /api/chat/{chatId}:
- *   get:
- *     tags:
- *       - Chat
- *     summary: Get a specific chat
- *     description: Get chat details with participants
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: chatId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Chat details
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden - not a participant
- *       404:
- *         description: Chat not found
- *       500:
- *         description: Internal server error
- */
 export const getChat = async (
   req: Request,
   res: Response
@@ -43,99 +15,125 @@ export const getChat = async (
       return sendError(res, "Authentication required", status.UNAUTHORIZED);
     }
 
-    const { chatId } = req.params;
-    const db = await database();
+    const { id } = req.params;
     const userId = req.user.userId;
-    const userRole = req.user.role;
 
-    // Get chat
-    const chatResults = await db
+    const db = await database();
+
+    // Verify user is participant
+    const [chatParticipant] = await db
       .select()
-      .from(chats)
-      .where(eq(chats.id, chatId))
+      .from(chatParticipants)
+      .where(and(
+        eq(chatParticipants.chatId, id),
+        eq(chatParticipants.userId, userId)
+      ))
       .limit(1);
 
-    if (chatResults.length === 0) {
+    if (!chatParticipant) {
+      return sendError(res, "Chat not found or access denied", status.NOT_FOUND);
+    }
+
+    // Get chat
+    const [chat] = await db
+      .select()
+      .from(chats)
+      .where(eq(chats.id, id))
+      .limit(1);
+
+    if (!chat) {
       return sendError(res, "Chat not found", status.NOT_FOUND);
     }
 
-    const chat = chatResults[0];
-
-    // Check access permissions
-    if (userRole !== "admin") {
-      if (userRole === "coordinator" && chat.coordinatorId !== userId) {
-        return sendError(
-          res,
-          "You don't have access to this chat",
-          status.FORBIDDEN
-        );
-      } else if (userRole === "user") {
-        // Check if user is a participant
-        const participantResults = await db
-          .select()
-          .from(chatParticipants)
-          .where(
-            and(
-              eq(chatParticipants.chatId, chatId),
-              eq(chatParticipants.userId, userId)
-            )
-          )
-          .limit(1);
-
-        if (participantResults.length === 0) {
-          return sendError(
-            res,
-            "You don't have access to this chat",
-            status.FORBIDDEN
-          );
-        }
-      }
-    }
-
     // Get participants with user details
-    const participants = await db
+    const participantsData = await db
       .select({
         id: chatParticipants.id,
         userId: chatParticipants.userId,
         role: chatParticipants.role,
         joinedAt: chatParticipants.joinedAt,
-        firstName: users.firstName,
-        lastName: users.lastName,
-        email: users.email,
-        userRole: users.userRoles,
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          userRoles: users.userRoles,
+        },
       })
       .from(chatParticipants)
       .innerJoin(users, eq(chatParticipants.userId, users.id))
-      .where(eq(chatParticipants.chatId, chatId));
+      .where(eq(chatParticipants.chatId, id));
 
-    // Get coordinator details
-    let coordinator = null;
-    if (chat.coordinatorId) {
-      const coordinatorResults = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, chat.coordinatorId))
+    // Get all messages
+    const messagesData = await db
+      .select({
+        id: messages.id,
+        content: messages.content,
+        senderId: messages.senderId,
+        chatId: messages.chatId,
+        createdAt: messages.createdAt,
+        updatedAt: messages.updatedAt,
+        sender: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          userRoles: users.userRoles,
+        },
+      })
+      .from(messages)
+      .innerJoin(users, eq(messages.senderId, users.id))
+      .where(eq(messages.chatId, id))
+      .orderBy(asc(messages.createdAt));
+
+    // Get trip details
+    let tripData = null;
+    if (chat.tripId) {
+      const [trip] = await db
+        .select({
+          id: trips.id,
+          title: trips.title,
+        })
+        .from(trips)
+        .where(eq(trips.id, chat.tripId))
         .limit(1);
-      coordinator = coordinatorResults[0] || null;
+      tripData = trip;
     }
+
+    const chatData = {
+      ...chat,
+      participants: participantsData.map(p => ({
+        ...p,
+        user: {
+          id: p.user.id,
+          name: (p.user.firstName && p.user.lastName) ? `${p.user.firstName} ${p.user.lastName}` : p.user.email.split('@')[0],
+          email: p.user.email,
+          role: p.user.userRoles,
+        },
+      })),
+      messages: messagesData.map(m => ({
+        ...m,
+        sender: {
+          id: m.sender.id,
+          name: (m.sender.firstName && m.sender.lastName) ? `${m.sender.firstName} ${m.sender.lastName}` : m.sender.email.split('@')[0],
+          email: m.sender.email,
+          role: m.sender.userRoles,
+        },
+      })),
+      trip: tripData,
+    };
 
     return sendSuccess(
       res,
       "Chat retrieved successfully",
-      {
-        chat: {
-          ...chat,
-          coordinator,
-          participants,
-        },
-      },
+      chatData,
       status.OK
     );
-  } catch (error) {
-    console.error("Get chat error:", error);
+  } catch (error: any) {
+    console.error("Error getting chat:", error);
     return sendError(
       res,
-      "An error occurred while retrieving chat",
+      error.message || "Failed to get chat",
       status.INTERNAL_SERVER_ERROR
     );
   }

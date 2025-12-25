@@ -1,29 +1,11 @@
 import { Request, Response } from "express";
 import { database } from "@/configs/connection.config";
-import { chats, chatParticipants } from "@/schema/schema";
+import { chats, chatParticipants, users, messages, trips } from "@/schema/schema";
 import { sendSuccess, sendError } from "@/utils/response.util";
-import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
+import "@/middlewares/auth.middleware";
 import status from "http-status";
-import { eq, sql } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 
-/**
- * @swagger
- * /api/chat:
- *   get:
- *     tags:
- *       - Chat
- *     summary: Get all chats for current user
- *     description: Returns chats based on user role (admin sees all, coordinator sees their chats, user sees chats they're in)
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of chats
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
- */
 export const getChats = async (
   req: Request,
   res: Response
@@ -33,67 +15,129 @@ export const getChats = async (
       return sendError(res, "Authentication required", status.UNAUTHORIZED);
     }
 
-    const db = await database();
-    const userRole = req.user.role;
     const userId = req.user.userId;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
 
-    let chatResults;
-
-    if (userRole === "admin") {
-      // Admin sees all chats
-      chatResults = await db
-        .select({
-          id: chats.id,
-          name: chats.name,
-          description: chats.description,
-          coordinatorId: chats.coordinatorId,
-          createdBy: chats.createdBy,
-          createdAt: chats.createdAt,
-          updatedAt: chats.updatedAt,
-        })
-        .from(chats);
-    } else if (userRole === "coordinator") {
-      // Coordinator sees chats where they are the coordinator
-      chatResults = await db
-        .select({
-          id: chats.id,
-          name: chats.name,
-          description: chats.description,
-          coordinatorId: chats.coordinatorId,
-          createdBy: chats.createdBy,
-          createdAt: chats.createdAt,
-          updatedAt: chats.updatedAt,
-        })
-        .from(chats)
-        .where(eq(chats.coordinatorId, userId));
-    } else {
-      // User sees chats where they are a participant
-      chatResults = await db
-        .select({
-          id: chats.id,
-          name: chats.name,
-          description: chats.description,
-          coordinatorId: chats.coordinatorId,
-          createdBy: chats.createdBy,
-          createdAt: chats.createdAt,
-          updatedAt: chats.updatedAt,
-        })
-        .from(chats)
-        .innerJoin(chatParticipants, eq(chats.id, chatParticipants.chatId))
-        .where(eq(chatParticipants.userId, userId));
+    if (page < 1 || limit < 1 || limit > 100) {
+      return sendError(res, "Invalid pagination parameters", status.BAD_REQUEST);
     }
 
-    // Get participant counts for each chat
-    const chatsWithCounts = await Promise.all(
-      chatResults.map(async (chat) => {
-        const participantCount = await db
-          .select({ count: sql<number>`count(*)` })
+    const db = await database();
+    const skip = (page - 1) * limit;
+
+    // Get chats where user is a participant
+    const userChats = await db
+      .select({
+        chatId: chatParticipants.chatId,
+      })
+      .from(chatParticipants)
+      .where(eq(chatParticipants.userId, userId));
+
+    const chatIds = userChats.map(c => c.chatId);
+
+    if (chatIds.length === 0) {
+      return sendSuccess(res, "Chats retrieved successfully", [], status.OK);
+    }
+
+    // Get chats with pagination
+    const chatsList = await db
+      .select()
+      .from(chats)
+      .where(inArray(chats.id, chatIds))
+      .orderBy(desc(chats.updatedAt))
+      .limit(limit)
+      .offset(skip);
+
+    // Get all data for each chat
+    const chatsWithData = await Promise.all(
+      chatsList.map(async (chat) => {
+        // Get participants
+        const participantsData = await db
+          .select({
+            id: chatParticipants.id,
+            userId: chatParticipants.userId,
+            role: chatParticipants.role,
+            user: {
+              id: users.id,
+              firstName: users.firstName,
+              lastName: users.lastName,
+              email: users.email,
+              userRoles: users.userRoles,
+            },
+          })
           .from(chatParticipants)
+          .innerJoin(users, eq(chatParticipants.userId, users.id))
           .where(eq(chatParticipants.chatId, chat.id));
 
+        // Get latest message
+        const [latestMessage] = await db
+          .select({
+            id: messages.id,
+            content: messages.content,
+            senderId: messages.senderId,
+            chatId: messages.chatId,
+            createdAt: messages.createdAt,
+            sender: {
+              id: users.id,
+              firstName: users.firstName,
+              lastName: users.lastName,
+              email: users.email,
+              userRoles: users.userRoles,
+            },
+          })
+          .from(messages)
+          .innerJoin(users, eq(messages.senderId, users.id))
+          .where(eq(messages.chatId, chat.id))
+          .orderBy(desc(messages.createdAt))
+          .limit(1);
+
+        // Get trip
+        let tripData = null;
+        if (chat.tripId) {
+          const [trip] = await db
+            .select({
+              id: trips.id,
+              title: trips.title,
+            })
+            .from(trips)
+            .where(eq(trips.id, chat.tripId))
+            .limit(1);
+          tripData = trip;
+        }
+
         return {
-          ...chat,
-          participantCount: Number(participantCount[0]?.count || 0),
+          id: chat.id,
+          user: participantsData.find(p => p.user.userRoles === "user")?.user ? {
+            id: participantsData.find(p => p.user.userRoles === "user")!.user.id,
+            name: participantsData.find(p => p.user.userRoles === "user")!.user.firstName && participantsData.find(p => p.user.userRoles === "user")!.user.lastName
+              ? `${participantsData.find(p => p.user.userRoles === "user")!.user.firstName} ${participantsData.find(p => p.user.userRoles === "user")!.user.lastName}`
+              : participantsData.find(p => p.user.userRoles === "user")!.user.email.split('@')[0],
+            email: participantsData.find(p => p.user.userRoles === "user")!.user.email,
+            role: participantsData.find(p => p.user.userRoles === "user")!.user.userRoles,
+          } : null,
+          coordinator: participantsData.find(p => p.user.userRoles === "coordinator")?.user ? {
+            id: participantsData.find(p => p.user.userRoles === "coordinator")!.user.id,
+            name: participantsData.find(p => p.user.userRoles === "coordinator")!.user.firstName && participantsData.find(p => p.user.userRoles === "coordinator")!.user.lastName
+              ? `${participantsData.find(p => p.user.userRoles === "coordinator")!.user.firstName} ${participantsData.find(p => p.user.userRoles === "coordinator")!.user.lastName}`
+              : participantsData.find(p => p.user.userRoles === "coordinator")!.user.email.split('@')[0],
+            email: participantsData.find(p => p.user.userRoles === "coordinator")!.user.email,
+            role: participantsData.find(p => p.user.userRoles === "coordinator")!.user.userRoles,
+          } : null,
+          trip: tripData,
+          lastMessage: latestMessage ? {
+            ...latestMessage,
+            sender: {
+              id: latestMessage.sender.id,
+              name: (latestMessage.sender.firstName && latestMessage.sender.lastName)
+                ? `${latestMessage.sender.firstName} ${latestMessage.sender.lastName}`
+                : latestMessage.sender.email.split('@')[0],
+              email: latestMessage.sender.email,
+              role: latestMessage.sender.userRoles,
+            },
+          } : null,
+          createdAt: chat.createdAt,
+          updatedAt: chat.updatedAt,
         };
       })
     );
@@ -101,15 +145,16 @@ export const getChats = async (
     return sendSuccess(
       res,
       "Chats retrieved successfully",
-      { chats: chatsWithCounts },
+      chatsWithData,
       status.OK
     );
-  } catch (error) {
-    console.error("Get chats error:", error);
+  } catch (error: any) {
+    console.error("Error getting chats:", error);
     return sendError(
       res,
-      "An error occurred while retrieving chats",
+      error.message || "Failed to get chats",
       status.INTERNAL_SERVER_ERROR
     );
   }
 };
+

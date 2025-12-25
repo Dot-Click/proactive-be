@@ -1,56 +1,12 @@
 import { Request, Response } from "express";
 import { database } from "@/configs/connection.config";
-import { messages, chats, chatParticipants } from "@/schema/schema";
+import { messages, chatParticipants, chats, users } from "@/schema/schema";
 import { sendSuccess, sendError } from "@/utils/response.util";
-import { sendMessageSchema } from "@/types/chat.types";
-import { RequestWithIO } from "@/types/socket";
-import { emitToChatRoom, getMessageWithSender } from "@/utils/socket-chat.util";
-import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
+import "@/middlewares/auth.middleware";
 import status from "http-status";
-import { eq, and } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
-import { createNotification } from "@/services/notifications.services";
+import { eq, and } from "drizzle-orm";
 
-/**
- * @swagger
- * /api/chat/{chatId}/messages:
- *   post:
- *     tags:
- *       - Chat
- *     summary: Send a message to a chat
- *     description: Send a text message to a chat (participants only)
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: chatId
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - content
- *             properties:
- *               content:
- *                 type: string
- *                 example: Hello everyone!
- *     responses:
- *       201:
- *         description: Message sent successfully
- *       400:
- *         description: Validation error
- *       403:
- *         description: Forbidden - not a participant
- *       404:
- *         description: Chat not found
- *       500:
- *         description: Internal server error
- */
 export const sendMessage = async (
   req: Request,
   res: Response
@@ -60,113 +16,79 @@ export const sendMessage = async (
       return sendError(res, "Authentication required", status.UNAUTHORIZED);
     }
 
-    const { chatId } = req.params;
-    const validationResult = sendMessageSchema.safeParse({
-      ...req.body,
-      chatId,
-    });
-    if (!validationResult.success) {
-      const errors: Record<string, string[]> = {};
-      validationResult.error.errors.forEach((err) => {
-        const path = err.path.join(".");
-        if (!errors[path]) {
-          errors[path] = [];
-        }
-        errors[path].push(err.message);
-      });
-      return sendError(
-        res,
-        "Validation failed",
-        status.BAD_REQUEST,
-        undefined,
-        errors
-      );
+    const { id } = req.params;
+    const { content } = req.body;
+    const userId = req.user.userId;
+
+    if (!content || !content.trim()) {
+      return sendError(res, "Message content is required", status.BAD_REQUEST);
     }
 
-    const { content } = validationResult.data;
     const db = await database();
-    const userId = req.user.userId;
-    const userRole = req.user.role;
 
-    // Verify chat exists
-    const chatResults = await db
+    // Verify user is participant
+    const [chatParticipant] = await db
       .select()
-      .from(chats)
-      .where(eq(chats.id, chatId))
+      .from(chatParticipants)
+      .where(and(
+        eq(chatParticipants.chatId, id),
+        eq(chatParticipants.userId, userId)
+      ))
       .limit(1);
 
-    if (chatResults.length === 0) {
-      return sendError(res, "Chat not found", status.NOT_FOUND);
-    }
-
-    // Check if user is a participant (admin can always send)
-    if (userRole !== "admin") {
-      const participantResults = await db
-        .select()
-        .from(chatParticipants)
-        .where(
-          and(
-            eq(chatParticipants.chatId, chatId),
-            eq(chatParticipants.userId, userId)
-          )
-        )
-        .limit(1);
-
-      if (participantResults.length === 0) {
-        return sendError(
-          res,
-          "You must be a participant to send messages",
-          status.FORBIDDEN
-        );
-      }
+    if (!chatParticipant) {
+      return sendError(res, "You are not a participant of this chat", status.FORBIDDEN);
     }
 
     // Create message
-    const newMessage = await db
+    const [newMessage] = await db
       .insert(messages)
       .values({
         id: createId(),
-        chatId,
+        content: content.trim(),
+        chatId: id,
         senderId: userId,
-        content,
       })
       .returning();
 
-    // Get message with sender details
-    const messageWithSender = await getMessageWithSender(newMessage[0].id);
+    // Update chat's updatedAt
+    await db
+      .update(chats)
+      .set({ updatedAt: new Date() })
+      .where(eq(chats.id, id));
 
-    if (!messageWithSender) {
-      return sendError(
-        res,
-        "Failed to retrieve message",
-        status.INTERNAL_SERVER_ERROR
-      );
-    }
+    // Get sender details
+    const [sender] = await db
+      .select({
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
 
-    // Emit to all chat participants via socket
-    const reqWithIO = req as Request & RequestWithIO;
-    if (reqWithIO.io) {
-      await emitToChatRoom(reqWithIO.io, chatId, "message:new", {
-        message: messageWithSender,
-      });
-    }
-    await createNotification({
-      userId,
-      title: "A new message recieved",
-      description: `You have a new message from ${messageWithSender.senderFirstName + " " + messageWithSender.senderLastName}`,
-      type: "chat",
-    });
+    const messageData = {
+      ...newMessage,
+      sender: {
+        id: sender.id,
+        name: (sender.firstName && sender.lastName) ? `${sender.firstName} ${sender.lastName}` : sender.email.split('@')[0],
+        email: sender.email,
+      },
+    };
+
     return sendSuccess(
       res,
       "Message sent successfully",
-      { message: messageWithSender },
+      messageData,
       status.CREATED
     );
-  } catch (error) {
-    console.error("Send message error:", error);
+  } catch (error: any) {
+    console.error("Error sending message:", error);
     return sendError(
       res,
-      "An error occurred while sending message",
+      error.message || "Failed to send message",
       status.INTERNAL_SERVER_ERROR
     );
   }

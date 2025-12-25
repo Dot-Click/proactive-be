@@ -1,59 +1,12 @@
 import { Request, Response } from "express";
 import { database } from "@/configs/connection.config";
-import { chats, chatParticipants, users } from "@/schema/schema";
+import { chats, chatParticipants, users, trips, messages } from "@/schema/schema";
 import { sendSuccess, sendError } from "@/utils/response.util";
-import { createChatSchema } from "@/types/chat.types";
-import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
+import "@/middlewares/auth.middleware";
 import status from "http-status";
-import { eq, and } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
-import { createNotification } from "@/services/notifications.services";
+import { eq, and, inArray, desc, sql } from "drizzle-orm";
 
-/**
- * @swagger
- * /api/chat:
- *   post:
- *     tags:
- *       - Chat
- *     summary: Create a new chat
- *     description: Create a new group chat with participants
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - coordinatorId
- *               - participantIds
- *             properties:
- *               name:
- *                 type: string
- *                 example: Trip to Paris
- *               description:
- *                 type: string
- *                 example: Group chat for Paris trip participants
- *               coordinatorId:
- *                 type: string
- *                 example: coord123
- *               participantIds:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: ["user1", "user2"]
- *     responses:
- *       201:
- *         description: Chat created successfully
- *       400:
- *         description: Validation error
- *       404:
- *         description: Coordinator or participant not found
- *       500:
- *         description: Internal server error
- */
 export const createChat = async (
   req: Request,
   res: Response
@@ -63,136 +16,214 @@ export const createChat = async (
       return sendError(res, "Authentication required", status.UNAUTHORIZED);
     }
 
-    const validationResult = createChatSchema.safeParse(req.body);
-    if (!validationResult.success) {
-      const errors: Record<string, string[]> = {};
-      validationResult.error.errors.forEach((err) => {
-        const path = err.path.join(".");
-        if (!errors[path]) {
-          errors[path] = [];
-        }
-        errors[path].push(err.message);
-      });
-      return sendError(
-        res,
-        "Validation failed",
-        status.BAD_REQUEST,
-        undefined,
-        errors
-      );
+    const { participantIds, tripId } = req.body;
+    const userId = req.user.userId;
+
+    if (!participantIds || !Array.isArray(participantIds) || participantIds.length === 0) {
+      return sendError(res, "Participant IDs are required", status.BAD_REQUEST);
     }
 
-    const { name, description, coordinatorId, participantIds } =
-      validationResult.data;
+    if (!tripId) {
+      return sendError(res, "Trip ID is required", status.BAD_REQUEST);
+    }
+
+    // Remove current user from participants if included
+    const filteredParticipants = participantIds.filter(id => id !== userId);
+
+    if (filteredParticipants.length === 0) {
+      return sendError(res, "Cannot create chat with yourself", status.BAD_REQUEST);
+    }
+
     const db = await database();
 
-    // Verify coordinator exists and is a coordinator
-    const coordinatorResults = await db
-      .select()
+    // Validate that all participants exist
+    const allUserIds = [...filteredParticipants, userId];
+    const existingUsers = await db
+      .select({ id: users.id })
       .from(users)
-      .where(
-        and(eq(users.id, coordinatorId), eq(users.userRoles, "coordinator"))
-      )
+      .where(inArray(users.id, allUserIds));
+
+    if (existingUsers.length !== allUserIds.length) {
+      return sendError(res, "One or more participants do not exist", status.BAD_REQUEST);
+    }
+
+    // Check if trip exists
+    const [trip] = await db
+      .select({ id: trips.id })
+      .from(trips)
+      .where(eq(trips.id, tripId))
       .limit(1);
 
-    if (coordinatorResults.length === 0) {
-      return sendError(
-        res,
-        "Coordinator not found or invalid",
-        status.NOT_FOUND
-      );
+    if (!trip) {
+      return sendError(res, "Trip not found", status.NOT_FOUND);
     }
 
-    // Verify all participants exist and are users
-    const allUsers = await db
-      .select()
-      .from(users)
-      .where(eq(users.userRoles, "user"));
+    // Check if chat already exists between these users with same trip
+    const existingChats = await db
+      .select({
+        chatId: chatParticipants.chatId,
+      })
+      .from(chatParticipants)
+      .where(inArray(chatParticipants.userId, allUserIds))
+      .groupBy(chatParticipants.chatId)
+      .having(sql`COUNT(DISTINCT ${chatParticipants.userId}) = ${allUserIds.length}`);
 
-    const validParticipantIds = allUsers
-      .filter((user) => participantIds.includes(user.id))
-      .map((user) => user.id);
+    // Check each chat to see if it has exactly these participants and same trip
+    for (const chatRef of existingChats) {
+      const chatParticipantsList = await db
+        .select({ userId: chatParticipants.userId })
+        .from(chatParticipants)
+        .where(eq(chatParticipants.chatId, chatRef.chatId));
 
-    if (validParticipantIds.length !== participantIds.length) {
-      return sendError(
-        res,
-        "One or more participants not found or invalid",
-        status.NOT_FOUND
-      );
+      const chatUserIds = chatParticipantsList.map(p => p.userId).sort();
+      const sortedUserIds = [...allUserIds].sort();
+
+      if (chatUserIds.length === sortedUserIds.length &&
+          chatUserIds.every((id, index) => id === sortedUserIds[index])) {
+        // Check if same trip
+        const [existingChat] = await db
+          .select()
+          .from(chats)
+          .where(and(
+            eq(chats.id, chatRef.chatId),
+            eq(chats.tripId, tripId)
+          ))
+          .limit(1);
+
+        if (existingChat) {
+          // Return existing chat with all relations
+          const chatData = await getChatWithRelations(db, existingChat.id);
+          return sendSuccess(
+            res,
+            "Chat already exists",
+            chatData,
+            status.OK
+          );
+        }
+      }
     }
 
-    // Create chat
-    const newChat = await db
+    // Create new chat
+    const chatId = createId();
+    const [newChat] = await db
       .insert(chats)
       .values({
-        id: createId(),
-        name,
-        description: description || null,
-        coordinatorId,
-        createdBy: req.user.userId,
+        id: chatId,
+        tripId,
+        createdBy: userId,
       })
-      .returning({
-        id: chats.id,
-        name: chats.name,
-        description: chats.description,
-        coordinatorId: chats.coordinatorId,
-        createdBy: chats.createdBy,
-        createdAt: chats.createdAt,
-      });
+      .returning();
 
-    const chat = newChat[0];
-
-    // Add coordinator as participant with admin role
-    await db.insert(chatParticipants).values({
+    // Create participants
+    const participantValues = allUserIds.map(userId => ({
       id: createId(),
-      chatId: chat.id,
-      userId: coordinatorId,
-      role: "admin",
-    });
-
-    // Add creator as participant if not coordinator
-    if (req.user.userId !== coordinatorId) {
-      await db.insert(chatParticipants).values({
-        id: createId(),
-        chatId: chat.id,
-        userId: req.user.userId,
-        role: req.user.role === "admin" ? "admin" : "participant",
-      });
-    }
-
-    // Add all participants
-    const participantInserts = validParticipantIds.map((userId) => ({
-      id: createId(),
-      chatId: chat.id,
+      chatId,
       userId,
-      role: "participant" as const,
     }));
 
-    if (participantInserts.length > 0) {
-      await db.insert(chatParticipants).values(participantInserts);
-    }
-    // send notf to all participants
-    for (const userId of validParticipantIds) {
-      await createNotification({
-        userId: userId,
-        title: "You are added to a new chat",
-        description: `You are added to a new chat ${chat.name}`,
-        type: "chat",
-      });
-    }
+    await db.insert(chatParticipants).values(participantValues);
+
+    // Get chat with all relations
+    const chatData = await getChatWithRelations(db, chatId);
+
     return sendSuccess(
       res,
       "Chat created successfully",
-      { chat },
+      chatData,
       status.CREATED
     );
-  } catch (error) {
-    console.error("Create chat error:", error);
+  } catch (error: any) {
+    console.error("Error creating chat:", error);
     return sendError(
       res,
-      "An error occurred while creating chat",
+      error.message || "Failed to create chat",
       status.INTERNAL_SERVER_ERROR
     );
   }
 };
+
+async function getChatWithRelations(db: any, chatId: string) {
+  // Get chat
+  const [chat] = await db
+    .select()
+    .from(chats)
+    .where(eq(chats.id, chatId))
+    .limit(1);
+
+  if (!chat) return null;
+
+  // Get participants with user details
+  const participantsData = await db
+    .select({
+      id: chatParticipants.id,
+      userId: chatParticipants.userId,
+      role: chatParticipants.role,
+      joinedAt: chatParticipants.joinedAt,
+      user: {
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        userRoles: users.userRoles,
+      },
+    })
+    .from(chatParticipants)
+    .innerJoin(users, eq(chatParticipants.userId, users.id))
+    .where(eq(chatParticipants.chatId, chatId));
+
+  // Get latest message
+  const latestMessages = await db
+    .select({
+      id: messages.id,
+      content: messages.content,
+      senderId: messages.senderId,
+      chatId: messages.chatId,
+      createdAt: messages.createdAt,
+      sender: {
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        userRoles: users.userRoles,
+      },
+    })
+    .from(messages)
+    .innerJoin(users, eq(messages.senderId, users.id))
+    .where(eq(messages.chatId, chatId))
+    .orderBy(desc(messages.createdAt))
+    .limit(1);
+
+  // Get trip details
+  const [tripData] = await db
+    .select({
+      id: trips.id,
+      title: trips.title,
+    })
+    .from(trips)
+    .where(eq(trips.id, chat.tripId))
+    .limit(1);
+
+  return {
+    ...chat,
+    participants: participantsData.map((p: any) => ({
+      ...p,
+      user: {
+        id: p.user.id,
+        name: (p.user.firstName && p.user.lastName) ? `${p.user.firstName} ${p.user.lastName}` : p.user.email.split('@')[0],
+        email: p.user.email,
+        role: p.user.userRoles,
+      },
+    })),
+    messages: latestMessages.map((m: any) => ({
+      ...m,
+      sender: {
+        id: m.sender.id,
+        name: (m.sender.firstName && m.sender.lastName) ? `${m.sender.firstName} ${m.sender.lastName}` : m.sender.email.split('@')[0],
+        email: m.sender.email,
+        role: m.sender.userRoles,
+      },
+    })),
+    trip: tripData,
+  };
+}
 

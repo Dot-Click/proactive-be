@@ -120,6 +120,13 @@
       "when": 1766535919544,
       "tag": "0016_lying_domino",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1766616205403,
+      "tag": "0017_wide_shockwave",
+      "breakpoints": true
     }
   ]
 }

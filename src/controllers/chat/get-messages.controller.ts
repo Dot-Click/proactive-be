@@ -1,47 +1,11 @@
 import { Request, Response } from "express";
 import { database } from "@/configs/connection.config";
-import { messages, chats, chatParticipants, users } from "@/schema/schema";
+import { messages, chatParticipants, users } from "@/schema/schema";
 import { sendSuccess, sendError } from "@/utils/response.util";
-import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
+import "@/middlewares/auth.middleware";
 import status from "http-status";
-import { eq, and, isNull, desc } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 
-/**
- * @swagger
- * /api/chat/{chatId}/messages:
- *   get:
- *     tags:
- *       - Chat
- *     summary: Get messages from a chat
- *     description: Get paginated messages from a chat (participants only)
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: chatId
- *         required: true
- *         schema:
- *           type: string
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 50
- *     responses:
- *       200:
- *         description: Messages retrieved successfully
- *       403:
- *         description: Forbidden - not a participant
- *       404:
- *         description: Chat not found
- *       500:
- *         description: Internal server error
- */
 export const getMessages = async (
   req: Request,
   res: Response
@@ -51,97 +15,81 @@ export const getMessages = async (
       return sendError(res, "Authentication required", status.UNAUTHORIZED);
     }
 
-    const { chatId } = req.params;
+    const { id } = req.params;
+    const userId = req.user.userId;
     const page = parseInt(req.query.page as string) || 1;
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
-    const offset = (page - 1) * limit;
+    const limit = parseInt(req.query.limit as string) || 50;
+
+    if (page < 1 || limit < 1 || limit > 100) {
+      return sendError(res, "Invalid pagination parameters", status.BAD_REQUEST);
+    }
 
     const db = await database();
-    const userId = req.user.userId;
-    const userRole = req.user.role;
 
-    // Verify chat exists
-    const chatResults = await db
+    // Verify user is participant
+    const [chatParticipant] = await db
       .select()
-      .from(chats)
-      .where(eq(chats.id, chatId))
+      .from(chatParticipants)
+      .where(and(
+        eq(chatParticipants.chatId, id),
+        eq(chatParticipants.userId, userId)
+      ))
       .limit(1);
 
-    if (chatResults.length === 0) {
-      return sendError(res, "Chat not found", status.NOT_FOUND);
+    if (!chatParticipant) {
+      return sendError(res, "You are not a participant of this chat", status.FORBIDDEN);
     }
 
-    // Check if user is a participant (admin can always view)
-    if (userRole !== "admin") {
-      const participantResults = await db
-        .select()
-        .from(chatParticipants)
-        .where(
-          and(
-            eq(chatParticipants.chatId, chatId),
-            eq(chatParticipants.userId, userId)
-          )
-        )
-        .limit(1);
+    const skip = (page - 1) * limit;
 
-      if (participantResults.length === 0) {
-        return sendError(
-          res,
-          "You must be a participant to view messages",
-          status.FORBIDDEN
-        );
-      }
-    }
-
-    // Get messages with sender details (excluding deleted messages)
-    const messageResults = await db
+    // Get messages with pagination
+    const messagesData = await db
       .select({
         id: messages.id,
-        chatId: messages.chatId,
-        senderId: messages.senderId,
-        senderFirstName: users.firstName,
-        senderLastName: users.lastName,
-        senderEmail: users.email,
         content: messages.content,
-        editedAt: messages.editedAt,
+        senderId: messages.senderId,
+        chatId: messages.chatId,
         createdAt: messages.createdAt,
         updatedAt: messages.updatedAt,
+        sender: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          userRoles: users.userRoles,
+        },
       })
       .from(messages)
       .innerJoin(users, eq(messages.senderId, users.id))
-      .where(and(eq(messages.chatId, chatId), isNull(messages.deletedAt)))
+      .where(eq(messages.chatId, id))
       .orderBy(desc(messages.createdAt))
       .limit(limit)
-      .offset(offset);
+      .offset(skip);
 
-    // Get total count
-    const totalCount = await db
-      .select({ count: messages.id })
-      .from(messages)
-      .where(and(eq(messages.chatId, chatId), isNull(messages.deletedAt)));
+    // Reverse to get chronological order
+    const reversedMessages = messagesData.reverse().map(m => ({
+      ...m,
+      sender: {
+        id: m.sender.id,
+        name: (m.sender.firstName && m.sender.lastName) ? `${m.sender.firstName} ${m.sender.lastName}` : m.sender.email.split('@')[0],
+        email: m.sender.email,
+        role: m.sender.userRoles,
+      },
+    }));
 
     return sendSuccess(
       res,
       "Messages retrieved successfully",
-      {
-        messages: messageResults.reverse(), // Reverse to show oldest first
-        pagination: {
-          page,
-          limit,
-          total: totalCount.length,
-          totalPages: Math.ceil(totalCount.length / limit),
-        },
-      },
+      reversedMessages,
       status.OK
     );
-  } catch (error) {
-    console.error("Get messages error:", error);
+  } catch (error: any) {
+    console.error("Error getting messages:", error);
     return sendError(
       res,
-      "An error occurred while retrieving messages",
+      error.message || "Failed to get messages",
       status.INTERNAL_SERVER_ERROR
     );
   }
 };
-
 

@@ -157,6 +157,9 @@ export const chats = pgTable("chats", {
   createdBy: foreignkeyRef("created_by", () => users.id, {
     onDelete: "cascade",
   }).notNull(),
+  tripId: foreignkeyRef("trip_id", () => trips.id, {
+    onDelete: "cascade",
+  }),
   ...timeStamps,
 });
 

@@ -1,9 +1,7 @@
 import { prepareProductionStance } from "./configs/prepareproductionstance.config";
 import { assignSocketToReqIO } from "@/middlewares/socket.middleware";
 import { prepareMigration } from "./utils/preparemigration.util";
-import { authorizeUser } from "@/middlewares/socket.middleware";
 import { throttle } from "./middlewares/throttle.middleware";
-import { registerEvents } from "@/utils/registerevents.util";
 import { sessionOptions } from "./configs/session.config";
 import unknownRoutes from "@/routes/unknown.routes";
 import apiRoutes from "@/routes";
@@ -13,13 +11,12 @@ import cors, { CorsOptions } from "cors";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import { createServer } from "http";
-import { Server } from "socket.io";
-// import status from "http-status";
 import { config } from "dotenv";
 import express from "express";
 import morgan from "morgan";
 import helmet from "helmet";
 import { cloudinaryConfig } from "@/configs/cloudinary.config";
+import createSocketServer from "@/socket";
 
 config();
 const app = express();
@@ -59,16 +56,14 @@ app.use((req, res, next) => {
   }
   next();
 });
-const io = new Server(httpServer, {
-  cors: corsOptions,
-});
+
+const io = createSocketServer(httpServer, corsOptions);
 
 swagger(app);
 prepareProductionStance({ isProduction, app, sessionOptions });
 prepareMigration(isProduction);
 app.use(helmet());
 app.use(express.json({ limit: "50mb" }));
-io.on("connection", (socket) => registerEvents(socket, io));
 app.use(express.static("public"));
 io.engine.use(sessionMiddleware);
 app.use(assignSocketToReqIO(io));
@@ -76,7 +71,6 @@ app.use(express.static("dist"));
 app.use(sessionMiddleware);
 app.use(cookieParser());
 app.use(express.json());
-io.use(authorizeUser);
 cloudinaryConfig();
 
 app.use(morgan("dev"));
