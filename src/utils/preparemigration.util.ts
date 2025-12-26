@@ -1,4 +1,4 @@
-import { database, migrateSchema } from "@/configs/connection.config";
+import { migrateSchema } from "@/configs/connection.config";
 import { logger } from "./logger.util";
 
 /**
@@ -9,8 +9,7 @@ import { logger } from "./logger.util";
 export const prepareMigration = async (enableMigration = false) => {
   if (!enableMigration) return null;
   try {
-    const db = await database();
-    await migrateSchema(db);
+    await migrateSchema();
     logger.info("migration successful.");
   } catch (e) {
     const error = e as Error;

@@ -1,26 +1,36 @@
 import { z } from "zod";
 
 export const createCoordinatorSchema = z.object({
-  coordinatorDetails: z.preprocess((val) => {
+  fullName: z.string().max(200),
+  phoneNumber: z.string().max(20),
+  bio: z.string(),
+  prof_pic: z.string().optional(),
+  specialities: z.preprocess((val) => {
     if (typeof val === "string") {
-      return JSON.parse(val);
+      try {
+        return JSON.parse(val);
+      } catch {
+        return val;
+      }
     }
     return val;
-  }, z.object({
-    fullName: z.string(),
-    phoneNumber: z.string(),
-    bio: z.string(),
-    profilePicture: z.string(),
-    specialities: z.array(z.string()),
-    languages: z.array(z.string()),
-    certificateLvl: z.string(),
-    yearsOfExperience: z.number(),
-    type: z.string(),
-    accessLvl: z.string(),
-  })),
+  }, z.array(z.string())),
+  languages: z.preprocess((val) => {
+    if (typeof val === "string") {
+      try {
+        return JSON.parse(val);
+      } catch {
+        return val;
+      }
+    }
+    return val;
+  }, z.array(z.string())),
+  certificateLvl: z.string().max(20),
+  yearsOfExperience: z.coerce.number(),
+  type: z.string().max(20),
+  accessLvl: z.string().max(20),
   email: z.string().email(),
-  password: z.string(),
-  
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export type CreateCoordinatorRequest = z.infer<typeof createCoordinatorSchema>;

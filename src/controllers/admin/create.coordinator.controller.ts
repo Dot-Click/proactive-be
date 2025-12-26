@@ -19,11 +19,24 @@ export const createCoordinator = async (req: Request, res: Response) => {
       return sendError(res, "Invalid request body", status.BAD_REQUEST, undefined, valid.error.flatten().fieldErrors);
     }
     
-    const { coordinatorDetails: coordDetails, email, password } = valid.data;
+    const { 
+      fullName,
+      phoneNumber,
+      bio,
+      specialities,
+      languages,
+      certificateLvl,
+      yearsOfExperience,
+      type,
+      accessLvl,
+      email,
+      password 
+    } = valid.data;
     
+    let profilePictureUrl;
     if (req.files && (req.files as any).prof_pic && (req.files as any).prof_pic[0]) {
       const prof_pic = await cloudinaryUploader((req.files as any).prof_pic[0].path) as any;
-      coordDetails.profilePicture = prof_pic.secure_url as string;
+      profilePictureUrl = prof_pic.secure_url as string;
     }
 
     const db = await database();
@@ -68,16 +81,16 @@ export const createCoordinator = async (req: Request, res: Response) => {
       .values({
         id: createId(),
         userId: user.id,
-        fullName: coordDetails.fullName,
-        phoneNumber: coordDetails.phoneNumber,
-        bio: coordDetails.bio,
-        profilePicture: coordDetails.profilePicture,
-        specialities: coordDetails.specialities,
-        languages: coordDetails.languages,
-        certificateLvl: coordDetails.certificateLvl,
-        yearsOfExperience: coordDetails.yearsOfExperience,
-        type: coordDetails.type,
-        accessLvl: coordDetails.accessLvl,
+        fullName: fullName,
+        phoneNumber: phoneNumber.substring(0, 20),
+        bio: bio,
+        profilePicture: profilePictureUrl || null,
+        specialities: specialities,
+        languages: languages,
+        certificateLvl: certificateLvl.substring(0, 20),
+        yearsOfExperience: yearsOfExperience,
+        type: type.substring(0, 20),
+        accessLvl: accessLvl.substring(0, 20),
       })
       .returning();
 
@@ -91,13 +104,13 @@ export const createCoordinator = async (req: Request, res: Response) => {
 
       await sendCoordinatorWelcomeEmail(
         email,
-        coordDetail.fullName || undefined,
+        fullName,
         password
       );
     await createNotification({
-      userId: coordDetail.userId,
+      userId: user.id,
       title: "Welcome to Proactive!",
-      description: "Welcome to the team " + coordDetail.fullName + "!",
+      description: "Welcome to the team " + fullName + "!",
       type: "admin",
     });
 
