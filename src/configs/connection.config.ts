@@ -40,10 +40,13 @@ export const migrationDatabase = async () => {
       max: 1, // Use single connection for migrations
     });
     
-    return drizzlePostgres({
+    const db = drizzlePostgres({
       client: sql,
       schema,
     });
+    
+    // Return both db and sql client so we can close it later
+    return { db, sql };
   } catch (error) {
     console.error("Error creating migration database connection:", error);
     throw error;
@@ -51,11 +54,11 @@ export const migrationDatabase = async () => {
 }
 
 export const migrateSchema = async () => {
-  const db = await migrationDatabase();
+  const { db, sql } = await migrationDatabase();
   try {
     await migrate(db, { migrationsFolder: "drizzle" });
   } finally {
-    // Close the connection after migration
-    await (db as any).client.end();
+    // Close the postgres connection after migration
+    await sql.end();
   }
 }
