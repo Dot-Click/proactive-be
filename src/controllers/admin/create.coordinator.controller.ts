@@ -27,6 +27,7 @@ export const createCoordinator = async (req: Request, res: Response) => {
       languages,
       certificateLvl,
       yearsOfExperience,
+      location,
       type,
       accessLvl,
       email,
@@ -89,6 +90,7 @@ export const createCoordinator = async (req: Request, res: Response) => {
         languages: languages,
         certificateLvl: certificateLvl.substring(0, 20),
         yearsOfExperience: yearsOfExperience,
+        location: location ?? null,
         type: type.substring(0, 20),
         accessLvl: accessLvl.substring(0, 20),
       })
@@ -126,6 +128,7 @@ export const createCoordinator = async (req: Request, res: Response) => {
       languages: coordDetail.languages,
       certificateLvl: coordDetail.certificateLvl,
       yearsOfExperience: coordDetail.yearsOfExperience,
+      location: coordDetail.location,
       type: coordDetail.type,
       accessLvl: coordDetail.accessLvl,
       email: user.email,
