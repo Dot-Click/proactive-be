@@ -1,4 +1,5 @@
 import { createCoordinator } from "@/controllers/admin/create.coordinator.controller";
+import { dashboardlogic } from "@/controllers/admin/dashboard.controller";
 import { deleteCoordinator } from "@/controllers/admin/delete.coordinator.controller";
 import { getCoordinatorById } from "@/controllers/admin/get-unique.coordinators.controller";
 import { getCoordinators } from "@/controllers/admin/get.coordinators.controller";
@@ -248,4 +249,15 @@ adminRoutes.get("/settings", authenticate, getSettings);
  *     description: Update settings
  */
 adminRoutes.patch("/settings", authenticate, authorize("admin"), updateSettings);
+
+/**
+ * @swagger
+ * /api/admin/dashboard:
+ *   get:
+ *    tags:
+ *     - Admin
+ *    summary: get admin dashboard details
+ *    description: admin dashboard creds
+ */
+adminRoutes.get("/dashboard", authenticate,authorize("admin"), dashboardlogic)
 export default adminRoutes;
