@@ -127,6 +127,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
       );
     }
 
+    await db.update(users).set({lastActive: new Date().toLocaleString()}).where(eq(users.id, user.id))
     // Generate tokens
     const accessToken = generateAccessToken({
       userId: user.id,

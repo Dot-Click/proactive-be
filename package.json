@@ -3,16 +3,18 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && tsc-alias && npm run dbgenerate",
+    "build": "tsc && tsc-alias",
     "dev": "ts-node-dev -r tsconfig-paths/register src/server.ts",
     "seed": "ts-node -r tsconfig-paths/register src/schema/seeder.ts",
-    "start": "node dist/server.js && npm run dbgenerate",
+    "start": "node dist/server.js",
     "dbgenerate": "drizzle-kit generate",
     "dbpush": "drizzle-kit push",
+    "dbmigrate": "drizzle-kit push",
     "dbstudio": "drizzle-kit studio --port 5000 --host localhost",
     "dbdrop": "drizzle-kit drop",
     "dbintrospect": "drizzle-kit introspect",
-    "swagger": "ts-node ./src/configs/swagger.config.ts"
+    "swagger": "ts-node ./src/configs/swagger.config.ts",
+    "postbuild": "npm run dbpush"
   },
   "license": "ISC",
   "devDependencies": {

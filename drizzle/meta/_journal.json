@@ -127,6 +127,13 @@
       "when": 1766616205403,
       "tag": "0017_wide_shockwave",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1766790109682,
+      "tag": "0018_aspiring_goliath",
+      "breakpoints": true
     }
   ]
 }

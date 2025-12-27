@@ -38,6 +38,10 @@ export const migrationDatabase = async () => {
     // Use postgres client for migrations which supports transactions
     const sql = postgres(env.CONNECTION_URL, {
       max: 1, // Use single connection for migrations
+      onnotice: () => {}, // Suppress NOTICE logs (e.g., "already exists" messages)
+      connection: {
+        application_name: "drizzle-migrator",
+      },
     });
     
     const db = drizzlePostgres({
@@ -56,7 +60,28 @@ export const migrationDatabase = async () => {
 export const migrateSchema = async () => {
   const { db, sql } = await migrationDatabase();
   try {
-    await migrate(db, { migrationsFolder: "drizzle" });
+    await migrate(db, { 
+      migrationsFolder: "drizzle",
+      migrationsTable: "__drizzle_migrations"
+    });
+  } catch (error: any) {
+    // Check if error is about existing tables/relations (already migrated)
+    const isAlreadyExistsError = 
+      error?.cause?.code === "42P07" || // relation already exists
+      error?.code === "42P07" ||
+      error?.code === "23505" || // duplicate key
+      error?.message?.includes("already exists") ||
+      (error?.message?.includes("relation") && error?.message?.includes("already exists"));
+    
+    if (isAlreadyExistsError) {
+      // Tables already exist - migration likely already applied
+      // This is normal when database is already set up, silently continue
+      return;
+    }
+    
+    // For other errors, log and re-throw
+    console.error("Migration error:", error?.message || "Unknown migration error");
+    throw error;
   } finally {
     // Close the postgres connection after migration
     await sql.end();

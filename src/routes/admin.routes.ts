@@ -237,7 +237,7 @@ adminRoutes.delete("/coordinator/:id", authenticate, authorize("admin"), deleteC
  *     summary: Get settings
  *     description: Get settings
  */
-adminRoutes.get("/settings", authenticate, authorize("admin"), getSettings);
+adminRoutes.get("/settings", authenticate, getSettings);
 /**
  * @swagger
  * /api/admin/settings:

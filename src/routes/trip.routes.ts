@@ -37,7 +37,7 @@ tripRoutes.post("/", authenticate, authorize("admin", "coordinator"), upload(['i
  *     summary: Get all trips
  *     description: Get all trips
  */
-tripRoutes.get("/", authenticate, authorize("admin", "coordinator"), getTrips);
+tripRoutes.get("/", authenticate, getTrips);
 
 /**
  * @swagger

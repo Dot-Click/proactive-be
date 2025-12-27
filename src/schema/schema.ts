@@ -88,6 +88,7 @@ export const users = pgTable("users", {
     .$defaultFn(() => false)
     .notNull(),
   userRoles: varchar("userRoles", { length: 20 }).default("user"),
+  lastActive: varchar("lastActive", {length:30}),
   createdAt: timestamp("createdAt").defaultNow(),
   coordinatorDetails: foreignkeyRef("coordinator_details_id", (): any => coordinatorDetails.id, { onDelete: "cascade" }),
   updatedAt: timestamp("updatedAt").$onUpdateFn((): Date => new Date()),
@@ -106,6 +107,10 @@ export const coordinatorDetails = pgTable("coordinator_details", {
   yearsOfExperience: integer("yearsOfExperience"),
   type: varchar("type", { length: 20 }),
   accessLvl: varchar("accessLvl", { length: 20 }),
+  location: varchar("location", {length: 200}),
+  successRate: numeric(),
+  repeatCustomers: integer(),
+  totalRevenue: numeric({precision: 100}),
   ...timeStamps,
 });
 

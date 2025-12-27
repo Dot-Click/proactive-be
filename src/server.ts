@@ -61,7 +61,6 @@ const io = createSocketServer(httpServer, corsOptions);
 
 swagger(app);
 prepareProductionStance({ isProduction, app, sessionOptions });
-prepareMigration(isProduction);
 app.use(helmet());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.static("public"));
