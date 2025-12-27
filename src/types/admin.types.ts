@@ -27,6 +27,7 @@ export const createCoordinatorSchema = z.object({
   }, z.array(z.string())),
   certificateLvl: z.string().max(20),
   yearsOfExperience: z.coerce.number(),
+  location: z.string().max(100).optional(),
   type: z.string().max(20),
   accessLvl: z.string().max(20),
   email: z.string().email(),
