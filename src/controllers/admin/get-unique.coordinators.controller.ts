@@ -26,6 +26,7 @@ export const getCoordinatorById = async (req: Request, res: Response) => {
         languages: coordinatorDetails.languages,
         certificateLvl: coordinatorDetails.certificateLvl,
         yearsOfExperience: coordinatorDetails.yearsOfExperience,
+        location: coordinatorDetails.location,
         type: coordinatorDetails.type,
         accessLvl: coordinatorDetails.accessLvl,
         createdAt: coordinatorDetails.createdAt,
