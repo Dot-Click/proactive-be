@@ -3,7 +3,7 @@ import { sendSuccess, sendError } from "@/utils/response.util";
 import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
 import status from "http-status";
 import { database } from "@/configs/connection.config";
-import { payments, trips, discounts } from "@/schema/schema";
+import { payments, trips, discounts, users } from "@/schema/schema";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
 
 /**
@@ -35,10 +35,9 @@ export const getPayments = async (
 
     const db = await database();
 
-    // Get all payments with trip information and discounts using left joins (admin view - no user filter)
+    // Get all payments including trip, discount and user information (admin view - no user filter)
     const paymentsData = await db
       .select({
-        // Payment fields
         id: payments.id,
         userId: payments.userId,
         tripId: payments.tripId,
@@ -58,11 +57,9 @@ export const getPayments = async (
         stripePaymentId: payments.stripePaymentId,
         createdAt: payments.createdAt,
         updatedAt: payments.updatedAt,
-        // Trip fields (can be null)
         tripIdFromTrips: trips.id,
         tripTitle: trips.title,
         tripEndDate: trips.endDate,
-        // Discount fields (can be null)
         discountId: discounts.id,
         discountCode: discounts.discountCode,
         discountDescription: discounts.description,
@@ -71,6 +68,10 @@ export const getPayments = async (
         discountValidTill: discounts.validTill,
         discountStatus: discounts.status,
         discountMaxUsage: discounts.maxUsage,
+        userEmail: users.email,
+        userFirstName: users.firstName,
+        userLastName: users.lastName,
+        userNickName: users.nickName,
       })
       .from(payments)
       .leftJoin(trips, eq(payments.tripId, trips.id))
@@ -81,7 +82,8 @@ export const getPayments = async (
           eq(discounts.status, "active"),
           gte(discounts.validTill, sql`NOW()`)
         )
-      );
+      )
+      .leftJoin(users, eq(payments.userId, users.id));
 
     // Get all active discounts for trips (separate query)
     const allDiscounts = await db
@@ -118,6 +120,13 @@ export const getPayments = async (
       const formattedPayment = {
         id: payment.id,
         userId: payment.userId,
+        user: {
+          id: payment.userId,
+          email: payment.userEmail,
+          firstName: payment.userFirstName,
+          lastName: payment.userLastName,
+          nickName: payment.userNickName,
+        },
         tripId: payment.tripId,
         amount: payment.amount,
         status: payment.status,
@@ -174,15 +183,15 @@ export const getPayments = async (
             end_date: payment.tripEndDate,
             discount: payment.discountId
               ? {
-                  id: payment.discountId,
-                  code: payment.discountCode,
-                  description: payment.discountDescription,
-                  percentage: payment.discountPercentage,
-                  amount: payment.discountAmount,
-                  validTill: payment.discountValidTill,
-                  status: payment.discountStatus,
-                  maxUsage: payment.discountMaxUsage,
-                }
+                id: payment.discountId,
+                code: payment.discountCode,
+                description: payment.discountDescription,
+                percentage: payment.discountPercentage,
+                amount: payment.discountAmount,
+                validTill: payment.discountValidTill,
+                status: payment.discountStatus,
+                maxUsage: payment.discountMaxUsage,
+              }
               : null,
           },
         });
