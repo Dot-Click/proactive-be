@@ -1,5 +1,5 @@
 import { database } from "@/configs/connection.config";
-import { applications } from "@/schema/schema";
+import { applications, users, trips } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { eq } from "drizzle-orm";
 import { Request, Response } from "express";
@@ -66,9 +66,28 @@ import { Request, Response } from "express";
 export const getAllApplications = async (_req: Request, res: Response): Promise<Response> => {
   try {
     const db = await database();
-    const application = await db.select().from(applications)
+    const application = await db
+      .select({
+        id: applications.id,
+        userId: applications.userId,
+        tripId: applications.tripId,
+        shortIntro: applications.shortIntro,
+        dietaryRestrictions: applications.dietaryRestrictions,
+        introVideo: applications.introVideo,
+        status: applications.status,
+        createdAt: applications.createdAt,
+        updatedAt: applications.updatedAt,
+        userFirstName: users.firstName,
+        userLastName: users.lastName,
+        userEmail: users.email,
+        tripTitle: trips.title,
+      })
+      .from(applications)
+      .leftJoin(users, eq(applications.userId, users.id))
+      .leftJoin(trips, eq(applications.tripId, trips.id));
+
     return sendSuccess(res, "Applications fetched successfully", application);
-} catch (error) {
+  } catch (error) {
     console.error(error);
     return sendError(res, "Failed to get all applications", 500);
   }
