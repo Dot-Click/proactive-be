@@ -28,6 +28,7 @@ export const getTrips = async (_: Request, res: Response): Promise<Response> => 
           endDate: trip.endDate,
           status: trip.status,
           approvalStatus: trip.approvalStatus,
+          coverImage: trip.coverImage,
         };
       });
       return sendSuccess(res, "Trips fetched successfully", { trips: mappedTripsData }, status.OK);
