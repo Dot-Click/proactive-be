@@ -94,7 +94,6 @@ export const createTripSchema = z.object({
         parsed = [];
       }
     }
-    // If items are strings, convert to object shape with empty description/img
     parsed = parsed.map((item: any) => {
       if (typeof item === 'string') {
         return { title: item, description: '', img: '' };

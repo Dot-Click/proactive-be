@@ -284,20 +284,23 @@ export const createTrip = async (
         await db.insert(tripCoordinators).values(coordinatorValues);
       }
     }
+    if (typeof id === 'string' && id.trim()) {
+      try {
+        await createNotification({
+          userId: id.trim(),
+          title: "Trip created",
+          description: "Trip created successfully",
+          type: "trip",
+        });
+        console.log("Notification sent to user:", id);
+      } catch (notificationError: any) {
+        console.error("Notification failed (trip still created):", notificationError.message);
+      }
+    } else {
+      console.warn("No valid user ID for notification:", id);
+    }
 
-    await createNotification({
-      userId: id,
-      title: "Trip created",
-      description: "Trip created successfully",
-      type: "trip",
-    });
-
-    return sendSuccess(
-      res,
-      "Trip created successfully",
-      { trip },
-      status.CREATED
-    );
+    return sendSuccess(res, "Trip created successfully", { trip }, status.CREATED);
   } catch (error: any) {
     console.error("Create trip error:", error);
 
