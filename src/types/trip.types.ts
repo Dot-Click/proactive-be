@@ -25,7 +25,7 @@ export const createTripSchema = z.object({
   coverImage: z
     .string()
     .url("Cover image must be a valid URL")
-    .max(500, "Cover image URL must be less than 500 characters")
+    .max(2000, "Cover image URL must be less than 2000 characters")
     .optional(),
   type: z
     .string()
@@ -38,28 +38,25 @@ export const createTripSchema = z.object({
   mapCoordinates: z
     .string()
     .optional(),
-  startDate: z.preprocess(
-    (val) => {
-      if (val instanceof Date) return val;
-      if (typeof val === "string") {
-        const date = new Date(val);
-        return isNaN(date.getTime()) ? val : date;
-      }
-      return val;
-    },
-    z.date({ message: "Invalid date" })
-  ),
-  endDate: z.preprocess(
-    (val) => {
-      if (val instanceof Date) return val;
-      if (typeof val === "string") {
-        const date = new Date(val);
-        return isNaN(date.getTime()) ? val : date;
-      }
-      return val;
-    },
-    z.date({ message: "Invalid date" })
-  ),
+  startDate: z.preprocess((val) => {
+    if (typeof val === "string") {
+      const s = val.trim();
+      if (!s) return val;
+      const d = new Date(s);
+      return isNaN(d.getTime()) ? val : d;
+    }
+    return val;
+  }, z.date({ invalid_type_error: "Invalid date", required_error: "Start date is required" })),
+
+  endDate: z.preprocess((val) => {
+    if (typeof val === "string") {
+      const s = val.trim();
+      if (!s) return val;
+      const d = new Date(s);
+      return isNaN(d.getTime()) ? val : d;
+    }
+    return val;
+  }, z.date({ invalid_type_error: "Invalid date", required_error: "End date is required" })),
   duration: z
     .string()
     .min(1, "Duration is required")
@@ -88,34 +85,49 @@ export const createTripSchema = z.object({
     .max(100, "Weekend timetable must be less than 100 characters")
     .optional(),
   included: z.any().transform((val: any) => {
-      if (Array.isArray(val)) return val;
-      if (typeof val === 'string') {
-          try {
-              return JSON.parse(val);
-          } catch {
-              return [];
-          }
+    let parsed = [] as any[];
+    if (Array.isArray(val)) parsed = val;
+    else if (typeof val === 'string') {
+      try {
+        parsed = JSON.parse(val);
+      } catch {
+        parsed = [];
       }
-      return [];
-  }).pipe(z.array(z.object({ 
-      title: z.string().min(5).max(255),
-      description: z.string().min(5).max(255),
-      img: z.string().min(5).max(255)
+    }
+    // If items are strings, convert to object shape with empty description/img
+    parsed = parsed.map((item: any) => {
+      if (typeof item === 'string') {
+        return { title: item, description: '', img: '' };
+      }
+      return item;
+    });
+    return parsed;
+  }).pipe(z.array(z.object({
+    title: z.string().min(1).max(255),
+    description: z.string().max(1000).optional(),
+    img: z.string().max(2000).optional()
   }))),
   notIncluded: z.any().transform((val: any) => {
-      if (Array.isArray(val)) return val;
-      if (typeof val === 'string') {
-          try {
-              return JSON.parse(val);
-          } catch {
-              return [];
-          }
+    let parsed = [] as any[];
+    if (Array.isArray(val)) parsed = val;
+    else if (typeof val === 'string') {
+      try {
+        parsed = JSON.parse(val);
+      } catch {
+        parsed = [];
       }
-      return [];
-  }).pipe(z.array(z.object({ 
-      title: z.string().min(5).max(255),
-      description: z.string().min(5).max(255),
-      img: z.string().min(5).max(255)
+    }
+    parsed = parsed.map((item: any) => {
+      if (typeof item === 'string') {
+        return { title: item, description: '', img: '' };
+      }
+      return item;
+    });
+    return parsed;
+  }).pipe(z.array(z.object({
+    title: z.string().min(1).max(255),
+    description: z.string().max(1000).optional(),
+    img: z.string().max(2000).optional()
   }))),
   shortDesc: z
     .string()
@@ -164,14 +176,14 @@ export const createTripSchema = z.object({
   discounts: z.any().transform((val: any) => {
     if (Array.isArray(val)) return val;
     if (typeof val === 'string') {
-        try {
-            return JSON.parse(val);
-        } catch {
-            return [];
-        }
+      try {
+        return JSON.parse(val);
+      } catch {
+        return [];
+      }
     }
     return [];
-}).pipe(z.array(discountSchema))
+  }).pipe(z.array(discountSchema))
     .optional(),
 })
 
@@ -301,19 +313,19 @@ export const updateTripSchema = z.object({
     .optional(),
   coordinators: z.any().transform((val: any) => {
     try {
-        return JSON.parse(val);
+      return JSON.parse(val);
     } catch {
-        return Array.isArray(val) ? val : [];
+      return Array.isArray(val) ? val : [];
     }
   }).pipe(z.array(z.string())),
   discounts: z.any().transform((val: any) => {
     if (Array.isArray(val)) return val;
     if (typeof val === 'string') {
-        try {
-            return JSON.parse(val);
-        } catch {
-            return [];
-        }
+      try {
+        return JSON.parse(val);
+      } catch {
+        return [];
+      }
     }
     return [];
   }).pipe(z.array(discountSchema))

@@ -154,8 +154,29 @@ export const createTrip = async (
       ...(id && typeof id === "string" ? [id] : []),
       ...validCoordinatorIds,
     ].filter((cid, index, self) => cid && self.indexOf(cid) === index);
-    
-    
+
+
+    // Normalize date fields that come from multipart/form-data as strings
+    if (payload.startDate && typeof payload.startDate === "string") {
+      const s = payload.startDate.trim();
+      if (s) {
+        const d = new Date(s);
+        payload.startDate = isNaN(d.getTime()) ? payload.startDate : d;
+      } else {
+        payload.startDate = undefined;
+      }
+    }
+
+    if (payload.endDate && typeof payload.endDate === "string") {
+      const s = payload.endDate.trim();
+      if (s) {
+        const d = new Date(s);
+        payload.endDate = isNaN(d.getTime()) ? payload.endDate : d;
+      } else {
+        payload.endDate = undefined;
+      }
+    }
+
     const validationResult = createTripSchema.safeParse(payload);
     if (!validationResult.success) {
       const errors: Record<string, string[]> = {};
@@ -258,7 +279,7 @@ export const createTrip = async (
           };
         })
         .filter((val) => val !== null) as Array<{ id: string; tripId: string; userId: string }>;
-      
+
       if (coordinatorValues.length > 0) {
         await db.insert(tripCoordinators).values(coordinatorValues);
       }
