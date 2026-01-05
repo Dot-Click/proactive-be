@@ -48,7 +48,7 @@ tripRoutes.get("/", authenticate, getTrips);
  *     summary: Get a trip by ID
  *     description: Get a trip by ID
  */
-tripRoutes.get("/:id", authenticate, authorize("admin", "coordinator"), getTripById);
+tripRoutes.get("/:id", authenticate, authorize("admin", "coordinator", "user"), getTripById);
 
 /**
  * @swagger
