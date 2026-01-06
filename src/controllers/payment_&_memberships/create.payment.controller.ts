@@ -67,7 +67,7 @@ export const createPayment = async (
       payment_method_id,
       amount,
       currency = "eur",
-      return_url,
+      // return_url,
       trip_id,
     } = req.body;
 
@@ -95,14 +95,26 @@ export const createPayment = async (
     });
 
     // Create payment intent
+    // const paymentIntent = await stripe.paymentIntents.create({
+    //   amount: Math.round(amount * 100), // Convert to cents
+    //   currency: currency.toLowerCase(),
+    //   customer: customer.id,
+    //   payment_method: payment_method_id,
+    //   confirmation_method: "manual",
+    //   confirm: true,
+    //   return_url,
+    // });
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convert to cents
+      amount: Math.round(amount * 100),
       currency: currency.toLowerCase(),
       customer: customer.id,
       payment_method: payment_method_id,
-      confirmation_method: "manual",
+      automatic_payment_methods: {
+        enabled: true,
+        allow_redirects: 'never'
+      },
       confirm: true,
-      return_url,
+      // return_url,
     });
 
     const db = await database();

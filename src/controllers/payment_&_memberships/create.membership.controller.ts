@@ -74,7 +74,7 @@ export const createMembership = async (
       payment_method_id,
       amount,
       currency = "eur",
-      return_url,
+      // return_url,
       membership_type,
     } = req.body;
     console.log("req.body", req.body);
@@ -115,9 +115,12 @@ export const createMembership = async (
       currency: currency.toLowerCase(),
       customer: customer.id,
       payment_method: payment_method_id,
-      confirmation_method: "manual",
+      automatic_payment_methods: {
+        enabled: true,
+        allow_redirects: 'never' 
+      },
       confirm: true,
-      return_url,
+      // return_url,
     });
 
     const db = await database();
