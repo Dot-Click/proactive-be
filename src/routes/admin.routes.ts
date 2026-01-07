@@ -1,3 +1,4 @@
+import { toggleCoordinatorStatus } from "@/controllers/admin/block.coordinator.controller";
 import { createCoordinator } from "@/controllers/admin/create.coordinator.controller";
 import { dashboardlogic } from "@/controllers/admin/dashboard.controller";
 import { deleteCoordinator } from "@/controllers/admin/delete.coordinator.controller";
@@ -249,6 +250,7 @@ adminRoutes.get("/settings", authenticate, getSettings);
  *     description: Update settings
  */
 adminRoutes.patch("/settings", authenticate, authorize("admin"), updateSettings);
+adminRoutes.patch("/coordinator/:coordinatorId", authenticate, authorize("admin"), toggleCoordinatorStatus);
 
 /**
  * @swagger
@@ -259,5 +261,5 @@ adminRoutes.patch("/settings", authenticate, authorize("admin"), updateSettings)
  *    summary: get admin dashboard details
  *    description: admin dashboard creds
  */
-adminRoutes.get("/dashboard", authenticate,authorize("admin"), dashboardlogic)
+adminRoutes.get("/dashboard", authenticate, authorize("admin"), dashboardlogic)
 export default adminRoutes;

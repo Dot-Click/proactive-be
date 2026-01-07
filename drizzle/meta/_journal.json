@@ -134,6 +134,13 @@
       "when": 1766790109682,
       "tag": "0018_aspiring_goliath",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1767783714956,
+      "tag": "0019_sad_skrulls",
+      "breakpoints": true
     }
   ]
 }

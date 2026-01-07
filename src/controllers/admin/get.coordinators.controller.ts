@@ -80,6 +80,7 @@ export const getCoordinators = async (_req: Request, res: Response) => {
         lastActive: users.lastActive,
         emailVerified: users.emailVerified,
         userCreatedAt: users.createdAt,
+        isActive: coordinatorDetails.isActive
       })
       .from(coordinatorDetails)
       .innerJoin(users, eq(coordinatorDetails.userId, users.id));

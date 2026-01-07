@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { database } from "@/configs/connection.config";
-import { users } from "@/schema/schema";
+import { coordinatorDetails, users } from "@/schema/schema";
 import { verifyPassword } from "@/utils/password.util";
 import { generateAccessToken, generateRefreshToken } from "@/utils/token.util";
 import { sendSuccess, sendError } from "@/utils/response.util";
@@ -115,6 +115,31 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
       return sendError(res, "Invalid email or password", status.UNAUTHORIZED);
     }
 
+    if (user.userRoles === "coordinator") {
+      const coordinator = await db
+        .select({ isActive: coordinatorDetails.isActive })
+        .from(coordinatorDetails)
+        .where(eq(coordinatorDetails.userId, user.id))
+        .limit(1);
+
+      if (!coordinator.length) {
+        return sendError(
+          res,
+          "Coordinator profile not found",
+          status.FORBIDDEN
+        );
+      }
+
+      if (!coordinator[0].isActive) {
+        return sendError(
+          res,
+          "Your coordinator account has been blocked. Please contact support.",
+          status.FORBIDDEN
+        );
+      }
+    }
+
+
     // Check if email is verified - required for login
     // Set REQUIRE_EMAIL_VERIFICATION=false in .env to disable this check
     const requireEmailVerification =
@@ -127,7 +152,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
       );
     }
 
-    await db.update(users).set({lastActive: new Date().toLocaleString()}).where(eq(users.id, user.id))
+    await db.update(users).set({ lastActive: new Date().toLocaleString() }).where(eq(users.id, user.id))
     // Generate tokens
     const accessToken = generateAccessToken({
       userId: user.id,

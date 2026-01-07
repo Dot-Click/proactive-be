@@ -1,0 +1,1 @@
+ALTER TABLE "coordinator_details" ADD COLUMN "isActive" boolean NOT NULL;

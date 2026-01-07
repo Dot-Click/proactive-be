@@ -111,6 +111,7 @@ export const coordinatorDetails = pgTable("coordinator_details", {
   successRate: numeric(),
   repeatCustomers: integer(),
   totalRevenue: numeric({precision: 100}),
+  isActive: boolean("isActive").$defaultFn(() => true).notNull(),
   ...timeStamps,
 });
 
