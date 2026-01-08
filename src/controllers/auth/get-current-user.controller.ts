@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import { database } from "@/configs/connection.config";
-import { coordinatorDetails, users } from "@/schema/schema";
+import { coordinatorDetails, payments, users } from "@/schema/schema";
 import { sendSuccess, sendError } from "@/utils/response.util";
 import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
 import status from "http-status";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 /**
  * @swagger
@@ -111,6 +111,21 @@ export const getCurrentUser = async (
 
     const user = userResults[0];
 
+    // Fetch latest payment
+    const latestPayment = await db
+      .select({
+        membershipId: payments.membershipId,
+        membershipAvailable: payments.membershipAvailable,
+        membershipType: payments.membershipType,
+        membershipExpiry: payments.membershipExpiry,
+        discountAvailable: payments.discountAvailable,
+        status: payments.status,
+      })
+      .from(payments)
+      .where(eq(payments.userId, user.id))
+      .orderBy(desc(payments.createdAt))
+      .limit(1);
+
     // Fetch coordinator details if user is a coordinator
     let coordDetails = null;
     if (user.userRoles === "coordinator") {
@@ -119,7 +134,7 @@ export const getCurrentUser = async (
         .from(coordinatorDetails)
         .where(eq(coordinatorDetails.userId, user.id))
         .limit(1);
-      
+
       if (coordDetailsResults.length > 0) {
         coordDetails = coordDetailsResults[0];
       }
@@ -138,6 +153,12 @@ export const getCurrentUser = async (
       role: user.userRoles || "user",
       emailVerified: user.emailVerified || false,
       createdAt: user.createdAt,
+      membershipId: latestPayment[0]?.membershipId || null,
+      discountAvailable: latestPayment[0]?.discountAvailable || false,
+      membershipAvailable: latestPayment[0]?.membershipAvailable || false,
+      membershipType: latestPayment[0]?.membershipType || null,
+      membershipExpiry: latestPayment[0]?.membershipExpiry || null,
+      status: latestPayment[0]?.status || null,
     };
 
     // Add coordinator details if available
