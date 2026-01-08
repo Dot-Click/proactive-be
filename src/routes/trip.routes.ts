@@ -5,6 +5,8 @@ import { upload } from "@/middlewares/multer.middleware";
 import { getTrips } from "@/controllers/trips/get-trips.controller";
 import { getTripById } from "@/controllers/trips/get-unique-tripe.controller";
 import { updateTrip } from "@/controllers/trips/update-trip.controller";
+import { approveTrip } from "@/controllers/trips/Approvetrip.controller";
+import { rejectTrip } from "@/controllers/trips/rejectTrip.controller";
 
 const tripRoutes = Router();
 
@@ -60,4 +62,8 @@ tripRoutes.get("/:id", authenticate, authorize("admin", "coordinator", "user"), 
  *     description: Update a trip by ID
  */
 tripRoutes.patch("/:id", authenticate, authorize("admin", "coordinator"),upload(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'video/mp4', 'video/mov']), updateTrip);
+
+tripRoutes.patch("/trips/:id/approve", authenticate, authorize("admin", "coordinator"), approveTrip);
+tripRoutes.patch("/trips/:id/reject", authenticate, authorize("admin", "coordinator"), rejectTrip);
+
 export default tripRoutes;
