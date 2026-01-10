@@ -25,8 +25,9 @@ export const authenticate = (
 ): void => {
   try {
     const authHeader = req.headers.authorization;
-
+    
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      // need to add supabase get user logic for authHeader absence
       sendError(
         res,
         "Authentication required. Please provide a valid token.",
