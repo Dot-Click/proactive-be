@@ -46,7 +46,7 @@ export const createTripSchema = z.object({
       return isNaN(d.getTime()) ? val : d;
     }
     return val;
-  }, z.date({ invalid_type_error: "Invalid date", required_error: "Start date is required" })),
+  }, z.date({ message: "Start date is required" })),
 
   endDate: z.preprocess((val) => {
     if (typeof val === "string") {
@@ -56,7 +56,7 @@ export const createTripSchema = z.object({
       return isNaN(d.getTime()) ? val : d;
     }
     return val;
-  }, z.date({ invalid_type_error: "Invalid date", required_error: "End date is required" })),
+  }, z.date({ message: "End date is required" })),
   duration: z
     .string()
     .min(1, "Duration is required")

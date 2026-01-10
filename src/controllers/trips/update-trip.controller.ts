@@ -68,7 +68,7 @@ export const updateTrip = async (req: Request, res: Response): Promise<Response>
     const validationResult = updateTripSchema.safeParse(payload);
     if (!validationResult.success) {
       const errors: Record<string, string[]> = {};
-      validationResult.error.errors.forEach((err) => {
+      validationResult.error.issues.forEach((err) => {
         const path = err.path.join(".");
         if (!errors[path]) {
           errors[path] = [];

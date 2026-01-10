@@ -120,7 +120,7 @@ export const register = async (
     const validationResult = registerSchema.safeParse(req.body);
     if (!validationResult.success) {
       const errors: Record<string, string[]> = {};
-      validationResult.error.errors.forEach((err) => {
+      validationResult.error.issues.forEach((err) => {
         const path = err.path.join(".");
         if (!errors[path]) {
           errors[path] = [];

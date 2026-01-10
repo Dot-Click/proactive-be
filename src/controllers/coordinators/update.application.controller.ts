@@ -109,7 +109,7 @@ export const updateApplication = async (
 
     if (!validationResult.success) {
       const errors: Record<string, string[]> = {};
-      validationResult.error.errors.forEach((err) => {
+      validationResult.error.issues.forEach((err) => {
         const path = err.path.join(".");
         if (!errors[path]) {
           errors[path] = [];

@@ -99,7 +99,7 @@ export const submitApplication = async (req: Request, res: Response): Promise<Re
     const validationResult = createApplicationSchema.safeParse(payload);
     if (!validationResult.success) {
       const errors: Record<string, string[]> = {};
-      validationResult.error.errors.forEach((err) => {
+      validationResult.error.issues.forEach((err) => {
         const path = err.path.join(".");
         if (!errors[path]) {
           errors[path] = [];

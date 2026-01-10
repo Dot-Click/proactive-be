@@ -106,7 +106,7 @@ export const sendMessageHandler: SocketEventHandler<SendMessageData> = async ({
     if (!validationResult.success) {
       socket.emit("error", {
         message: "Validation failed",
-        errors: validationResult.error.errors,
+        errors: validationResult.error.issues,
       });
       return;
     }

@@ -78,7 +78,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     const validationResult = loginSchema.safeParse(req.body);
     if (!validationResult.success) {
       const errors: Record<string, string[]> = {};
-      validationResult.error.errors.forEach((err) => {
+      validationResult.error.issues.forEach((err) => {
         const path = err.path.join(".");
         if (!errors[path]) {
           errors[path] = [];
@@ -124,7 +124,6 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
         .limit(1);
 
       if (!coordinator.length) {
-        console.log(coordinator)
         return sendError(
           res,
           "Coordinator profile not found",
