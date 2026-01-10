@@ -77,7 +77,7 @@ export const users = pgTable("users", {
   id: uuid().primaryKey(),
   firstName: varchar("firstName", { length: 100 }),
   provider: varchar("provider", { length: 20 }).default("email"),
-  avatar: varchar("avatar", { length: 255 }),
+  avatar: varchar("avatar", { length: 256 }),
   lastName: varchar("lastName", { length: 100 }),
   nickName: varchar("nickName", { length: 200 }),
   address: text("address"),

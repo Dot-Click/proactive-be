@@ -9,12 +9,12 @@
     "start": "node dist/server.js",
     "dbgenerate": "drizzle-kit generate",
     "dbpush": "drizzle-kit push",
-    "dbmigrate": "drizzle-kit push",
+    "dbmigrate": "drizzle-kit migrate",
     "dbstudio": "drizzle-kit studio --port 5000 --host localhost",
     "dbdrop": "drizzle-kit drop",
     "dbintrospect": "drizzle-kit introspect",
     "swagger": "ts-node ./src/configs/swagger.config.ts",
-    "postbuild": "npm run dbpush"
+    "postbuild": "npm run dbmigrate"
   },
   "license": "ISC",
   "devDependencies": {

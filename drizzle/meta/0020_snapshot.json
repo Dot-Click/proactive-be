@@ -1,5 +1,5 @@
 {
-  "id": "29aad0ea-4049-44c8-9a41-3f5e47aa7565",
+  "id": "42db3565-0aa4-4315-b6a2-7e1991ac5c6a",
   "prevId": "e99a9c6f-4bdd-4200-807b-aec9168cc6ac",
   "version": "7",
   "dialect": "postgresql",
@@ -1749,7 +1749,7 @@
         },
         "avatar": {
           "name": "avatar",
-          "type": "varchar(255)",
+          "type": "varchar(256)",
           "primaryKey": false,
           "notNull": false
         },
