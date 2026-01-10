@@ -9,20 +9,87 @@ import {
   trips,
 } from "./schema";
 import { hashPassword } from "@/utils/password.util";
+import { env } from "@/utils/env.utils";
+import { sql } from "drizzle-orm";
 
 const seed = async () => {
   try {
     console.log("🌱 Starting database seeding...");
+    
+    // Check if CONNECTION_URL is set
+    if (!env.CONNECTION_URL) {
+      throw new Error(
+        "❌ CONNECTION_URL environment variable is not set!\n" +
+        "Please ensure your .env file contains a valid CONNECTION_URL.\n" +
+        "Example: CONNECTION_URL=postgresql://user:password@host/database"
+      );
+    }
+
+    console.log("🔌 Connecting to database...");
     const db = await database();
+    
+    // Test database connection with a simple query
+    try {
+      console.log("🧪 Testing database connection...");
+      await db.execute(sql`SELECT 1`);
+      console.log("✅ Database connection successful!");
+    } catch (connectionError: any) {
+      const errorMessage = connectionError?.message || connectionError?.toString() || "Unknown error";
+      const isNetworkError = errorMessage.includes("fetch failed") || 
+                             errorMessage.includes("ECONNREFUSED") ||
+                             errorMessage.includes("ENOTFOUND") ||
+                             errorMessage.includes("ETIMEDOUT");
+      
+      if (isNetworkError) {
+        throw new Error(
+          "❌ Database connection failed!\n\n" +
+          "Possible issues:\n" +
+          "1. Network connectivity - Check your internet connection\n" +
+          "2. Database URL - Verify your CONNECTION_URL is correct\n" +
+          "3. Database status - Check if your Supabase database is active\n" +
+          "4. Firewall/VPN - Ensure your network allows connections to Supabase\n" +
+          "5. Connection string - Ensure you're using the direct connection string (not pooler)\n\n" +
+          `Error details: ${errorMessage}\n` +
+          `Connection URL format: ${env.CONNECTION_URL.substring(0, 20)}...`
+        );
+      }
+      throw connectionError;
+    }
 
     // Clear existing data (in reverse order of dependencies)
     console.log("🧹 Clearing existing data...");
-    await db.delete(messages);
-    await db.delete(chatParticipants);
-    await db.delete(chats);
-    await db.delete(faqs);
-    await db.delete(categories);
-    await db.delete(users);
+    try {
+      await db.delete(messages);
+      await db.delete(chatParticipants);
+      await db.delete(chats);
+      await db.delete(faqs);
+      await db.delete(categories);
+      await db.delete(users);
+    } catch (deleteError: any) {
+      const errorMessage = deleteError?.message || deleteError?.toString() || "Unknown error";
+      const isNetworkError = errorMessage.includes("fetch failed") || 
+                             errorMessage.includes("ECONNREFUSED") ||
+                             errorMessage.includes("ENOTFOUND") ||
+                             errorMessage.includes("ETIMEDOUT") ||
+                             deleteError?.cause?.message?.includes("fetch failed");
+      
+      if (isNetworkError) {
+        throw new Error(
+          "❌ Database connection failed during data clearing!\n\n" +
+          "Possible issues:\n" +
+          "1. Network connectivity - Check your internet connection\n" +
+          "2. Database URL - Verify your CONNECTION_URL is correct and accessible\n" +
+          "3. Database status - Check if your Supabase database is active\n" +
+          "   → Go to https://supabase.com/dashboard and ensure your project is running\n" +
+          "4. Firewall/VPN - Ensure your network allows connections to Supabase\n" +
+          "5. Connection string format - Ensure it starts with 'postgresql://' or 'postgres://'\n" +
+          "6. Use direct connection - Use the direct connection string, not the pooler URL\n\n" +
+          `Error details: ${errorMessage}\n` +
+          (deleteError?.cause?.message ? `Cause: ${deleteError.cause.message}\n` : "")
+        );
+      }
+      throw deleteError;
+    }
 
     // Seed Users
     console.log("👥 Seeding users...");
@@ -276,8 +343,28 @@ const seed = async () => {
     console.log(`   - Messages: 5`);
     console.log(`   - Trips: 2`);
     console.log("\n🔑 Default password for all users: Password123!");
-  } catch (error) {
-    console.error("❌ Error seeding database:", error);
+  } catch (error: any) {
+    console.error("\n❌ Error seeding database:");
+    
+    // Provide helpful error messages
+    if (error?.message) {
+      console.error(error.message);
+    } else {
+      console.error(error);
+    }
+    
+    // Additional diagnostics
+    if (error?.cause) {
+      console.error("\n📋 Additional error details:", error.cause);
+    }
+    
+    console.error("\n💡 Troubleshooting tips:");
+    console.error("   1. Verify CONNECTION_URL in your .env file");
+    console.error("   2. Check if your Supabase database is active");
+    console.error("   3. Ensure your network allows connections to Supabase");
+    console.error("   4. Use the direct connection string (not pooler) from Supabase dashboard");
+    console.error("   5. Try running: npm run dbpush (to ensure schema is up to date)");
+    
     throw error;
   }
 };

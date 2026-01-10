@@ -7,6 +7,7 @@ import { sendSuccess, sendError } from "@/utils/response.util";
 import { loginSchema } from "@/types/auth.types";
 import status from "http-status";
 import { eq } from "drizzle-orm";
+import { supabase } from "@/configs/supabase.config";
 
 /**
  * @swagger
@@ -123,6 +124,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
         .limit(1);
 
       if (!coordinator.length) {
+        console.log(coordinator)
         return sendError(
           res,
           "Coordinator profile not found",
@@ -195,5 +197,42 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
       "An error occurred during login",
       status.INTERNAL_SERVER_ERROR
     );
+  }
+};
+
+export const googleAuth = async (req: Request, res: Response) => {
+  try {
+    
+    const code = req.query.code as string | undefined;
+    if (code) {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+  
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+  
+      return res.json({
+        user: data.user,
+        session: data.session,
+      });
+    }
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: process.env.GOOGLE_REDIRECT_URL!, // same endpoint
+        queryParams:{
+          prompt: "select_account",
+          access_type: "offline",
+        }
+      },
+    });
+  
+    if (error || !data?.url) {
+      return res.status(500).json({ error: "Google login failed" });
+    }
+  
+    return sendSuccess(res, "google login successfull", data, status.OK)
+  } catch (error: any) {
+   return sendError(res, error?.message,status.INTERNAL_SERVER_ERROR ) 
   }
 };

@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { register } from "@/controllers/auth/register.controller";
-import { login } from "@/controllers/auth/login.controller";
+import { googleSignup, register } from "@/controllers/auth/register.controller";
+import { googleAuth, login } from "@/controllers/auth/login.controller";
 import { logout } from "@/controllers/auth/logout.controller";
 import { refreshToken } from "@/controllers/auth/refresh-token.controller";
 import { getCurrentUser } from "@/controllers/auth/get-current-user.controller";
@@ -135,5 +135,27 @@ authRoutes.post("/reset-password", resetPassword);
  *       - bearerAuth: []
  */
 authRoutes.post("/change-password", authenticate, changePassword);
+
+/**
+ * @swagger
+ * /api/auth/google-signin:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Google signin
+ *     description: Signin user with Google
+ */
+authRoutes.post("/google-signin", googleAuth);
+
+/**
+ * @swagger
+ * /api/auth/google-signup:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Google signup
+ *     description: Signup user with Google
+ */
+authRoutes.post("/google-signup", googleSignup);
 
 export default authRoutes;

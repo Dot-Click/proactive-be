@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { database } from "@/configs/connection.config";
 import { users, verification } from "@/schema/schema";
-import { hashPassword } from "@/utils/password.util";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -13,6 +12,8 @@ import { registerSchema } from "@/types/auth.types";
 import status from "http-status";
 import { eq } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
+import { supabase } from "@/configs/supabase.config";
+import { hashPassword } from "@/utils/password.util";
 
 /**
  * @swagger
@@ -177,6 +178,7 @@ export const register = async (
         emailVerified: false,
         firstName: FirstName || undefined,
         lastName: LastName || undefined,
+        avatar: `https://ui-avatars.com/api/?name=${FirstName}+${LastName}`,
         nickName: NickName || undefined,
         address: Address || undefined,
         phoneNumber: PhoneNumber || undefined,
@@ -275,5 +277,111 @@ export const register = async (
       "An error occurred during registration",
       status.INTERNAL_SERVER_ERROR
     );
+  }
+};
+
+/**
+ * @swagger
+ * /api/auth/google-signup:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Sign up with Google using Supabase OAuth
+ *     description: |
+ *       Creates a user account after Supabase handles Google OAuth flow.
+ *       Frontend should use Supabase client to authenticate, then send the session token here.
+ *       Supabase handles all OAuth redirects and token exchanges.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - session_token
+ *             properties:
+ *               session_token:
+ *                 type: string
+ *                 description: Supabase session access token (from session.access_token after OAuth)
+ *                 example: eyJhbGciOiJSUzI1NiIsImtpZCI6Ij...
+ *     responses:
+ *       201:
+ *         description: User successfully registered with Google
+ *       200:
+ *         description: User already exists, logged in successfully
+ *       400:
+ *         description: Missing session token
+ *       401:
+ *         description: Invalid or expired session token
+ *       500:
+ *         description: Internal server error
+ */
+export const googleSignup = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const code = req.query.code as string | undefined;
+
+    if (code) {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+      if (error || !data.user || !data.user.email) {
+        return sendError(res, "OAuth failed", status.BAD_REQUEST);
+      }
+
+      const db = await database();
+
+      const existingUser = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, data.user.email))
+        .limit(1);
+
+      if (existingUser.length) {
+        // optional: sign user out from Supabase
+        await supabase.auth.signOut();
+
+        return sendError(
+          res,
+          "User already exists. Please login instead.",
+          status.CONFLICT
+        );
+      }
+
+      const newUser = await db.insert(users).values({
+        id: createId(),
+        email: data.user.email,
+        password: "",
+        firstName: data.user.user_metadata?.full_name?.split(" ")[0],
+        lastName: data.user.user_metadata?.full_name?.split(" ").slice(1).join(" "),
+        avatar: data.user.user_metadata?.avatar_url,
+        provider: "google",
+        emailVerified: true,
+      }).returning();
+
+      return sendSuccess(
+        res,
+        "Google signup successful",
+        newUser[0],
+        status.CREATED
+      );
+    }
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: process.env.GOOGLE_REDIRECT_URL!,
+        queryParams: {
+          prompt: "select_account",
+          access_type: "offline",
+        },
+      },
+    });
+
+    if (error || !data?.url) {
+      return sendError(res, "Google signup failed", status.INTERNAL_SERVER_ERROR);
+    }
+
+    return sendSuccess(res, "sucessfully registered", data, status.OK);
+  } catch (err: any) {
+    return sendError(res, err.message, status.INTERNAL_SERVER_ERROR);
   }
 };
