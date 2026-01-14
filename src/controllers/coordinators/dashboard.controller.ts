@@ -1,6 +1,6 @@
 import { database } from "@/configs/connection.config";
 import { sendError, sendSuccess } from "@/utils/response.util";
-import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
+import "@/middlewares/auth.middleware";
 import { Request, Response } from "express";
 import status from "http-status";
 import { sql, eq } from "drizzle-orm";

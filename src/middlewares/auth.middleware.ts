@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken, TokenPayload } from "@/utils/token.util";
 import { sendError } from "@/utils/response.util";
+import { supabase } from "@/configs/supabase.config";
+import { users } from "@/schema/schema";
 import status from "http-status";
+import { database } from "@/configs/connection.config";
+import { eq } from "drizzle-orm";
 
 /**
  * Extend Express Request to include user information
@@ -18,45 +22,48 @@ declare global {
  * Middleware to authenticate requests using JWT token
  * Expects token in Authorization header as "Bearer <token>"
  */
-export const authenticate = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
+export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      // need to add supabase get user logic for authHeader absence
-      sendError(
-        res,
-        "Authentication required. Please provide a valid token.",
-        status.UNAUTHORIZED
-      );
-      return;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return sendError(res, "Unauthorized", status.UNAUTHORIZED);
     }
 
-    const token = authHeader.substring(7); // Remove "Bearer " prefix
+    const token = authHeader.replace("Bearer ", "");
+    try {
+      const localToken = verifyToken(token);
+      req.user = localToken;
+      return next();
+    } catch {}
 
-    if (!token) {
-      sendError(
-        res,
-        "Authentication required. Please provide a valid token.",
-        status.UNAUTHORIZED
-      );
-      return;
+    // If local JWT fails, try Supabase token
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      return sendError(res, "Invalid token", status.UNAUTHORIZED);
     }
 
-    // Verify and decode token
-    const decoded = verifyToken(token);
-    req.user = decoded;
+    const db = await database()
+    let dbUser = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, data.user.email!))
+    .limit(1)
+    .execute();
+
+
+    if (!dbUser || dbUser.length === 0  ) {
+      return sendError(res, "Access Denied, User not found", status.NOT_FOUND);
+    }
+    req.user = {
+      userId: dbUser[0].id,
+      role: dbUser[0].userRoles!,
+      email: data.user.email!,
+    };
+
     next();
-  } catch (error) {
-    sendError(
-      res,
-      "Invalid or expired token. Please login again.",
-      status.UNAUTHORIZED
-    );
+  } catch (err) {
+    console.log(err);
+    sendError(res, "Unauthorized", status.UNAUTHORIZED);
   }
 };
 

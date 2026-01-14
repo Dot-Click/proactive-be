@@ -316,59 +316,12 @@ export const register = async (
  *       500:
  *         description: Internal server error
  */
-export const googleSignup = async (req: Request, res: Response): Promise<Response> => {
+export const googleSignup = async (_req: Request, res: Response) => {
   try {
-    const code = req.query.code as string | undefined;
-
-    if (code) {
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-      if (error || !data.user || !data.user.email) {
-        return sendError(res, "OAuth failed", status.BAD_REQUEST);
-      }
-
-      const db = await database();
-
-      const existingUser = await db
-        .select()
-        .from(users)
-        .where(eq(users.email, data.user.email))
-        .limit(1);
-
-      if (existingUser.length) {
-        // optional: sign user out from Supabase
-        await supabase.auth.signOut();
-
-        return sendError(
-          res,
-          "User already exists. Please login instead.",
-          status.CONFLICT
-        );
-      }
-
-      const newUser = await db.insert(users).values({
-        id: createId(),
-        email: data.user.email,
-        password: "",
-        firstName: data.user.user_metadata?.full_name?.split(" ")[0],
-        lastName: data.user.user_metadata?.full_name?.split(" ").slice(1).join(" "),
-        avatar: data.user.user_metadata?.avatar_url,
-        provider: "google",
-        emailVerified: true,
-      }).returning();
-
-      return sendSuccess(
-        res,
-        "Google signup successful",
-        newUser[0],
-        status.CREATED
-      );
-    }
-
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: process.env.GOOGLE_REDIRECT_URL!,
+        redirectTo: `${process.env.BACKEND_DOMAIN}/api/auth/google-callback`,
         queryParams: {
           prompt: "select_account",
           access_type: "offline",
@@ -376,11 +329,107 @@ export const googleSignup = async (req: Request, res: Response): Promise<Respons
       },
     });
 
-    if (error || !data?.url) {
-      return sendError(res, "Google signup failed", status.INTERNAL_SERVER_ERROR);
+    if (error || !data.url) {
+      return sendError(res, "Failed to generate Google OAuth URL", status.INTERNAL_SERVER_ERROR);
     }
 
-    return sendSuccess(res, "sucessfully registered", data, status.OK);
+    return sendSuccess(res, "Google OAuth URL generated", { url: data.url }, status.OK);
+  } catch (err: any) {
+    return sendError(res, err.message, status.INTERNAL_SERVER_ERROR);
+  }
+};
+
+/**
+ * @swagger
+ * /api/auth/google-callback:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Sign up with Google using Supabase OAuth callback
+ *     description: |
+ *       Creates a user account after Supabase handles Google OAuth flow.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - access_token
+ *             properties:
+ *               access_token:
+ *                 type: string
+ *                 description: Supabase access token (from session.access_token after OAuth)
+ *                 example: eyJhbGciOiJSUzI1NiIsImtpZCI6Ij...
+ *     responses:
+ *       201:
+ *         description: User successfully registered with Google
+ *       200:
+ *         description: User already exists, logged in successfully
+ *       400:
+ *         description: Missing access token
+ *       401:
+ *         description: Invalid or expired access token
+ *       500:
+ *         description: Internal server error
+ */
+
+export const verifyGoogleToken = async (_req:Request, res: Response) => {
+  try {
+   return res.status(201)
+  } 
+  catch(e){
+    console.log(e)
+    return sendError(res, "Internal server error",status.INTERNAL_SERVER_ERROR)
+  }
+}
+export const googleSignupCallback = async (req: Request, res: Response) => {
+  try {
+    const token = req.query.code as string;
+    if (!token) return sendError(res, "Missing access token", status.BAD_REQUEST);
+
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user || !data.user.email) {
+      return sendError(res, "Invalid or expired token", status.UNAUTHORIZED);
+    }
+
+    const db = await database();
+
+    // Check if user already exists
+    const existingUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, data.user.email))
+      .limit(1);
+
+    if (existingUser.length) {
+      return sendSuccess(res, "User already exists", existingUser[0], status.OK);
+    }
+
+    const fullName = data.user.user_metadata.full_name || "";
+    const [firstName, ...lastParts] = fullName.split(" ");
+    const lastName = lastParts.join(" ") || null;
+
+    // Create user in DB
+    const newUser = await db.insert(users).values({
+      id: createId(),
+      email: data.user.email,
+      firstName,
+      lastName,
+      nickName: firstName,
+      avatar: data.user.user_metadata.avatar_url || data.user.user_metadata.picture || null,
+      provider: data.user.app_metadata.provider || "google",
+      password: "", // Supabase handles auth
+      emailVerified: data.user.user_metadata.email_verified || false,
+      userRoles: "user",
+      phoneNumber: data.user.user_metadata.phone || null,
+      gender: null,
+      dob: null,
+      address: null,
+      lastActive: new Date().toISOString(),
+    }).returning();
+
+    return sendSuccess(res, "User registered successfully", newUser, status.CREATED);
   } catch (err: any) {
     return sendError(res, err.message, status.INTERNAL_SERVER_ERROR);
   }

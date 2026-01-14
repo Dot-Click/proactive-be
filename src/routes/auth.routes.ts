@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { googleSignup, register } from "@/controllers/auth/register.controller";
+import { googleSignupCallback,googleSignup, register } from "@/controllers/auth/register.controller";
 import { googleAuth, login } from "@/controllers/auth/login.controller";
 import { logout } from "@/controllers/auth/logout.controller";
 import { refreshToken } from "@/controllers/auth/refresh-token.controller";
@@ -158,4 +158,19 @@ authRoutes.post("/google-signin", googleAuth);
  */
 authRoutes.post("/google-signup", googleSignup);
 
+/**
+ * @swagger
+ * /api/auth/google-callback:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Google callback
+ *     description: Callback for Google signup
+ *     queryParams:
+ *       - name: code
+ *         description: access_token after sucesssfull verification
+ *         required: true
+ *         type: string
+ */
+authRoutes.get("/google-callback", googleSignupCallback);
 export default authRoutes;

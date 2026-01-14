@@ -201,37 +201,54 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
 
 export const googleAuth = async (req: Request, res: Response) => {
   try {
-    
     const code = req.query.code as string | undefined;
+
     if (code) {
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-  
-      if (error) {
-        return res.status(400).json({ error: error.message });
+      if (error || !data.user) {
+        return res.status(400).json({ error: error?.message || "Auth failed" });
       }
-  
+
+      // ✅ CHECK USER IN YOUR DATABASE
+      const { data: dbUser, error: dbError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("email", data.user.email)
+        .single();
+
+      if (dbError || !dbUser) {
+        // optional: revoke session
+        await supabase.auth.signOut();
+        return res.status(403).json({
+          error: "User not registered. Access denied.",
+        });
+      }
+
+      // ✅ user exists → allow access
       return res.json({
         user: data.user,
         session: data.session,
       });
     }
+
+    // start Google OAuth
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: process.env.GOOGLE_REDIRECT_URL!, // same endpoint
-        queryParams:{
+        redirectTo: process.env.GOOGLE_REDIRECT_URL!,
+        queryParams: {
           prompt: "select_account",
           access_type: "offline",
-        }
+        },
       },
     });
-  
+
     if (error || !data?.url) {
       return res.status(500).json({ error: "Google login failed" });
     }
-  
-    return sendSuccess(res, "google login successfull", data, status.OK)
+
+    return sendSuccess(res, "google login successful", data, status.OK);
   } catch (error: any) {
-   return sendError(res, error?.message,status.INTERNAL_SERVER_ERROR ) 
+    return sendError(res, error?.message, status.INTERNAL_SERVER_ERROR);
   }
 };
