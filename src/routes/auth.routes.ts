@@ -161,16 +161,23 @@ authRoutes.post("/google-signup", googleSignup);
 /**
  * @swagger
  * /api/auth/google-callback:
- *   post:
+ *   get:
  *     tags:
  *       - Authentication
  *     summary: Google callback
  *     description: Callback for Google signup
- *     queryParams:
- *       - name: code
- *         description: access_token after sucesssfull verification
+ *     parameters:
+ *       - in: query
+ *         name: code
  *         required: true
- *         type: string
+ *         schema:
+ *           type: string
+ *         description: Authorization code returned by Google after successful login
+ *     responses:
+ *       200:
+ *         description: Google authentication successful
+ *       400:
+ *         description: Invalid or missing authorization code
  */
 authRoutes.get("/google-callback", googleSignupCallback);
 export default authRoutes;
