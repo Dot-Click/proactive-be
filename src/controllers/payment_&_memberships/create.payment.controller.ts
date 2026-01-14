@@ -5,6 +5,8 @@ import status from "http-status";
 import { database } from "@/configs/connection.config";
 import { payments } from "@/schema/schema";
 import { createId } from "@paralleldrive/cuid2";
+import { trips } from "@/schema/schema";
+import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 import { createNotification } from "@/services/notifications.services";
 
@@ -140,7 +142,13 @@ export const createPayment = async (
       paymentIntent.amount_received > 0
         ? paymentIntent.amount_received / 100
         : amount;
-
+    const trip = await db.query.trips.findFirst({
+          where: eq(trips.id, trip_id),
+        })
+        
+        if (!trip) {
+          return sendError(res, "Invalid trip ID", 400);
+        }
     // Insert payment into database
     const newPayment = await db
       .insert(payments)
