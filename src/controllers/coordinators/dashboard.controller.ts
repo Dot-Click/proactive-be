@@ -15,10 +15,11 @@ export const dashboardlogic = async (req: Request, res: Response) => {
         const coordinatorId = req.user.userId;
         const db = await database();
         const now = new Date();
-        const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+        const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
 
 
         const keyStatsResult = await db
@@ -26,7 +27,7 @@ export const dashboardlogic = async (req: Request, res: Response) => {
                 activeTrips: sql<number>`COUNT(*) FILTER (WHERE ${trips.status} = 'active')::int`,
                 activeCurrentMonth: sql<number>`COUNT(*) FILTER (WHERE ${trips.status}='active' AND ${trips.createdAt} >= ${currentMonthStart})::int`,
                 activePreviousMonth: sql<number>`COUNT(*) FILTER (WHERE ${trips.status}='active' AND ${trips.createdAt} >= ${previousMonthStart} AND ${trips.createdAt} < ${currentMonthStart})::int`,
-                upcomingTrips: sql<number>`COUNT(*) FILTER (WHERE ${trips.startDate} > ${now} AND ${trips.status} IN ('active','pending'))::int`,
+                upcomingTrips: sql<number>`COUNT(*) FILTER (WHERE ${trips.startDate} > ${now.toISOString()} AND ${trips.status} IN ('active','pending'))::int`,
                 closedTrips: sql<number>`COUNT(*) FILTER (WHERE ${trips.status} = 'completed')::int`,
                 pendingReviews: sql<number>`COUNT(${applications.id}) FILTER (WHERE ${applications.status}='pending')::int`
             })
