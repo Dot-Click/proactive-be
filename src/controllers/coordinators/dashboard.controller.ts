@@ -24,9 +24,9 @@ export const dashboardlogic = async (req: Request, res: Response) => {
 
         const keyStatsResult = await db
             .select({
-                activeTrips: sql<number>`COUNT(*) FILTER (WHERE ${trips.status} = 'active')::int`,
-                activeCurrentMonth: sql<number>`COUNT(*) FILTER (WHERE ${trips.status}='active' AND ${trips.createdAt} >= ${currentMonthStart})::int`,
-                activePreviousMonth: sql<number>`COUNT(*) FILTER (WHERE ${trips.status}='active' AND ${trips.createdAt} >= ${previousMonthStart} AND ${trips.createdAt} < ${currentMonthStart})::int`,
+                activeTrips: sql<number>`COUNT(*) FILTER (WHERE ${trips.status} = 'live')::int`,
+                activeCurrentMonth: sql<number>`COUNT(*) FILTER (WHERE ${trips.status}='live' AND ${trips.createdAt} >= ${currentMonthStart})::int`,
+                activePreviousMonth: sql<number>`COUNT(*) FILTER (WHERE ${trips.status}='live' AND ${trips.createdAt} >= ${previousMonthStart} AND ${trips.createdAt} < ${currentMonthStart})::int`,
                 upcomingTrips: sql<number>`COUNT(*) FILTER (WHERE ${trips.startDate} > ${now.toISOString()} AND ${trips.status} IN ('active','pending'))::int`,
                 closedTrips: sql<number>`COUNT(*) FILTER (WHERE ${trips.status} = 'completed')::int`,
                 pendingReviews: sql<number>`COUNT(${applications.id}) FILTER (WHERE ${applications.status}='pending')::int`
