@@ -4,6 +4,7 @@ import { dashboardlogic } from "@/controllers/admin/dashboard.controller";
 import { deleteCoordinator } from "@/controllers/admin/delete.coordinator.controller";
 import { getCoordinatorById } from "@/controllers/admin/get-unique.coordinators.controller";
 import { getCoordinators } from "@/controllers/admin/get.coordinators.controller";
+import { sendMails } from "@/controllers/admin/send.emails.controller";
 import { getSettings, updateSettings } from "@/controllers/admin/settings.controller";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { upload } from "@/middlewares/multer.middleware";
@@ -262,4 +263,16 @@ adminRoutes.patch("/coordinator/:coordinatorId", authenticate, authorize("admin"
  *    description: admin dashboard creds
  */
 adminRoutes.get("/dashboard", authenticate, authorize("admin"), dashboardlogic)
+
+/**
+ * @swagger
+ * /api/admin/sendMail:
+ *   post:
+ *    tags:
+ *     - Admin
+ *    summary: sendmail to user and coordinators
+ *    description: sendmail to user and coordinators
+ */
+
+adminRoutes.post("/sendMail", authenticate, authorize("admin"), sendMails)
 export default adminRoutes;

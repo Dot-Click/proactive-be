@@ -52,7 +52,6 @@ export const sendEmail = async (
       text: options.textContent,
     });
       
-      console.log('data', data)
 
     logger.info(
       `Email sent successfully to ${options.to}. Message ID: ${
@@ -534,7 +533,6 @@ export const sendSMS = async (
 
     if (!res.ok) {
       logger.error("Brevo SMS error:", data);
-      console.log('data', data)
       return false;
     }
 

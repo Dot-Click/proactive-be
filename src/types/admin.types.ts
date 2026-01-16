@@ -107,5 +107,10 @@ export const createSettingsSchema = updateSettingsSchema.extend({
   minPasswordLength: z.coerce.number().int().positive(),
 });
 
+export const emailSendings = z.object({
+  subject: z.string().optional(),
+  emailText: z.string(),
+  userEmail: z.string()
+})
 export type UpdateSettingsRequest = z.infer<typeof updateSettingsSchema>;
 export type CreateSettingsRequest = z.infer<typeof createSettingsSchema>;
