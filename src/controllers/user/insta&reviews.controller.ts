@@ -165,7 +165,7 @@ export const getReviews = async (
     }
 
     const limit = 5;
-    const business_id = "0x89c259b5a9bd152b%3A0x31453e62a3be9f7";
+    const business_id = "0x65e285d9dffa46ab:0x3dd1b18e867e6183";
     const data = await fetch(
       `https://local-business-data.p.rapidapi.com/business-reviews?business_id=${business_id}&limit=${limit}&translate_reviews=false&sort_by=most_relevant&region=us&language=es`,
       {

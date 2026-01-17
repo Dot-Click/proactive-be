@@ -106,31 +106,41 @@ export const dashboard = async (req: Request, res: Response) => {
         .limit(10);
   
 
-      const reviewReminders = await db
-        .select({
-          tripId: trips.id,
-          tripName: trips.title,
-          coverImage: trips.coverImage,
-          endDate: trips.endDate,
-        })
-        .from(trips)
-        .innerJoin(applications, eq(applications.tripId, trips.id))
-        .leftJoin(
-          reviews,
-          and(eq(reviews.userId, userId), eq(reviews.tripId, trips.id))
-        )
-        .where(
-          and(
-            eq(applications.userId, userId),
-            eq(applications.status, "approved"),
-            eq(trips.status, "completed"),
-            sql`${trips.endDate} < now()`,
-            isNull(reviews.id)
-          )
-        )
-        .orderBy(desc(trips.endDate))
-        .limit(5);
-  
+        const apiKey = process.env.RAPID_API_KEY;
+        if (!apiKey) {
+          return sendError(res, "RAPID_API_KEY is not configured", status.INTERNAL_SERVER_ERROR);
+        }
+
+        const limit = 5;
+        const business_id = "0x65e285d9dffa46ab:0x3dd1b18e867e6183";
+        const data = await fetch(
+          `https://local-business-data.p.rapidapi.com/business-reviews?business_id=${business_id}&limit=${limit}&translate_reviews=false&sort_by=most_relevant&region=us&language=es`,
+          {
+            method: "GET",
+            headers: {
+              "X-RapidAPI-Key": apiKey,
+              "X-RapidAPI-Host": "local-business-data.p.rapidapi.com",
+            },
+          }
+        );
+    
+        const json = await data.json();
+    
+        if (!json.data || !Array.isArray(json.data)) {
+          return sendSuccess(
+            res,
+            "Reviews fetched successfully",
+            { reviews: [] },
+            status.OK
+          );
+        }
+    
+        const reviewReminders = json.data.map((review: any) => ({
+          link: review.review_link,
+          userImage: review.author_photo_url,
+          userName: review.author_name,
+          review: review.review_text,
+        }));
 
       const fields = [
         user.firstName,
