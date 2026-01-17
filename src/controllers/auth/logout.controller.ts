@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { sendSuccess, sendError } from "@/utils/response.util";
 import status from "http-status";
+import { supabase } from "@/configs/supabase.config";
 
 /**
  * @swagger
@@ -34,7 +35,11 @@ export const logout = async (
   res: Response
 ): Promise<Response> => {
   try {
-    // Clear the refresh token cookie
+    const flag = _req.user?.provider
+    if(flag === "google"){
+      const {error } = await supabase.auth.signOut()
+      if(error) throw error
+    }
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

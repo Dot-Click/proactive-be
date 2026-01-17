@@ -1,0 +1,1 @@
+ALTER TABLE "coordinator_details" ADD COLUMN "notificationPref" jsonb DEFAULT '{"emailNotf":false,"appAlert":false,"reviewNotf":false}'::jsonb;

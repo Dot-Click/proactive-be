@@ -4,12 +4,14 @@ import { updateApplication } from "@/controllers/coordinators/update.application
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { Router } from "express";
 import { dashboardlogic } from "@/controllers/coordinators/dashboard.controller";
+import { settings } from "@/controllers/coordinators/settings.controller";
 
 const coordinatorRoutes = Router();
 
 coordinatorRoutes.get("/applications", authenticate, authorize("coordinator","admin"), getAllApplications);
 coordinatorRoutes.patch("/applications/:applicationId", authenticate, authorize("coordinator","admin"), updateApplication);
 coordinatorRoutes.get("/achievements", authenticate, authorize("coordinator","admin"), getAllAchievements);
+coordinatorRoutes.get("/setting", authenticate, authorize("coordinator"), settings)
 /**
  * @swagger
  * /api/coordinator/dashboard:

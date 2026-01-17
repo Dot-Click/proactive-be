@@ -148,6 +148,13 @@
       "when": 1768063174768,
       "tag": "0020_bouncy_namor",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1768600109407,
+      "tag": "0021_wide_forgotten_one",
+      "breakpoints": true
     }
   ]
 }

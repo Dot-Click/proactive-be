@@ -4,6 +4,7 @@ import { env } from "./env.utils";
 export interface TokenPayload {
   userId: string;
   email: string;
+  provider?: string;
   role: string;
 }
 

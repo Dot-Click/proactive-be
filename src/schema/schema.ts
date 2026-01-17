@@ -104,6 +104,7 @@ export const coordinatorDetails = pgTable("coordinator_details", {
   bio: text("bio"),
   profilePicture: varchar("profilePicture", { length: 255 }),
   specialities: text("specialities").array(),
+  notificationPref: jsonb().default({"emailNotf": false, "appAlert": false, "reviewNotf": false}),
   languages: text("languages").array(),
   certificateLvl: varchar("certificateLvl", { length: 20 }),
   yearsOfExperience: integer("yearsOfExperience"),

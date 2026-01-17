@@ -57,6 +57,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     req.user = {
       userId: dbUser[0].id,
       role: dbUser[0].userRoles!,
+      provider: dbUser[0].provider!,
       email: data.user.email!,
     };
 
