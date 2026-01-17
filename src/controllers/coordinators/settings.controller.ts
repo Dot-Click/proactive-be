@@ -5,6 +5,28 @@ import { eq } from "drizzle-orm";
 import { Response, Request } from "express"
 import status from "http-status";
 
+
+
+/**
+ * @swagger
+ * /api/coordinator/settings:
+ *   get:
+ *     tags:
+ *       - Coordinator
+ *     summary: Get coordinator settings
+ *     description: Get coordinator settings
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Settings retrieved successfully
+ *       500:
+ *         description: Internal server error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ * */
 export const settings = async (req: Request, res: Response): Promise<Response> => {
     try {
         const userId = req.user?.userId
@@ -14,7 +36,7 @@ export const settings = async (req: Request, res: Response): Promise<Response> =
             fname: coordinatorDetails.fullName,
             avatar: coordinatorDetails.profilePicture,
             emai: users.email,
-            // notificationPref: coordinatorDetails.notificationPref
+            notificationPref: coordinatorDetails.notificationPref
         }).from(users)
         .leftJoin(coordinatorDetails,eq(coordinatorDetails.id, users.coordinatorDetails))
         .where(eq(users.id, userId!)).limit(1);

@@ -30,6 +30,11 @@ export const createCoordinatorSchema = z.object({
   location: z.string().max(100).optional(),
   type: z.string().max(20),
   accessLvl: z.string().max(20),
+  notificationPref: z.object({
+    emailNotf: z.boolean(),
+    appAlert: z.boolean(),
+    reviewNotf: z.boolean(),
+  }).optional().default({ emailNotf: false, appAlert: false, reviewNotf: false }),
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });

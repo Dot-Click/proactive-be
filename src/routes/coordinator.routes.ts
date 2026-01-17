@@ -1,6 +1,7 @@
 import { getAllApplications } from "@/controllers/coordinators/get.all.applications";
 import { getAllAchievements } from "@/controllers/coordinators/get.all.acheivemnets";
 import { updateApplication } from "@/controllers/coordinators/update.application.controller";
+import { updateCoordinator } from "@/controllers/coordinators/update..controller";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { Router } from "express";
 import { dashboardlogic } from "@/controllers/coordinators/dashboard.controller";
@@ -31,6 +32,18 @@ coordinatorRoutes.get("/achievements", authenticate, authorize("coordinator","ad
  *    description: get coordinator current settings
  */
 coordinatorRoutes.get("/setting", authenticate, authorize("coordinator"), settings)
+
+/**
+ * @swagger
+ * /api/coordinator/updateSettings:
+ *   patch:
+ *    tags:
+ *     - Coordinator
+ *    summary: update coordinator settings
+ *    description: update coordinator settings
+ */
+coordinatorRoutes.patch("/updateSettings", authenticate, authorize("coordinator"), updateCoordinator);
+
 /**
  * @swagger
  * /api/coordinator/dashboard:
