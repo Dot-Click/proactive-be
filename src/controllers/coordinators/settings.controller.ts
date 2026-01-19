@@ -7,6 +7,28 @@ import status from "http-status";
 import { cloudinaryUploader } from "@/utils/cloudinary.util";
 import { createId } from "@paralleldrive/cuid2";
 
+
+
+/**
+ * @swagger
+ * /api/coordinator/settings:
+ *   get:
+ *     tags:
+ *       - Coordinator
+ *     summary: Get coordinator settings
+ *     description: Get coordinator settings
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Settings retrieved successfully
+ *       500:
+ *         description: Internal server error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ * */
 export const settings = async (req: Request, res: Response): Promise<Response> => {
     try {
         const userId = req.user?.userId
@@ -16,6 +38,7 @@ export const settings = async (req: Request, res: Response): Promise<Response> =
             Name: coordinatorDetails.fullName,
             Email: users.email,
             avatar: coordinatorDetails.profilePicture,
+            emai: users.email,
             // notificationPref: coordinatorDetails.notificationPref
         }).from(users)
         .leftJoin(coordinatorDetails,eq(coordinatorDetails.id, users.coordinatorDetails))
