@@ -52,9 +52,9 @@ A TypeScript-based backend API for the Proactive project, featuring authenticati
 - **Runtime**: Node.js
 - **Framework**: Express.js
 - **Language**: TypeScript
-- **Database**: NeonDB (PostgreSQL)
+- **Database**: Supabase (PostgreSQL)
 - **ORM**: Drizzle ORM
-- **Authentication**: JWT (jsonwebtoken)
+- **Authentication**: Supabase Auth
 - **Password Hashing**: bcrypt
 - **Email Service**: Brevo (via Nodemailer)
 - **Documentation**: Swagger/OpenAPI
@@ -123,6 +123,9 @@ BREVO_SENDER_EMAIL=noreply@yourdomain.com
 # Rate Limiting (Optional - Upstash Redis)
 UPSTASH_REDIS_REST_URL=your_upstash_redis_rest_url
 UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_rest_token
+
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_role_key
+SUPABASE_URL=your_supabase_url
 
 # Email Verification (Optional)
 REQUIRE_EMAIL_VERIFICATION=true

@@ -19,6 +19,7 @@ export const sendMessage = async (
     const { id } = req.params;
     const { content } = req.body;
     const userId = req.user.userId;
+    const userRole = req.user.role;
 
     if (!content || !content.trim()) {
       return sendError(res, "Message content is required", status.BAD_REQUEST);
@@ -26,18 +27,19 @@ export const sendMessage = async (
 
     const db = await database();
 
-    // Verify user is participant
-    const [chatParticipant] = await db
-      .select()
-      .from(chatParticipants)
-      .where(and(
-        eq(chatParticipants.chatId, id),
-        eq(chatParticipants.userId, userId)
-      ))
-      .limit(1);
+    if (userRole !== "admin") {
+      const [chatParticipant] = await db
+        .select()
+        .from(chatParticipants)
+        .where(and(
+          eq(chatParticipants.chatId, id),
+          eq(chatParticipants.userId, userId)
+        ))
+        .limit(1);
 
-    if (!chatParticipant) {
-      return sendError(res, "You are not a participant of this chat", status.FORBIDDEN);
+      if (!chatParticipant) {
+        return sendError(res, "You are not a participant of this chat", status.FORBIDDEN);
+      }
     }
 
     // Create message

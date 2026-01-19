@@ -39,7 +39,7 @@ export const settings = async (req: Request, res: Response): Promise<Response> =
             Email: users.email,
             avatar: coordinatorDetails.profilePicture,
             emai: users.email,
-            // notificationPref: coordinatorDetails.notificationPref
+            notificationPref: coordinatorDetails.notificationPref
         }).from(users)
         .leftJoin(coordinatorDetails,eq(coordinatorDetails.id, users.coordinatorDetails))
         .where(eq(users.id, userId!)).limit(1);
