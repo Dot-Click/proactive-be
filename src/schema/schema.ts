@@ -253,7 +253,8 @@ export const tripCoordinators = pgTable("trip_coordinators", {
   userId: foreignkeyRef("user_id", () => users.id, {
     onDelete: "cascade",
   }).notNull(),
-  ...timeStamps,
+  createdAt: timestamp().defaultNow(),
+  updatedAt: timestamp().$defaultFn(() => new Date()).$onUpdateFn(() => new Date()),
 });
 
 export const payments = pgTable("payments", {

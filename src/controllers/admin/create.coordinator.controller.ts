@@ -8,8 +8,7 @@ import { Request, Response } from "express";
 import status from "http-status";
 import { eq } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
-import { generateAccessToken, generateRefreshToken, generateVerificationToken } from "@/utils/token.util";
-import { sendCoordinatorWelcomeEmail, sendVerificationEmail } from "@/utils/brevo.util";
+import { sendCoordinatorWelcomeEmail } from "@/utils/brevo.util";
 import { createNotification } from "@/services/notifications.services";
 
 export const createCoordinator = async (req: Request, res: Response) => {

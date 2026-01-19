@@ -26,18 +26,23 @@ export const getMessages = async (
 
     const db = await database();
 
-    // Verify user is participant
-    const [chatParticipant] = await db
-      .select()
-      .from(chatParticipants)
-      .where(and(
-        eq(chatParticipants.chatId, id),
-        eq(chatParticipants.userId, userId)
-      ))
-      .limit(1);
+    // Check if user is admin
+    const isAdmin = req.user.role === "admin";
 
-    if (!chatParticipant) {
-      return sendError(res, "You are not a participant of this chat", status.FORBIDDEN);
+    // Verify user is participant (skip for admin)
+    if (!isAdmin) {
+      const [chatParticipant] = await db
+        .select()
+        .from(chatParticipants)
+        .where(and(
+          eq(chatParticipants.chatId, id),
+          eq(chatParticipants.userId, userId)
+        ))
+        .limit(1);
+
+      if (!chatParticipant) {
+        return sendError(res, "You are not a participant of this chat", status.FORBIDDEN);
+      }
     }
 
     const skip = (page - 1) * limit;

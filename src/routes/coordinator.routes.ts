@@ -4,7 +4,8 @@ import { updateApplication } from "@/controllers/coordinators/update.application
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { Router } from "express";
 import { dashboardlogic } from "@/controllers/coordinators/dashboard.controller";
-import { settings } from "@/controllers/coordinators/settings.controller";
+import { settings, updateSettings } from "@/controllers/coordinators/settings.controller";
+import { upload } from "@/middlewares/multer.middleware";
 
 const coordinatorRoutes = Router();
 
@@ -23,7 +24,7 @@ coordinatorRoutes.patch("/applications/:applicationId", authenticate, authorize(
 coordinatorRoutes.get("/achievements", authenticate, authorize("coordinator","admin"), getAllAchievements);
 /**
  * @swagger
- * /api/coordinator/settings:
+ * /api/coordinator/setting:
  *   get:
  *    tags:
  *     - Coordinator
@@ -31,6 +32,16 @@ coordinatorRoutes.get("/achievements", authenticate, authorize("coordinator","ad
  *    description: get coordinator current settings
  */
 coordinatorRoutes.get("/setting", authenticate, authorize("coordinator"), settings)
+/**
+ * @swagger
+ * /api/coordinator/setting:
+ *   patch:
+ *    tags:
+ *     - Coordinator
+ *    summary: update coordinator settings
+ *    description: update coordinator name, email, and profile picture
+ */
+coordinatorRoutes.patch("/setting", authenticate, authorize("coordinator"), upload(), updateSettings)
 /**
  * @swagger
  * /api/coordinator/dashboard:

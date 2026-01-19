@@ -237,8 +237,37 @@ export const handleMarkAsRead = async (socket: AuthenticatedSocket, data: MarkAs
       return;
     }
 
-    // Here you could implement read receipts if needed
-    // For now, just acknowledge the action
+    const { messages } = await import("../../schema/schema");
+    const [message] = await db
+      .select()
+      .from(messages)
+      .where(and(
+        eq(messages.id, messageId),
+        eq(messages.chatId, chatId)
+      ))
+      .limit(1);
+
+    if (!message) {
+      socket.emit('error', { message: 'Message not found', code: 'MESSAGE_NOT_FOUND' });
+      return;
+    }
+
+    // Emit message read event to notify sender (if message is not from current user)
+    if (message.senderId !== userId) {
+      socket.to(`chat_${chatId}`).emit('message_read', {
+        messageId,
+        chatId,
+        readBy: userId,
+        readAt: new Date().toISOString(),
+      });
+    }
+
+    // Confirm to the user
+    socket.emit('message_marked_as_read', {
+      messageId,
+      chatId,
+    });
+
     console.log(`User ${socket.user?.email} marked message ${messageId} as read in chat ${chatId}`);
   } catch (error) {
     console.error('Error marking message as read:', error);

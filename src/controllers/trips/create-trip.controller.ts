@@ -5,11 +5,11 @@ import status from "http-status";
 import { cloudinaryUploader } from "@/utils/cloudinary.util";
 import { fetchCorrd } from "@/utils/geocoding.util";
 import { database } from "@/configs/connection.config";
-import { trips, discounts, tripCoordinators } from "@/schema/schema";
+import { trips, discounts, tripCoordinators, users } from "@/schema/schema";
 import { createId } from "@paralleldrive/cuid2";
 import { ZodError } from "zod";
 import { createTripSchema } from "@/types/trip.types";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { createNotification } from "@/services/notifications.services";
 
 // Type augmentation for file uploads with multer
@@ -265,23 +265,45 @@ export const createTrip = async (
 
     // Handle coordinators relationship - create entries in junction table
     if (coordinatorIdsList.length > 0) {
-      const coordinatorValues = coordinatorIdsList
-        .filter((coordId: string) => coordId && typeof coordId === "string" && coordId.trim() !== "")
-        .map((coordId: string) => {
-          const trimmedId = coordId.trim();
-          if (!trimmedId) {
-            return null;
-          }
-          return {
-            id: createId(),
-            tripId: trip.id,
-            userId: trimmedId,
-          };
-        })
-        .filter((val) => val !== null) as Array<{ id: string; tripId: string; userId: string }>;
+      const validCoordinatorIds = coordinatorIdsList.filter(
+        (coordId: string) => coordId && typeof coordId === "string" && coordId.trim() !== ""
+      );
+      
+      // Validate that all coordinator user IDs exist in the users table
+      if (validCoordinatorIds.length > 0) {
+        const existingUsers = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(inArray(users.id, validCoordinatorIds));
+        
+        const existingUserIds = new Set(existingUsers.map(u => u.id));
+        const invalidIds = validCoordinatorIds.filter(id => !existingUserIds.has(id));
+        
+        if (invalidIds.length > 0) {
+          return sendError(
+            res,
+            `Invalid coordinator user IDs: ${invalidIds.join(", ")}. These users do not exist.`,
+            status.BAD_REQUEST
+          );
+        }
+        
+        const coordinatorValues = validCoordinatorIds
+          .map((coordId: string) => {
+            const trimmedId = coordId.trim();
+            if (!trimmedId) {
+              return null;
+            }
+            return {
+              id: createId(),
+              tripId: trip.id,
+              userId: trimmedId,
+            };
+          })
+          .filter((val) => val !== null) as Array<{ id: string; tripId: string; userId: string }>;
 
-      if (coordinatorValues.length > 0) {
-        await db.insert(tripCoordinators).values(coordinatorValues);
+        if (coordinatorValues.length > 0) {
+          await db.insert(tripCoordinators).values(coordinatorValues);
+        }
       }
     }
     if (typeof id === 'string' && id.trim()) {

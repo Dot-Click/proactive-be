@@ -26,28 +26,43 @@ export const getChats = async (
     const db = await database();
     const skip = (page - 1) * limit;
 
-    // Get chats where user is a participant
-    const userChats = await db
-      .select({
-        chatId: chatParticipants.chatId,
-      })
-      .from(chatParticipants)
-      .where(eq(chatParticipants.userId, userId));
+    // Check if user is admin
+    const isAdmin = req.user.role === "admin";
 
-    const chatIds = userChats.map(c => c.chatId);
+    let chatsList;
+    
+    if (isAdmin) {
+      // Admin can see all chats
+      chatsList = await db
+        .select()
+        .from(chats)
+        .orderBy(desc(chats.updatedAt))
+        .limit(limit)
+        .offset(skip);
+    } else {
+      // Regular users only see chats where they are a participant
+      const userChats = await db
+        .select({
+          chatId: chatParticipants.chatId,
+        })
+        .from(chatParticipants)
+        .where(eq(chatParticipants.userId, userId));
 
-    if (chatIds.length === 0) {
-      return sendSuccess(res, "Chats retrieved successfully", [], status.OK);
+      const chatIds = userChats.map(c => c.chatId);
+
+      if (chatIds.length === 0) {
+        return sendSuccess(res, "Chats retrieved successfully", [], status.OK);
+      }
+
+      // Get chats with pagination
+      chatsList = await db
+        .select()
+        .from(chats)
+        .where(inArray(chats.id, chatIds))
+        .orderBy(desc(chats.updatedAt))
+        .limit(limit)
+        .offset(skip);
     }
-
-    // Get chats with pagination
-    const chatsList = await db
-      .select()
-      .from(chats)
-      .where(inArray(chats.id, chatIds))
-      .orderBy(desc(chats.updatedAt))
-      .limit(limit)
-      .offset(skip);
 
     // Get all data for each chat
     const chatsWithData = await Promise.all(
@@ -64,6 +79,8 @@ export const getChats = async (
               lastName: users.lastName,
               email: users.email,
               userRoles: users.userRoles,
+              profilePicture: users.avatar,
+              avatar: users.avatar,
             },
           })
           .from(chatParticipants)
@@ -106,6 +123,28 @@ export const getChats = async (
           tripData = trip;
         }
 
+        // Format participants array for frontend
+        const participants = participantsData.map(p => ({
+          id: p.id,
+          userId: p.userId,
+          role: p.role,
+          user: {
+            id: p.user.id,
+            fullName: (p.user.firstName && p.user.lastName) 
+              ? `${p.user.firstName} ${p.user.lastName}` 
+              : p.user.email.split('@')[0],
+            name: (p.user.firstName && p.user.lastName) 
+              ? `${p.user.firstName} ${p.user.lastName}` 
+              : p.user.email.split('@')[0],
+            firstName: p.user.firstName,
+            lastName: p.user.lastName,
+            email: p.user.email,
+            type: p.user.userRoles,
+            profilePicture: p.user.avatar,
+            avatar: p.user.avatar,
+          }
+        }));
+
         return {
           id: chat.id,
           user: participantsData.find(p => p.user.userRoles === "user")?.user ? {
@@ -124,6 +163,7 @@ export const getChats = async (
             email: participantsData.find(p => p.user.userRoles === "coordinator")!.user.email,
             role: participantsData.find(p => p.user.userRoles === "coordinator")!.user.userRoles,
           } : null,
+          participants: participants,
           trip: tripData,
           lastMessage: latestMessage ? {
             ...latestMessage,

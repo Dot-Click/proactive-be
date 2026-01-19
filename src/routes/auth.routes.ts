@@ -9,6 +9,7 @@ import { resendVerification } from "@/controllers/auth/resend-verification.contr
 import { forgotPassword } from "@/controllers/auth/forgot-password.controller";
 import { resetPassword } from "@/controllers/auth/reset-password.controller";
 import { changePassword } from "@/controllers/auth/change-password.controller";
+import { updateProfile } from "@/controllers/auth/update-profile.controller";
 import { authenticate } from "@/middlewares/auth.middleware";
 
 const authRoutes = Router();
@@ -135,6 +136,19 @@ authRoutes.post("/reset-password", resetPassword);
  *       - bearerAuth: []
  */
 authRoutes.post("/change-password", authenticate, changePassword);
+
+/**
+ * @swagger
+ * /api/auth/update-profile:
+ *   patch:
+ *     tags:
+ *       - Authentication
+ *     summary: Update user profile
+ *     description: Update authenticated user's profile information
+ *     security:
+ *       - bearerAuth: []
+ */
+authRoutes.patch("/update-profile", authenticate, updateProfile);
 
 /**
  * @swagger
