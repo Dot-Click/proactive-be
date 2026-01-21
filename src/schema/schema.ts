@@ -73,6 +73,11 @@ export const applicationStatusEnum = pgEnum("application_status", [
   "cancelled",
 ]);
 
+export const userStatusEnum = pgEnum("user_status", [
+  "active",
+  "inactive",
+]);
+
 export const users = pgTable("users", {
   id: uuid().primaryKey(),
   firstName: varchar("firstName", { length: 100 }),
@@ -89,6 +94,7 @@ export const users = pgTable("users", {
   emailVerified: boolean("emailVerified")
     .$defaultFn(() => false)
     .notNull(),
+  userStatus: userStatusEnum("userStatus").default("active").notNull(),
   userRoles: varchar("userRoles", { length: 20 }).default("user"),
   lastActive: varchar("lastActive", {length:30}),
   createdAt: timestamp("createdAt").defaultNow(),
