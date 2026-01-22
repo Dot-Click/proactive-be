@@ -22,7 +22,7 @@ const coordinatorRoutes = Router();
  */
 coordinatorRoutes.get("/applications", authenticate, authorize("coordinator","admin"), getAllApplications);
 coordinatorRoutes.patch("/applications/:applicationId", authenticate, authorize("coordinator","admin"), updateApplication);
-coordinatorRoutes.get("/achievements", authenticate, authorize("coordinator","admin"), getAllAchievements);
+coordinatorRoutes.get("/achievements", authenticate, authorize("coordinator","admin", "user"), getAllAchievements);
 /**
  * @swagger
  * /api/coordinator/setting:
