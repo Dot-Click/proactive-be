@@ -3,6 +3,7 @@ import { applications, users, trips } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { eq } from "drizzle-orm";
 import { Request, Response } from "express";
+import status from "http-status";
 
 
 /**
@@ -92,3 +93,16 @@ export const getAllApplications = async (_req: Request, res: Response): Promise<
     return sendError(res, "Failed to get all applications", 500);
   }
 };
+
+export const getApplicationById = async (req: Request, res: Response): Promise<Response> => {
+  try {
+   const appId = req.params.id 
+   const db = await database()
+
+   const [newApp] = await db.select().from(applications).where(eq(applications.id, appId))
+   if(!newApp) return sendError(res, "Not found", status.NOT_FOUND);
+   return sendSuccess(res, "application retrived successfully", newApp, status.OK);
+  } catch (error) {
+    return sendError(res, "server error", status.INTERNAL_SERVER_ERROR)
+  }
+}
