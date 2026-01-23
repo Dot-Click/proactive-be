@@ -13,11 +13,10 @@ import { sendVerificationEmail } from "@/utils/brevo.util";
 
 export const updateCoordinator = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
-        let profilePictureUrl;
-        if (req.files && (req.files as any).prof_pic && (req.files as any).prof_pic[0]) {
-          const prof_pic = await cloudinaryUploader((req.files as any).prof_pic[0].path) as any;
-          profilePictureUrl = prof_pic.secure_url as string;
+        const { cid } = req.params;
+        let prof_pic;
+        if (req.file) {
+            prof_pic = await cloudinaryUploader((req.file as any).path) as any;
         }
         const valid = createCoordinatorSchema.partial().safeParse(req.body);
         if (!valid.success) {
@@ -25,13 +24,29 @@ export const updateCoordinator = async (req: Request, res: Response) => {
         }
 
         const db = await database();
-        const coordinator = await db.select().from(coordinatorDetails).where(eq(coordinatorDetails.id, id)).limit(1);
+        const coordinator = await db.select().from(coordinatorDetails).where(eq(coordinatorDetails.id, cid)).limit(1);
         if (!coordinator) {
             return sendError(res, "Coordinator not found", status.NOT_FOUND);
         }
-        await db.update(coordinatorDetails).set({ profilePicture: profilePictureUrl, fullName: valid.data.fullName, notificationPref: valid.data.notificationPref }).where(eq(coordinatorDetails.id, id));
-        return sendSuccess(res, "Coordinator updated successfully", coordinator, status.OK);
+        const {data} = valid
+        const updatedCoordinator = await db.update(coordinatorDetails)
+        .set({ 
+            profilePicture: prof_pic?.secure_url, 
+            fullName: data.fullName,
+            bio: data.bio,
+            notificationPref: data.notificationPref,
+            yearsOfExperience: data.yearsOfExperience,
+            accessLvl: data.accessLvl,
+            type: data.type,
+            specialities: data.specialities,
+            languages: data.languages,
+            location: data.location,
+            phoneNumber: data.phoneNumber,
+            certificateLvl: data.certificateLvl
+        }).where(eq(coordinatorDetails.id, cid)).returning();
+        return sendSuccess(res, "Coordinator updated successfully", updatedCoordinator, status.OK);
     } catch (error) {
+        console.log(error)
         return sendError(res, "Internal server error", status.INTERNAL_SERVER_ERROR);
     }
 }

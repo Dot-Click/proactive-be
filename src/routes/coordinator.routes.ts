@@ -1,4 +1,4 @@
-import { getAllApplications } from "@/controllers/coordinators/get.all.applications";
+import { getAllApplications, getApplicationById } from "@/controllers/coordinators/get.all.applications";
 import { getAllAchievements } from "@/controllers/coordinators/get.all.acheivemnets";
 import { updateApplication } from "@/controllers/coordinators/update.application.controller";
 import { updateCoordinator } from "@/controllers/coordinators/update..controller";
@@ -6,7 +6,7 @@ import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { Router } from "express";
 import { dashboardlogic } from "@/controllers/coordinators/dashboard.controller";
 import { settings, updateSettings } from "@/controllers/coordinators/settings.controller";
-import { upload } from "@/middlewares/multer.middleware";
+import { singleUpload, upload } from "@/middlewares/multer.middleware";
 
 const coordinatorRoutes = Router();
 
@@ -21,7 +21,38 @@ const coordinatorRoutes = Router();
  * 
  */
 coordinatorRoutes.get("/applications", authenticate, authorize("coordinator","admin"), getAllApplications);
+
+/**
+ * @swagger
+ * /api/coordinator/application/:id:
+ *   get:
+ *    tags:
+ *     - Coordinator
+ *    summary: get application by id
+ *    description: get application by id
+ */
+coordinatorRoutes.get("/application/:id", authenticate, authorize("coordinator", "admin"), getApplicationById);
+
+/**
+ * @swagger
+ * /api/coordinator/application/:id:
+ *   patch:
+ *    tags:
+ *     - Coordinator
+ *    summary: update application by id
+ *    description: update application by id
+ */
 coordinatorRoutes.patch("/applications/:applicationId", authenticate, authorize("coordinator","admin"), updateApplication);
+
+/**
+ * @swagger
+ * /api/coordinator/achievements:
+ *   get:
+ *    tags:
+ *     - Coordinator
+ *    summary: get all achievements
+ *    description: get all achievements
+ */
 coordinatorRoutes.get("/achievements", authenticate, authorize("coordinator","admin"), getAllAchievements);
 /**
  * @swagger
@@ -36,14 +67,73 @@ coordinatorRoutes.get("/setting", authenticate, authorize("coordinator"), settin
 
 /**
  * @swagger
- * /api/coordinator/updateSettings:
+ * /api/coordinator/updateSettings/:cid:
  *   patch:
  *    tags:
  *     - Coordinator
- *    summary: update coordinator settings
- *    description: update coordinator settings
+ *    summary: update coordinator fields
+ *    description: update coordinator fields accessable for both admin and coordinator
+ *    parameters:
+ *     - in: path
+ *       name: cid
+ *       required: true
+ *       description: Coordinator ID
+ *       schema:
+ *         type: string
+ *    requestBody:
+ *     required: true
+ *     content:
+ *      multipart/form-data:
+ *       schema:
+ *        type: object
+ *        properties:
+ *         fullName:
+ *          type: string
+ *         phoneNumber:
+ *          type: string
+ *         bio:
+ *          type: string
+ *         prof_pic:
+ *          type: binary
+ *         specialities:
+ *          type: array
+ *          items:
+ *           type: string
+ *         languages:
+ *          type: array
+ *          items:
+ *           type: string
+ *         certificateLvl:
+ *          type: string
+ *         yearsOfExperience:
+ *          type: number
+ *         location:
+ *          type: string
+ *         type:
+ *          type: string
+ *         accessLvl:
+ *          type: string
+ *         notificationPref:
+ *          type: object
+ *          properties:
+ *           emailNotf:
+ *            type: boolean
+ *           appAlert:
+ *            type: boolean
+ *           reviewNotf:
+ *            type: boolean
+ *       responses:
+ *        200:
+ *         description: Success
+ *         content:
+ *          application/json:
+ *           schema:
+ *            type: object
+ *            properties:
+ *             message:
+ *              type: string
  */
-coordinatorRoutes.patch("/updateSettings", authenticate, authorize("coordinator"), updateCoordinator);
+coordinatorRoutes.patch("/updateSettings/:cid", authenticate, authorize("coordinator","admin"),singleUpload("prof_pic"), updateCoordinator);
 
 /**
  * @swagger
@@ -52,9 +142,10 @@ coordinatorRoutes.patch("/updateSettings", authenticate, authorize("coordinator"
  *    tags:
  *     - Coordinator
  *    summary: update coordinator settings
- *    description: update coordinator name, email, and profile picture
+ *    description: update coordinator settings accessable for coordinator
+ *    
  */
-coordinatorRoutes.patch("/setting", authenticate, authorize("coordinator"), upload(), updateSettings)
+coordinatorRoutes.patch("/setting", authenticate, authorize("coordinator"), singleUpload("prof_pic"), updateSettings)
 /**
  * @swagger
  * /api/coordinator/dashboard:
