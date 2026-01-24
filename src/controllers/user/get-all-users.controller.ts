@@ -37,57 +37,12 @@ export const getAllUsers = async (
         updatedAt: users.updatedAt,
         coordinatorDetailsId: users.coordinatorDetails,
       })
-      .from(users);
-
-    // Fetch coordinator details for users with coordinator role
-    const coordinatorIds = allUsers
-      .filter((user) => user.coordinatorDetailsId)
-      .map((user) => user.coordinatorDetailsId)
-      .filter((id): id is string => id !== null);
-
-    let coordinatorDetailsMap = new Map();
-
-    if (coordinatorIds.length > 0) {
-      const coordinatorsData = await db
-        .select({
-          id: coordinatorDetails.id,
-          fullName: coordinatorDetails.fullName,
-          phoneNumber: coordinatorDetails.phoneNumber,
-          bio: coordinatorDetails.bio,
-          profilePicture: coordinatorDetails.profilePicture,
-          specialities: coordinatorDetails.specialities,
-          notificationPref: coordinatorDetails.notificationPref,
-          languages: coordinatorDetails.languages,
-          certificateLvl: coordinatorDetails.certificateLvl,
-          yearsOfExperience: coordinatorDetails.yearsOfExperience,
-          type: coordinatorDetails.type,
-          accessLvl: coordinatorDetails.accessLvl,
-          location: coordinatorDetails.location,
-          successRate: coordinatorDetails.successRate,
-          repeatCustomers: coordinatorDetails.repeatCustomers,
-          totalRevenue: coordinatorDetails.totalRevenue,
-          isActive: coordinatorDetails.isActive,
-          createdAt: coordinatorDetails.createdAt,
-          updatedAt: coordinatorDetails.updatedAt,
-        })
-        .from(coordinatorDetails);
-
-      coordinatorDetailsMap = new Map(
-        coordinatorsData.map((coord) => [coord.id, coord]),
-      );
-    }
-
-    const usersWithDetails = allUsers.map((user) => ({
-      ...user,
-      coordinatorDetails: user.coordinatorDetailsId
-        ? coordinatorDetailsMap.get(user.coordinatorDetailsId) || null
-        : null,
-    }));
+      .from(users).where(eq(users.userRoles, "user"));
 
     return sendSuccess(
       res,
       "Users fetched successfully",
-      { users: usersWithDetails, total: usersWithDetails.length },
+      { users: allUsers, total: allUsers.length },
       status.OK,
     );
   } catch (error) {
