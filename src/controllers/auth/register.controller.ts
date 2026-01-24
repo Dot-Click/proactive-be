@@ -321,7 +321,7 @@ export const googleSignup = async (_req: Request, res: Response) => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${process.env.BACKEND_DOMAIN}/api/auth/google-callback`,
+        redirectTo: process.env.GOOGLE_REDIRECT_URL!,
         queryParams: {
           prompt: "select_account",
           access_type: "offline",
@@ -385,7 +385,7 @@ export const verifyGoogleToken = async (_req:Request, res: Response) => {
 }
 export const googleSignupCallback = async (req: Request, res: Response) => {
   try {
-    const token = req.query.code as string;
+    const token = req.body.token as string;
     if (!token) return sendError(res, "Missing access token", status.BAD_REQUEST);
 
     const { data, error } = await supabase.auth.getUser(token);
@@ -431,6 +431,7 @@ export const googleSignupCallback = async (req: Request, res: Response) => {
 
     return sendSuccess(res, "User registered successfully", newUser, status.CREATED);
   } catch (err: any) {
+    console.log(err)
     return sendError(res, err.message, status.INTERNAL_SERVER_ERROR);
   }
 };

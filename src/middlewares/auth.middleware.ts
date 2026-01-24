@@ -32,6 +32,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     }
 
     const rawToken = authHeader.replace("Bearer ", "");
+    // console.log("rawToken ====> ", rawToken)
     const token = cleanSupabaseToken(rawToken);
     let tokenPayload: TokenPayload | null = null;
     try {
@@ -46,6 +47,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       email = tokenPayload.email;
     } else {
       // If local JWT fails, try Supabase token
+      // console.log(token)
       const { data, error } = await supabase.auth.getUser(token);
       if (error || !data.user) {
         return sendError(res, "Invalid token", status.UNAUTHORIZED);
@@ -130,7 +132,6 @@ export const authorize = (...allowedRoles: string[]) => {
       );
       return;
     }
-
     if (!allowedRoles.includes(req.user.role)) {
       sendError(
         res,

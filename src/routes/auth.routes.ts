@@ -193,5 +193,5 @@ authRoutes.post("/google-signup", googleSignup);
  *       400:
  *         description: Invalid or missing authorization code
  */
-authRoutes.get("/google-callback", googleSignupCallback);
+authRoutes.post("/google-callback", googleSignupCallback);
 export default authRoutes;

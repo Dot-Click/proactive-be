@@ -63,54 +63,6 @@ const userRoutes = Router();
  */
 userRoutes.get("/get-all-users", authenticate, authorize("admin"), getAllUsers);
 
-/**
- * @swagger
- * /api/user/{userId}:
- *   get:
- *     tags:
- *       - User
- *     summary: Get user by ID
- *     description: Get specific user data with coordinator details if applicable (Admin only)
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *         description: The user ID
- *     responses:
- *       200:
- *         description: User fetched successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: User fetched successfully
- *                 data:
- *                   type: object
- *                   properties:
- *                     user:
- *                       type: object
- *       400:
- *         description: Bad request - Invalid user ID
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden - Admin access required
- *       404:
- *         description: User not found
- *       500:
- *         description: Internal server error
- */
-userRoutes.get("/:userId", authenticate, authorize("admin"), getUserByID);
 
 /**
  * @swagger
@@ -215,5 +167,54 @@ userRoutes.get(
   authorize("user", "admin"),
   getUserAchievementsController,
 );
+
+/**
+ * @swagger
+ * /api/user/{userId}:
+ *   get:
+ *     tags:
+ *       - User
+ *     summary: Get user by ID
+ *     description: Get specific user data with coordinator details if applicable (Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID
+ *     responses:
+ *       200:
+ *         description: User fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: User fetched successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       type: object
+ *       400:
+ *         description: Bad request - Invalid user ID
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+userRoutes.get("/:userId", authenticate, authorize("admin"), getUserByID);
 
 export default userRoutes;
