@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { sendSuccess, sendError } from "@/utils/response.util";
 import status from "http-status";
 import { supabase } from "@/configs/supabase.config";
+import { redis } from "@/configs/redis.config";
 
 /**
  * @swagger
@@ -45,7 +46,8 @@ export const logout = async (
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
-
+    redis?.del(_req.user?.userId!);
+    redis?.flushall()
     return sendSuccess(res, "Logout successful", undefined, status.OK);
   } catch (error) {
     console.error("Logout error:", error);

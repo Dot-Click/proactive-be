@@ -67,9 +67,9 @@ export const updateSettings = async (req: Request, res: Response): Promise<Respo
         
         // Handle profile picture upload if present
         let profilePictureUrl: string | undefined;
-        if (req.files && (req.files as any).prof_pic && (req.files as any).prof_pic[0]) {
+        if (req.file) {
             try {
-                const prof_pic = await cloudinaryUploader((req.files as any).prof_pic[0].path) as any;
+                const prof_pic = await cloudinaryUploader((req.file as any).path) as any;
                 profilePictureUrl = prof_pic.secure_url as string;
             } catch (error) {
                 console.error("Profile picture upload error:", error);
@@ -120,8 +120,17 @@ export const updateSettings = async (req: Request, res: Response): Promise<Respo
                 .where(eq(users.id, userId!));
         }
         
-        // Update coordinator details if coordinatorDetails exists
-        if (coordinatorDetailsId) {
+        // Check if coordinator details already exist for this user directly
+        const existingCoordinator = await db
+            .select({ id: coordinatorDetails.id })
+            .from(coordinatorDetails)
+            .where(eq(coordinatorDetails.userId, userId!))
+            .limit(1);
+
+        const targetCoordinatorId = coordinatorDetailsId || existingCoordinator[0]?.id;
+
+        // Update coordinator details if exists, otherwise create new
+        if (targetCoordinatorId) {
             const updateData: any = {};
             if (Name) updateData.fullName = Name;
             if (profilePictureUrl) updateData.profilePicture = profilePictureUrl;
@@ -130,7 +139,15 @@ export const updateSettings = async (req: Request, res: Response): Promise<Respo
                 await db
                     .update(coordinatorDetails)
                     .set(updateData)
-                    .where(eq(coordinatorDetails.id, coordinatorDetailsId));
+                    .where(eq(coordinatorDetails.id, targetCoordinatorId));
+            }
+
+            // Ensure linkage in users table if it was missing
+            if (!coordinatorDetailsId) {
+                 await db
+                    .update(users)
+                    .set({ coordinatorDetails: targetCoordinatorId })
+                    .where(eq(users.id, userId!));
             }
         } else {
             // Create coordinator details if it doesn't exist
