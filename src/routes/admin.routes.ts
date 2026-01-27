@@ -114,7 +114,7 @@ adminRoutes.post("/coordinator", authenticate, authorize("admin"), upload(['imag
  *             schema:
  *               $ref: "#/components/schemas/ErrorResponse"
  */
-adminRoutes.get("/coordinator", authenticate, authorize("admin"), getCoordinators);
+adminRoutes.get("/coordinator", getCoordinators);
 
 /**
  * @swagger
@@ -172,7 +172,7 @@ adminRoutes.get("/coordinator", authenticate, authorize("admin"), getCoordinator
  *             schema:
  *               $ref: "#/components/schemas/ErrorResponse"
  */
-adminRoutes.get("/coordinator/:id", authenticate, authorize("admin"), getCoordinatorById);
+adminRoutes.get("/coordinator/:id", getCoordinatorById);
 
 /**
  * @swagger
