@@ -73,8 +73,8 @@ export const createPayment = async (
       trip_id,
     } = req.body;
 
-    if (!userId) {
-      return sendError(res, "User ID not found in authentication token", 400);
+    if (!userId || !amount || !trip_id) {
+      return sendError(res, "Bad Request, Missing required values", 400);
     }
 
     if (!payment_method_id) {
