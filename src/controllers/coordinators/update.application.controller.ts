@@ -143,13 +143,13 @@ export const updateApplication = async (
 
     // Fetch trip details to get trip name
     const tripResults = await db
-      .select({ title: trips.title })
+      .select({ title: trips.title, id: trips.id })
       .from(trips)
       .where(eq(trips.id, application.tripId))
       .limit(1);
 
     const tripName = tripResults.length > 0 ? tripResults[0].title : "the trip";
-
+    const tripId = tripResults.length > 0 ? tripResults[0].id : "";
     // Update application status
     const updatedApplication = await db
       .update(applications)
@@ -183,7 +183,7 @@ export const updateApplication = async (
         await createNotification({
           userId: application.userId,
           title: "Application approved",
-          description: `Your application for "${tripName}" has been approved. You can now proceed with payment.`,
+          description: `Your application for "${tripName}" has been approved. You can now proceed with payment. with trip id ${tripId}`,
           type: "trip",
         });
       } catch (achievementError) {

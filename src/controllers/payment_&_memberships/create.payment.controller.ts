@@ -72,6 +72,7 @@ export const createPayment = async (
       // return_url,
       trip_id,
     } = req.body;
+    const db = await database();
 
     if (!userId || !amount || !trip_id) {
       return sendError(res, "Bad Request, Missing required values", 400);
@@ -79,6 +80,14 @@ export const createPayment = async (
 
     if (!payment_method_id) {
       return sendError(res, "Payment method ID is required", 400);
+    }
+
+    // check in db if user has already paid for this trip
+    const existingPayment = await db.query.payments.findFirst({
+      where: eq(payments.tripId, trip_id),
+    });
+    if (existingPayment) {
+      return sendError(res, "You have already paid for this trip", 400);
     }
 
     // Retrieve payment method from Stripe
@@ -119,7 +128,6 @@ export const createPayment = async (
       // return_url,
     });
 
-    const db = await database();
 
     // Map payment status from Stripe to our enum
     let paymentStatus: "paid" | "unpaid" | "pending" | "failed" | "refunded" =
