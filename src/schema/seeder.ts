@@ -7,6 +7,7 @@ import {
   faqs,
   categories,
   trips,
+  globalSettings,
 } from "./schema";
 import { hashPassword } from "@/utils/password.util";
 import { env } from "@/utils/env.utils";
@@ -64,6 +65,7 @@ const seed = async () => {
       await db.delete(chats);
       await db.delete(faqs);
       await db.delete(categories);
+      await db.delete(globalSettings);
       await db.delete(users);
     } catch (deleteError: any) {
       const errorMessage = deleteError?.message || deleteError?.toString() || "Unknown error";
@@ -276,6 +278,33 @@ const seed = async () => {
       },
     ]);
 
+    // Seed Settings
+    console.log("⚙️ Seeding settings...");
+    await db.insert(globalSettings).values({
+      platformName: "Proactive Travel",
+      timeZone: "UTC",
+      logo: "/logo.png",
+      defaultLanguage: "en",
+      currency: "USD",
+      chatWidget: true,
+      tripCategories: ["Mountain", "Beach", "Culture", "Adventure", "Wellness"],
+      defaultApproval: "pending",
+      defaultMaxParticipants: 20,
+      defaultMinParticipants: 2,
+      emailNotification: true,
+      reminderDays: 3,
+      sendSms: false,
+      twoFactorEnabled: false,
+      sessionTimeout: 30,
+      maxLogins: 5,
+      minPasswordLength: 8,
+      contactAddress: "123 Travel Street, City, Country",
+      contactPhone: "+1234567890",
+      contactEmail: "contact@example.com",
+      mapLat: "40.7128",
+      mapLng: "-74.0060",
+    });
+
     // Seed Trips
     console.log("🚗 Seeding trips...");
     await db.insert(trips).values([
@@ -341,6 +370,7 @@ const seed = async () => {
     console.log(`   - Chats: 2`);
     console.log(`   - Chat Participants: 5`);
     console.log(`   - Messages: 5`);
+    console.log(`   - Settings: 1`);
     console.log(`   - Trips: 2`);
     console.log("\n🔑 Default password for all users: Password123!");
   } catch (error: any) {

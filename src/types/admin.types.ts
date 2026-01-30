@@ -75,6 +75,11 @@ export const updateSettingsSchema = z.object({
   sessionTimeout: z.coerce.number().int().positive().optional(),
   maxLogins: z.coerce.number().int().positive().optional(),
   minPasswordLength: z.coerce.number().int().positive().optional(),
+  contactAddress: z.string().max(500).optional(),
+  contactPhone: z.string().max(50).optional(),
+  contactEmail: z.string().email().max(255).optional(),
+  mapLat: z.string().max(50).optional(),
+  mapLng: z.string().max(50).optional(),
 }).strict();
 
 /**

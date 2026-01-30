@@ -387,6 +387,11 @@ export const globalSettings = pgTable("settings", {
   sessionTimeout: integer("session_timeout").notNull(),
   maxLogins: integer("max_logins").notNull(),
   minPasswordLength: integer("min_password_length").notNull(),
+  contactAddress: varchar("contact_address", { length: 500 }),
+  contactPhone: varchar("contact_phone", { length: 50 }),
+  contactEmail: varchar("contact_email", { length: 255 }),
+  mapLat: varchar("map_lat", { length: 50 }),
+  mapLng: varchar("map_lng", { length: 50 }),
   ...timeStamps,
 });
 
