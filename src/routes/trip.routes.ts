@@ -7,6 +7,7 @@ import { getTripById } from "@/controllers/trips/get-unique-tripe.controller";
 import { updateTrip } from "@/controllers/trips/update-trip.controller";
 import { approveTrip } from "@/controllers/trips/Approvetrip.controller";
 import { rejectTrip } from "@/controllers/trips/rejectTrip.controller";
+import { searchTrips } from "@/controllers/trips/search-trips.controller";
 
 const tripRoutes = Router();
 
@@ -28,7 +29,20 @@ const tripRoutes = Router();
  *     security:
  *       - bearerAuth: []
  */
-tripRoutes.post("/", authenticate, authorize("admin", "coordinator"), upload(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'video/mp4', 'video/mov']), createTrip);
+tripRoutes.post(
+  "/",
+  authenticate,
+  authorize("admin", "coordinator"),
+  upload([
+    "image/jpeg",
+    "image/png",
+    "image/jpg",
+    "image/gif",
+    "video/mp4",
+    "video/mov",
+  ]),
+  createTrip,
+);
 
 /**
  * @swagger
@@ -43,6 +57,24 @@ tripRoutes.get("/", authenticate, getTrips);
 
 /**
  * @swagger
+ * /api/trip/search:
+ *   get:
+ *     tags:
+ *       - Trips
+ *     summary: Search trips by name or location
+ *     description: Search for trips using trip name or location
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search query for trip name or location
+ */
+tripRoutes.get("/search", authenticate, searchTrips);
+
+/**
+ * @swagger
  * /api/trip/{id}:
  *   get:
  *     tags:
@@ -50,7 +82,12 @@ tripRoutes.get("/", authenticate, getTrips);
  *     summary: Get a trip by ID
  *     description: Get a trip by ID
  */
-tripRoutes.get("/:id", authenticate, authorize("admin", "coordinator", "user"), getTripById);
+tripRoutes.get(
+  "/:id",
+  authenticate,
+  authorize("admin", "coordinator", "user"),
+  getTripById,
+);
 
 /**
  * @swagger
@@ -61,9 +98,32 @@ tripRoutes.get("/:id", authenticate, authorize("admin", "coordinator", "user"), 
  *     summary: Update a trip by ID
  *     description: Update a trip by ID
  */
-tripRoutes.patch("/:id", authenticate, authorize("admin", "coordinator"),upload(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'video/mp4', 'video/mov']), updateTrip);
+tripRoutes.put(
+  "/:id",
+  authenticate,
+  authorize("admin", "coordinator"),
+  upload([
+    "image/jpeg",
+    "image/png",
+    "image/jpg",
+    "image/gif",
+    "video/mp4",
+    "video/mov",
+  ]),
+  updateTrip,
+);
 
-tripRoutes.patch("/trips/:id/approve", authenticate, authorize("admin", "coordinator"), approveTrip);
-tripRoutes.patch("/trips/:id/reject", authenticate, authorize("admin", "coordinator"), rejectTrip);
+tripRoutes.patch(
+  "/trips/:id/approve",
+  authenticate,
+  authorize("admin", "coordinator"),
+  approveTrip,
+);
+tripRoutes.patch(
+  "/trips/:id/reject",
+  authenticate,
+  authorize("admin", "coordinator"),
+  rejectTrip,
+);
 
 export default tripRoutes;
