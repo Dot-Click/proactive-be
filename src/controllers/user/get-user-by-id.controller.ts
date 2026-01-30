@@ -1,5 +1,5 @@
 import { database } from "@/configs/connection.config";
-import { users, coordinatorDetails } from "@/schema/schema";
+import { users, coordinatorDetails, payments, trips, achievements } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { Request, Response } from "express";
 import status from "http-status";
@@ -38,7 +38,13 @@ export const getUserByID = async (
         avatar: users.avatar,
         phoneNumber: users.phoneNumber,
         address: users.address,
+        badges: achievements.badges,
+        points: achievements.points,
+        achievementId: achievements.id,
         dob: users.dob,
+        trips: { title: trips.title, status: trips.status },
+        payments: payments.amount,
+        paymentId: payments.id,
         gender: users.gender,
         provider: users.provider,
         emailVerified: users.emailVerified,
@@ -49,51 +55,65 @@ export const getUserByID = async (
         coordinatorDetailsId: users.coordinatorDetails,
       })
       .from(users)
+      .leftJoin(payments, eq(users.id, payments.userId))
+      .leftJoin(trips, eq(payments.tripId, trips.id))
+      .leftJoin(achievements, eq(users.id, achievements.userId))
       .where(eq(users.id, userId))
-      .limit(1);
 
-    // Check if user exists
-    if (!userData || userData.length === 0) {
-      return sendError(res, "User not found", status.NOT_FOUND);
-    }
+      // Check if user exists
+      if (!userData || userData.length === 0) {
+        return sendError(res, "User not found", status.NOT_FOUND);
+      }
+
+      // De-duplicate results to handle Cartesian product from multiple joins
+      const uniquePayments = new Map<string, number>();
+      const uniqueAchievements = new Map<string, { badges: any; points: number }>();
+      const uniqueTrips = new Map<string, any>();
+
+      userData.forEach((row: any) => {
+        if (row.paymentId && row.payments) {
+          uniquePayments.set(row.paymentId, Number(row.payments));
+        }
+        if (row.achievementId) {
+          uniqueAchievements.set(row.achievementId, {
+            badges: row.badges,
+            points: Number(row.points) || 0,
+          });
+        }
+        if (row.trips && row.trips.title) {
+          uniqueTrips.set(row.trips.title, row.trips);
+        }
+      });
+
+      const totalAmount = Array.from(uniquePayments.values()).reduce((sum, val) => sum + val, 0);
+      const totalPoints = Array.from(uniqueAchievements.values()).reduce((sum, val) => sum + val.points, 0);
+      const badgeList = Array.from(new Set(Array.from(uniqueAchievements.values()).map(a => a.badges))).filter(Boolean);
+      const tripList = Array.from(uniqueTrips.values());
 
     const user = userData[0];
 
-    // Fetch coordinator details if user has coordinator role
-    let coordinatorDetailsData = null;
-    if (user.coordinatorDetailsId) {
-      const coordData = await db
-        .select({
-          id: coordinatorDetails.id,
-          fullName: coordinatorDetails.fullName,
-          phoneNumber: coordinatorDetails.phoneNumber,
-          bio: coordinatorDetails.bio,
-          profilePicture: coordinatorDetails.profilePicture,
-          specialities: coordinatorDetails.specialities,
-          notificationPref: coordinatorDetails.notificationPref,
-          languages: coordinatorDetails.languages,
-          certificateLvl: coordinatorDetails.certificateLvl,
-          yearsOfExperience: coordinatorDetails.yearsOfExperience,
-          type: coordinatorDetails.type,
-          accessLvl: coordinatorDetails.accessLvl,
-          location: coordinatorDetails.location,
-          successRate: coordinatorDetails.successRate,
-          repeatCustomers: coordinatorDetails.repeatCustomers,
-          totalRevenue: coordinatorDetails.totalRevenue,
-          isActive: coordinatorDetails.isActive,
-          createdAt: coordinatorDetails.createdAt,
-          updatedAt: coordinatorDetails.updatedAt,
-        })
-        .from(coordinatorDetails)
-        .where(eq(coordinatorDetails.id, user.coordinatorDetailsId))
-        .limit(1);
-
-      coordinatorDetailsData = coordData.length > 0 ? coordData[0] : null;
-    }
-
     const userWithDetails = {
-      ...user,
-      coordinatorDetails: coordinatorDetailsData,
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      nickName: user.nickName,
+      email: user.email,
+      avatar: user.avatar,
+      phoneNumber: user.phoneNumber,
+      address: user.address,
+      badges: badgeList,
+      points: totalPoints,
+      dob: user.dob,
+      gender: user.gender,
+      provider: user.provider,
+      emailVerified: user.emailVerified,
+      userRoles: user.userRoles,
+      lastActive: user.lastActive,
+      memberSince: user.createdAt,
+      updatedAt: user.updatedAt,
+      destinations: tripList.length,
+      completedTrips: tripList.filter((trip: any) => trip.status === 'completed').length,
+      totalAmount,
     };
 
     return sendSuccess(
