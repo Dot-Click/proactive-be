@@ -31,10 +31,9 @@ export const createTripSchema = z.object({
     .string()
     .min(1, "Type is required")
     .max(100, "Type must be less than 100 characters"),
-  location: z
+  locationId: z
     .string()
-    .min(1, "Location is required")
-    .max(255, "Location must be less than 255 characters"),
+    .min(1, "Location is required"),
   mapCoordinates: z
     .string()
     .optional(),
@@ -210,10 +209,9 @@ export const updateTripSchema = z.object({
     .min(1, "Type is required")
     .max(100, "Type must be less than 100 characters")
     .optional(),
-  location: z
+  locationId: z
     .string()
     .min(1, "Location is required")
-    .max(255, "Location must be less than 255 characters")
     .optional(),
   mapCoordinates: z
     .string()

@@ -1,5 +1,5 @@
 import { database } from "@/configs/connection.config";
-import { achievements, users, trips } from "@/schema/schema";
+import { achievements, users, trips, locations } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { eq, or, ilike } from "drizzle-orm";
 import { Request, Response } from "express";
@@ -50,6 +50,12 @@ export const searchAchievements = async (
         id: achievements.id,
         points: achievements.points,
         progress: achievements.progress,
+        level: achievements.level,
+        badges: achievements.badges,
+        unlocked: achievements.unlocked,
+        role: achievements.role,
+        createdAt: achievements.createdAt,
+        updatedAt: achievements.updatedAt,
 
         // User fields
         userId: users.id,
@@ -57,14 +63,22 @@ export const searchAchievements = async (
         userLastName: users.lastName,
         userNickName: users.nickName,
         userEmail: users.email,
+        userAvatar: users.avatar,
 
         // Trip fields
         tripId: trips.id,
         tripTitle: trips.title,
+        tripDescription: trips.description,
+        tripCoverImage: trips.coverImage,
+        tripLocation: locations.name,
+        tripStartDate: trips.startDate,
+        tripEndDate: trips.endDate,
+        tripStatus: trips.status,
       })
       .from(achievements)
       .leftJoin(users, eq(users.id, achievements.userId))
       .leftJoin(trips, eq(trips.id, achievements.tripId))
+      .leftJoin(locations, eq(trips.locationId, locations.id))
       .where(
         or(
           ilike(users.firstName, searchTerm),

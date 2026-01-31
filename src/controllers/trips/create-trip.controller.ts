@@ -5,7 +5,7 @@ import status from "http-status";
 import { cloudinaryUploader } from "@/utils/cloudinary.util";
 import { fetchCorrd } from "@/utils/geocoding.util";
 import { database } from "@/configs/connection.config";
-import { trips, discounts, tripCoordinators, users } from "@/schema/schema";
+import { trips, discounts, tripCoordinators, users, locations } from "@/schema/schema";
 import { createId } from "@paralleldrive/cuid2";
 import { ZodError } from "zod";
 import { createTripSchema } from "@/types/trip.types";
@@ -143,10 +143,6 @@ export const createTrip = async (
       }
     }
 
-    const map_coord = await fetchCorrd(payload.location);
-    payload.mapCoordinates = `${map_coord.lat},${map_coord.lon}`;
-
-
     const validCoordinatorIds = coordinatorIds.filter(
       (cid: string) => cid && typeof cid === "string" && cid.trim() !== ""
     );
@@ -201,14 +197,25 @@ export const createTrip = async (
 
     const db = await database();
 
+    const locationRow = await db
+      .select({ name: locations.name })
+      .from(locations)
+      .where(eq(locations.id, validatedPayload.locationId))
+      .limit(1);
+    if (locationRow.length === 0) {
+      return sendError(res, "Invalid location ID", status.BAD_REQUEST);
+    }
+    const map_coord = await fetchCorrd(locationRow[0].name);
+    const mapCoordinates = `${map_coord.lat},${map_coord.lon}`;
+
     // Create trip - map validated data to database schema
     const tripValues: any = {
       title: validatedPayload.title,
       description: validatedPayload.description,
       coverImage: validatedPayload.coverImage || "",
       type: validatedPayload.type,
-      location: validatedPayload.location,
-      mapCoordinates: validatedPayload.mapCoordinates,
+      locationId: validatedPayload.locationId,
+      mapCoordinates,
       startDate: validatedPayload.startDate,
       endDate: validatedPayload.endDate,
       duration: validatedPayload.duration,

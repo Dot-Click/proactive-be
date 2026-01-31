@@ -1,5 +1,5 @@
 import { database } from "@/configs/connection.config";
-import { trips, tripCoordinators, coordinatorDetails, users } from "@/schema/schema";
+import { trips, tripCoordinators, coordinatorDetails, users, locations } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { eq } from "drizzle-orm";
 import { Request, Response } from "express";
@@ -19,14 +19,22 @@ export const getTripById = async (req: Request, res: Response): Promise<Response
       const { id } = req.params;
       const db = await database();
       
-      // Get trip details
-      const tripResult = await db.select().from(trips).where(eq(trips.id, id));
-      
+      // Get trip details with location name
+      const tripResult = await db
+        .select({
+          trip: trips,
+          locationName: locations.name,
+        })
+        .from(trips)
+        .leftJoin(locations, eq(trips.locationId, locations.id))
+        .where(eq(trips.id, id));
+
       if (tripResult.length === 0) {
         return sendError(res, "Trip not found", status.NOT_FOUND);
       }
-      
-      const trip = tripResult[0];
+
+      const row = tripResult[0];
+      const trip = row.trip;
       
       // Get coordinators for this trip
       const coordinatorsResult = await db
@@ -47,9 +55,11 @@ export const getTripById = async (req: Request, res: Response): Promise<Response
         .leftJoin(users, eq(users.id, tripCoordinators.userId))
         .where(eq(tripCoordinators.tripId, id));
       
-      // Attach coordinators to trip
+      // Attach coordinators and location to trip
       const tripWithCoordinators = {
         ...trip,
+        location: row.locationName ?? null,
+        locationId: trip.locationId,
         coordinators: coordinatorsResult,
         coordinator: coordinatorsResult[0] || null, // For backward compatibility
         coordinatorId: coordinatorsResult[0]?.id || null, // For backward compatibility

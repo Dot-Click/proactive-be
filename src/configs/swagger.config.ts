@@ -691,10 +691,10 @@ const options: Options = {
               example: "Wild Weekend",
               description: "The trip type",
             },
-            location: {
+            locationId: {
               type: "string",
-              example: "Barcelona, Spain",
-              description: "The trip location",
+              example: "clx123abc456def789",
+              description: "ID of the location (from locations table)",
             },
             mapCoordinates: {
               type: "string",
@@ -876,7 +876,7 @@ const options: Options = {
         },
         CreateTripRequest: {
           type: "object",
-          required: ["title", "description", "location", "startDate", "endDate", "duration"],
+          required: ["title", "description", "locationId", "startDate", "endDate", "duration"],
           properties: {
             title: {
               type: "string",
@@ -904,12 +904,11 @@ const options: Options = {
               example: "Wild Weekend",
               description: "The trip type",
             },
-            location: {
+            locationId: {
               type: "string",
               minLength: 1,
-              maxLength: 255,
-              example: "Barcelona, Spain",
-              description: "The trip location",
+              example: "clx123abc456def789",
+              description: "ID of the location (from locations table)",
             },
             map_coordinates: {
               type: "string",

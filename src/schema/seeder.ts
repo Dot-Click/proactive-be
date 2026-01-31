@@ -6,6 +6,7 @@ import {
   messages,
   faqs,
   categories,
+  locations,
   trips,
   globalSettings,
   coordinatorDetails,
@@ -134,12 +135,17 @@ const seed = async () => {
         /* table may not exist */
       }
       try {
-        await db.delete(globalSettings);
+        await db.delete(trips);
       } catch (e) {
         /* table may not exist */
       }
       try {
-        await db.delete(trips);
+        await db.delete(locations);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(globalSettings);
       } catch (e) {
         /* table may not exist */
       }
@@ -397,6 +403,18 @@ const seed = async () => {
       mapLng: "-74.0060",
     });
 
+    // Seed Locations
+    console.log("📍 Seeding locations...");
+    const [locColorado, locHawaii, locParis, locThailand] = await db
+      .insert(locations)
+      .values([
+        { name: "Colorado, USA" },
+        { name: "Honolulu, Hawaii" },
+        { name: "Paris, France" },
+        { name: "Bangkok & Phuket, Thailand" },
+      ])
+      .returning();
+
     // Seed Trips
     console.log("🚗 Seeding trips...");
     const [trip1, trip2, trip3, trip4] = await db
@@ -408,7 +426,7 @@ const seed = async () => {
             "An exciting week exploring the majestic Rocky Mountains",
           coverImage: "https://example.com/rocky-mountains.jpg",
           type: "Mountain",
-          location: "Colorado, USA",
+          locationId: locColorado.id,
           mapCoordinates: "39.7392,-104.9903",
           startDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           endDate: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000),
@@ -440,7 +458,7 @@ const seed = async () => {
           description: "Relax on pristine beaches and explore tropical islands",
           coverImage: "https://example.com/hawaii-beach.jpg",
           type: "Beach",
-          location: "Honolulu, Hawaii",
+          locationId: locHawaii.id,
           mapCoordinates: "21.3099,-157.8581",
           startDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
           endDate: new Date(Date.now() + 52 * 24 * 60 * 60 * 1000),
@@ -477,7 +495,7 @@ const seed = async () => {
             "Immerse yourself in art, history, and cuisine in the City of Light",
           coverImage: "https://example.com/paris-tour.jpg",
           type: "Culture",
-          location: "Paris, France",
+          locationId: locParis.id,
           mapCoordinates: "48.8566,2.3522",
           startDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
           endDate: new Date(Date.now() + 67 * 24 * 60 * 60 * 1000),
@@ -514,7 +532,7 @@ const seed = async () => {
             "Rejuvenate body and mind with yoga, meditation, and spa treatments",
           coverImage: "https://example.com/thailand-wellness.jpg",
           type: "Wellness",
-          location: "Bangkok & Phuket, Thailand",
+          locationId: locThailand.id,
           mapCoordinates: "13.7563,100.5018",
           startDate: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000),
           endDate: new Date(Date.now() + 82 * 24 * 60 * 60 * 1000),

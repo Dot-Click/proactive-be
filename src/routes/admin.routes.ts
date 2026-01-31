@@ -6,6 +6,11 @@ import { getCoordinatorById } from "@/controllers/admin/get-unique.coordinators.
 import { getCoordinators } from "@/controllers/admin/get.coordinators.controller";
 import { sendMails } from "@/controllers/admin/send.emails.controller";
 import { getSettings, updateSettings } from "@/controllers/admin/settings.controller";
+import { createLocation } from "@/controllers/location/create-location.controller";
+import { getLocations } from "@/controllers/location/get-locations.controller";
+import { getLocation } from "@/controllers/location/get-location.controller";
+import { updateLocation } from "@/controllers/location/update-location.controller";
+import { deleteLocation } from "@/controllers/location/delete-location.controller";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { upload } from "@/middlewares/multer.middleware";
 import { Router } from "express";
@@ -274,5 +279,13 @@ adminRoutes.get("/dashboard", authenticate, authorize("admin"), dashboardlogic)
  *    description: sendmail to user and coordinators
  */
 
-adminRoutes.post("/sendMail", authenticate, authorize("admin"), sendMails)
+adminRoutes.post("/sendMail", authenticate, authorize("admin"), sendMails);
+
+// Location CRUD - list/get allowed for coordinators (for trip form); create/update/delete admin only
+adminRoutes.get("/location", authenticate, authorize("admin", "coordinator"), getLocations);
+adminRoutes.get("/location/:locationId", authenticate, authorize("admin", "coordinator"), getLocation);
+adminRoutes.post("/location", authenticate, authorize("admin"), createLocation);
+adminRoutes.put("/location/:locationId", authenticate, authorize("admin"), updateLocation);
+adminRoutes.delete("/location/:locationId", authenticate, authorize("admin"), deleteLocation);
+
 export default adminRoutes;

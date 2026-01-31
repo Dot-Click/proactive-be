@@ -4,6 +4,7 @@ import {
   tripCoordinators,
   coordinatorDetails,
   users,
+  locations,
 } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { eq, or, ilike } from "drizzle-orm";
@@ -48,14 +49,19 @@ export const searchTrips = async (
     const searchTerm = `%${query.trim()}%`;
     const db = await database();
 
-    // Search trips by title or location using case-insensitive search
+    // Search trips by title, description, or location name (via join)
     const tripsData = await db
-      .select()
+      .select({
+        trip: trips,
+        locationName: locations.name,
+      })
       .from(trips)
+      .leftJoin(locations, eq(trips.locationId, locations.id))
       .where(
         or(
           ilike(trips.title, searchTerm),
           ilike(trips.description, searchTerm),
+          ilike(locations.name, searchTerm),
         ),
       );
 
@@ -71,7 +77,8 @@ export const searchTrips = async (
 
     // Fetch coordinators for all matching trips
     const tripsWithCoordinators = await Promise.all(
-      tripsData.map(async (trip: any) => {
+      tripsData.map(async (row: any) => {
+        const trip = row.trip;
         const coordinatorsResult = await db
           .select({
             id: tripCoordinators.userId,
@@ -100,7 +107,8 @@ export const searchTrips = async (
           status: trip.status,
           approvalStatus: trip.approvalStatus,
           coverImage: trip.coverImage,
-          location: trip.location,
+          location: row.locationName ?? null,
+          locationId: trip.locationId,
           duration: trip.duration,
           groupSize: trip.groupSize,
           perHeadPrice: trip.perHeadPrice,

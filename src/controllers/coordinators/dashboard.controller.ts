@@ -4,7 +4,7 @@ import "@/middlewares/auth.middleware";
 import { Request, Response } from "express";
 import status from "http-status";
 import { sql, eq } from "drizzle-orm";
-import { trips, tripCoordinators, applications } from "@/schema/schema";
+import { trips, tripCoordinators, applications, locations } from "@/schema/schema";
 
 export const dashboardlogic = async (req: Request, res: Response) => {
     try {
@@ -75,12 +75,13 @@ export const dashboardlogic = async (req: Request, res: Response) => {
                 startDate: trips.startDate,
                 endDate: trips.endDate,
                 coverImage: trips.coverImage,
-                location: trips.location,
+                location: locations.name,
                 status: trips.status,
                 approvalStatus: trips.approvalStatus
             })
             .from(trips)
             .innerJoin(tripCoordinators, eq(tripCoordinators.tripId, trips.id))
+            .leftJoin(locations, eq(trips.locationId, locations.id))
             .where(eq(tripCoordinators.userId, coordinatorId))
             .orderBy(sql`${trips.createdAt} DESC`)
             .limit(10);

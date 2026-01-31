@@ -1,5 +1,5 @@
 import { database } from "@/configs/connection.config";
-import { trips, tripCoordinators, coordinatorDetails, users } from "@/schema/schema";
+import { trips, tripCoordinators, coordinatorDetails, users, locations } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { and, eq, lt, gte } from "drizzle-orm";
 import { Request, Response } from "express";
@@ -38,11 +38,19 @@ export const getTrips = async (req: Request, res: Response): Promise<Response> =
       }
 
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-      const tripsData = await db.select().from(trips).where(whereClause);
+      const tripsData = await db
+        .select({
+          trip: trips,
+          locationName: locations.name,
+        })
+        .from(trips)
+        .leftJoin(locations, eq(trips.locationId, locations.id))
+        .where(whereClause);
 
       // Fetch coordinators for all trips
       const tripsWithCoordinators = await Promise.all(
-        tripsData.map(async (trip: any) => {
+        tripsData.map(async (row: any) => {
+          const trip = row.trip;
           const coordinatorsResult = await db
             .select({
               id: tripCoordinators.userId,
@@ -70,7 +78,8 @@ export const getTrips = async (req: Request, res: Response): Promise<Response> =
             status: trip.status,
             approvalStatus: trip.approvalStatus,
             coverImage: trip.coverImage,
-            location: trip.location,
+            location: row.locationName ?? null,
+            locationId: trip.locationId,
             duration: trip.duration,
             groupSize: trip.groupSize,
             perHeadPrice: trip.perHeadPrice,

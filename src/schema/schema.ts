@@ -221,13 +221,19 @@ export const categories = pgTable("categories", {
   ...timeStamps,
 });
 
+export const locations = pgTable("locations", {
+  id: uuid().primaryKey(),
+  name: varchar({ length: 255 }).notNull().unique(),
+  ...timeStamps,
+});
+
 export const trips = pgTable("trips", {
   id: uuid().primaryKey(),
   title: varchar({ length: 255 }).notNull(),
   description: text().notNull(),
   coverImage: varchar({ length: 500 }).notNull(),
   type: varchar({ length: 100 }).notNull(),
-  location: varchar({ length: 255 }).notNull(),
+  locationId: foreignkeyRef("location_id", () => locations.id, { onDelete: "restrict" }).notNull(),
   mapCoordinates: varchar({ length: 255 }),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),

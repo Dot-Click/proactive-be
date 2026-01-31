@@ -1,5 +1,5 @@
 import { database } from "@/configs/connection.config";
-import { trips, tripCoordinators, coordinatorDetails, users } from "@/schema/schema";
+import { trips, tripCoordinators, coordinatorDetails, users, locations } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { and, eq, gte, inArray } from "drizzle-orm";
 import { Request, Response } from "express";
@@ -25,12 +25,17 @@ export const getOpenTrips = async (req: Request, res: Response): Promise<Respons
     }
 
     const tripsData = await db
-      .select()
+      .select({
+        trip: trips,
+        locationName: locations.name,
+      })
       .from(trips)
+      .leftJoin(locations, eq(trips.locationId, locations.id))
       .where(and(...conditions));
 
     const tripsWithCoordinators = await Promise.all(
-      tripsData.map(async (trip: any) => {
+      tripsData.map(async (row: any) => {
+        const trip = row.trip;
         const coordinatorsResult = await db
           .select({
             id: tripCoordinators.userId,
@@ -58,7 +63,8 @@ export const getOpenTrips = async (req: Request, res: Response): Promise<Respons
           status: trip.status,
           approvalStatus: trip.approvalStatus,
           coverImage: trip.coverImage,
-          location: trip.location,
+          location: row.locationName ?? null,
+          locationId: trip.locationId,
           duration: trip.duration,
           groupSize: trip.groupSize,
           perHeadPrice: trip.perHeadPrice,

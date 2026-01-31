@@ -1,5 +1,6 @@
 import { database } from "@/configs/connection.config";
-import { trips, discounts } from "@/schema/schema";
+import { trips, discounts, locations } from "@/schema/schema";
+import { fetchCorrd } from "@/utils/geocoding.util";
 import { updateTripSchema } from "@/types/trip.types";
 import { cloudinaryUploader } from "@/utils/cloudinary.util";
 import { sendError, sendSuccess } from "@/utils/response.util";
@@ -82,6 +83,19 @@ export const updateTrip = async (req: Request, res: Response): Promise<Response>
     const { discounts: tripDiscounts, ...tripData } = validatedPayload;
 
     const db = await database();
+
+    if (tripData.locationId) {
+      const locationRow = await db
+        .select({ name: locations.name })
+        .from(locations)
+        .where(eq(locations.id, tripData.locationId))
+        .limit(1);
+      if (locationRow.length === 0) {
+        return sendError(res, "Invalid location ID", status.BAD_REQUEST);
+      }
+      const map_coord = await fetchCorrd(locationRow[0].name);
+      (tripData as any).mapCoordinates = `${map_coord.lat},${map_coord.lon}`;
+    }
 
     // Update trip (excluding discounts from trip update)
     const trip = await db
