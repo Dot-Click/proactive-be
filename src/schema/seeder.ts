@@ -25,42 +25,46 @@ import { sql } from "drizzle-orm";
 const seed = async () => {
   try {
     console.log("🌱 Starting database seeding...");
-    
+
     // Check if CONNECTION_URL is set
     if (!env.CONNECTION_URL) {
       throw new Error(
         "❌ CONNECTION_URL environment variable is not set!\n" +
-        "Please ensure your .env file contains a valid CONNECTION_URL.\n" +
-        "Example: CONNECTION_URL=postgresql://user:password@host/database"
+          "Please ensure your .env file contains a valid CONNECTION_URL.\n" +
+          "Example: CONNECTION_URL=postgresql://user:password@host/database",
       );
     }
 
     console.log("🔌 Connecting to database...");
     const db = await database();
-    
+
     // Test database connection with a simple query
     try {
       console.log("🧪 Testing database connection...");
       await db.execute(sql`SELECT 1`);
       console.log("✅ Database connection successful!");
     } catch (connectionError: any) {
-      const errorMessage = connectionError?.message || connectionError?.toString() || "Unknown error";
-      const isNetworkError = errorMessage.includes("fetch failed") || 
-                             errorMessage.includes("ECONNREFUSED") ||
-                             errorMessage.includes("ENOTFOUND") ||
-                             errorMessage.includes("ETIMEDOUT");
-      
+      const errorMessage =
+        connectionError?.message ||
+        connectionError?.toString() ||
+        "Unknown error";
+      const isNetworkError =
+        errorMessage.includes("fetch failed") ||
+        errorMessage.includes("ECONNREFUSED") ||
+        errorMessage.includes("ENOTFOUND") ||
+        errorMessage.includes("ETIMEDOUT");
+
       if (isNetworkError) {
         throw new Error(
           "❌ Database connection failed!\n\n" +
-          "Possible issues:\n" +
-          "1. Network connectivity - Check your internet connection\n" +
-          "2. Database URL - Verify your CONNECTION_URL is correct\n" +
-          "3. Database status - Check if your Supabase database is active\n" +
-          "4. Firewall/VPN - Ensure your network allows connections to Supabase\n" +
-          "5. Connection string - Ensure you're using the direct connection string (not pooler)\n\n" +
-          `Error details: ${errorMessage}\n` +
-          `Connection URL format: ${env.CONNECTION_URL.substring(0, 20)}...`
+            "Possible issues:\n" +
+            "1. Network connectivity - Check your internet connection\n" +
+            "2. Database URL - Verify your CONNECTION_URL is correct\n" +
+            "3. Database status - Check if your Supabase database is active\n" +
+            "4. Firewall/VPN - Ensure your network allows connections to Supabase\n" +
+            "5. Connection string - Ensure you're using the direct connection string (not pooler)\n\n" +
+            `Error details: ${errorMessage}\n` +
+            `Connection URL format: ${env.CONNECTION_URL.substring(0, 20)}...`,
         );
       }
       throw connectionError;
@@ -69,44 +73,116 @@ const seed = async () => {
     // Clear existing data (in reverse order of dependencies)
     console.log("🧹 Clearing existing data...");
     try {
-      try { await db.delete(notifications); } catch (e) { /* table may not exist */ }
-      try { await db.delete(achievements); } catch (e) { /* table may not exist */ }
-      try { await db.delete(reviews); } catch (e) { /* table may not exist */ }
-      try { await db.delete(applications); } catch (e) { /* table may not exist */ }
-      try { await db.delete(discounts); } catch (e) { /* table may not exist */ }
-      try { await db.delete(payments); } catch (e) { /* table may not exist */ }
-      try { await db.delete(tripCoordinators); } catch (e) { /* table may not exist */ }
-      try { await db.delete(messages); } catch (e) { /* table may not exist */ }
-      try { await db.delete(chatParticipants); } catch (e) { /* table may not exist */ }
-      try { await db.delete(chats); } catch (e) { /* table may not exist */ }
-      try { await db.delete(faqs); } catch (e) { /* table may not exist */ }
-      try { await db.delete(categories); } catch (e) { /* table may not exist */ }
-      try { await db.delete(globalSettings); } catch (e) { /* table may not exist */ }
-      try { await db.delete(trips); } catch (e) { /* table may not exist */ }
-      try { await db.delete(coordinatorDetails); } catch (e) { /* table may not exist */ }
-      try { await db.delete(newsletterSubscribers); } catch (e) { /* table may not exist */ }
-      try { await db.delete(users); } catch (e) { /* table may not exist */ }
+      try {
+        await db.delete(notifications);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(achievements);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(reviews);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(applications);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(discounts);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(payments);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(tripCoordinators);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(messages);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(chatParticipants);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(chats);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(faqs);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(categories);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(globalSettings);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(trips);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(coordinatorDetails);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(newsletterSubscribers);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(users);
+      } catch (e) {
+        /* table may not exist */
+      }
     } catch (deleteError: any) {
-      const errorMessage = deleteError?.message || deleteError?.toString() || "Unknown error";
-      const isNetworkError = errorMessage.includes("fetch failed") || 
-                             errorMessage.includes("ECONNREFUSED") ||
-                             errorMessage.includes("ENOTFOUND") ||
-                             errorMessage.includes("ETIMEDOUT") ||
-                             deleteError?.cause?.message?.includes("fetch failed");
-      
+      const errorMessage =
+        deleteError?.message || deleteError?.toString() || "Unknown error";
+      const isNetworkError =
+        errorMessage.includes("fetch failed") ||
+        errorMessage.includes("ECONNREFUSED") ||
+        errorMessage.includes("ENOTFOUND") ||
+        errorMessage.includes("ETIMEDOUT") ||
+        deleteError?.cause?.message?.includes("fetch failed");
+
       if (isNetworkError) {
         throw new Error(
           "❌ Database connection failed during data clearing!\n\n" +
-          "Possible issues:\n" +
-          "1. Network connectivity - Check your internet connection\n" +
-          "2. Database URL - Verify your CONNECTION_URL is correct and accessible\n" +
-          "3. Database status - Check if your Supabase database is active\n" +
-          "   → Go to https://supabase.com/dashboard and ensure your project is running\n" +
-          "4. Firewall/VPN - Ensure your network allows connections to Supabase\n" +
-          "5. Connection string format - Ensure it starts with 'postgresql://' or 'postgres://'\n" +
-          "6. Use direct connection - Use the direct connection string, not the pooler URL\n\n" +
-          `Error details: ${errorMessage}\n` +
-          (deleteError?.cause?.message ? `Cause: ${deleteError.cause.message}\n` : "")
+            "Possible issues:\n" +
+            "1. Network connectivity - Check your internet connection\n" +
+            "2. Database URL - Verify your CONNECTION_URL is correct and accessible\n" +
+            "3. Database status - Check if your Supabase database is active\n" +
+            "   → Go to https://supabase.com/dashboard and ensure your project is running\n" +
+            "4. Firewall/VPN - Ensure your network allows connections to Supabase\n" +
+            "5. Connection string format - Ensure it starts with 'postgresql://' or 'postgres://'\n" +
+            "6. Use direct connection - Use the direct connection string, not the pooler URL\n\n" +
+            `Error details: ${errorMessage}\n` +
+            (deleteError?.cause?.message
+              ? `Cause: ${deleteError.cause.message}\n`
+              : ""),
         );
       }
       throw deleteError;
@@ -115,93 +191,98 @@ const seed = async () => {
     // Seed Users
     console.log("👥 Seeding users...");
     const hashedPassword = await hashPassword("Password123!");
-    
-    const [adminUser, coordinatorUser, regularUser1, regularUser2, regularUser3] =
-      await db
-        .insert(users)
-        .values([
-          {
-            firstName: "Admin",
-            lastName: "User",
-            nickName: "Admin User",
-            address: "123 Admin Street, City, Country",
-            phoneNumber: "+1234567890",
-            dob: "1990-01-01",
-            gender: "Male",
-            password: hashedPassword,
-            email: "admin@example.com",
-            emailVerified: true,
-            userStatus: "active",
-            userRoles: "admin",
-            provider: "email",
-            lastActive: new Date().toISOString(),
-          },
-          {
-            firstName: "Coordinator",
-            lastName: "Smith",
-            nickName: "Coordinator Smith",
-            address: "456 Coordinator Ave, City, Country",
-            phoneNumber: "+1234567891",
-            dob: "1985-05-15",
-            gender: "Female",
-            password: hashedPassword,
-            email: "coordinator@example.com",
-            emailVerified: true,
-            userStatus: "active",
-            userRoles: "coordinator",
-            provider: "email",
-            lastActive: new Date().toISOString(),
-          },
-          {
-            firstName: "John",
-            lastName: "Doe",
-            nickName: "John Doe",
-            address: "789 User Lane, City, Country",
-            phoneNumber: "+1234567892",
-            dob: "1992-08-20",
-            gender: "Male",
-            password: hashedPassword,
-            email: "user1@example.com",
-            emailVerified: true,
-            userStatus: "active",
-            userRoles: "user",
-            provider: "email",
-            lastActive: new Date().toISOString(),
-          },
-          {
-            firstName: "Jane",
-            lastName: "Wilson",
-            nickName: "Jane Wilson",
-            address: "321 User Road, City, Country",
-            phoneNumber: "+1234567893",
-            dob: "1995-12-10",
-            gender: "Female",
-            password: hashedPassword,
-            email: "user2@example.com",
-            emailVerified: true,
-            userStatus: "active",
-            userRoles: "user",
-            provider: "email",
-            lastActive: new Date().toISOString(),
-          },
-          {
-            firstName: "Robert",
-            lastName: "Johnson",
-            nickName: "Rob Johnson",
-            address: "555 Adventure Court, City, Country",
-            phoneNumber: "+1234567894",
-            dob: "1988-03-25",
-            gender: "Male",
-            password: hashedPassword,
-            email: "user3@example.com",
-            emailVerified: true,
-            userStatus: "active",
-            userRoles: "user",
-            provider: "email",
-            lastActive: new Date().toISOString(),
-          },
-        ])
-        .returning();
+
+    const [
+      adminUser,
+      coordinatorUser,
+      regularUser1,
+      regularUser2,
+      regularUser3,
+    ] = await db
+      .insert(users)
+      .values([
+        {
+          firstName: "Admin",
+          lastName: "User",
+          nickName: "Admin User",
+          address: "123 Admin Street, City, Country",
+          phoneNumber: "+1234567890",
+          dob: "1990-01-01",
+          gender: "Male",
+          password: hashedPassword,
+          email: "admin@example.com",
+          emailVerified: true,
+          userStatus: "active",
+          userRoles: "admin",
+          provider: "email",
+          lastActive: new Date().toISOString(),
+        },
+        {
+          firstName: "Coordinator",
+          lastName: "Smith",
+          nickName: "Coordinator Smith",
+          address: "456 Coordinator Ave, City, Country",
+          phoneNumber: "+1234567891",
+          dob: "1985-05-15",
+          gender: "Female",
+          password: hashedPassword,
+          email: "coordinator@example.com",
+          emailVerified: true,
+          userStatus: "active",
+          userRoles: "coordinator",
+          provider: "email",
+          lastActive: new Date().toISOString(),
+        },
+        {
+          firstName: "John",
+          lastName: "Doe",
+          nickName: "John Doe",
+          address: "789 User Lane, City, Country",
+          phoneNumber: "+1234567892",
+          dob: "1992-08-20",
+          gender: "Male",
+          password: hashedPassword,
+          email: "user1@example.com",
+          emailVerified: true,
+          userStatus: "active",
+          userRoles: "user",
+          provider: "email",
+          lastActive: new Date().toISOString(),
+        },
+        {
+          firstName: "Jane",
+          lastName: "Wilson",
+          nickName: "Jane Wilson",
+          address: "321 User Road, City, Country",
+          phoneNumber: "+1234567893",
+          dob: "1995-12-10",
+          gender: "Female",
+          password: hashedPassword,
+          email: "user2@example.com",
+          emailVerified: true,
+          userStatus: "active",
+          userRoles: "user",
+          provider: "email",
+          lastActive: new Date().toISOString(),
+        },
+        {
+          firstName: "Robert",
+          lastName: "Johnson",
+          nickName: "Rob Johnson",
+          address: "555 Adventure Court, City, Country",
+          phoneNumber: "+1234567894",
+          dob: "1988-03-25",
+          gender: "Male",
+          password: hashedPassword,
+          email: "user3@example.com",
+          emailVerified: true,
+          userStatus: "active",
+          userRoles: "user",
+          provider: "email",
+          lastActive: new Date().toISOString(),
+        },
+      ])
+      .returning();
 
     // Seed Coordinator Details
     console.log("👤 Seeding coordinator details...");
@@ -211,7 +292,11 @@ const seed = async () => {
         fullName: "Sarah Smith",
         phoneNumber: "+1234567891",
         bio: "Experienced travel coordinator with 10 years of expertise in adventure tours.",
-        specialities: ["Mountain Hiking", "Cultural Tours", "Adventure Activities"],
+        specialities: [
+          "Mountain Hiking",
+          "Cultural Tours",
+          "Adventure Activities",
+        ],
         languages: ["English", "Spanish", "French"],
         certificateLvl: "Advanced",
         yearsOfExperience: 10,
@@ -319,7 +404,8 @@ const seed = async () => {
       .values([
         {
           title: "Rocky Mountains Adventure",
-          description: "An exciting week exploring the majestic Rocky Mountains",
+          description:
+            "An exciting week exploring the majestic Rocky Mountains",
           coverImage: "https://example.com/rocky-mountains.jpg",
           type: "Mountain",
           location: "Colorado, USA",
@@ -327,7 +413,8 @@ const seed = async () => {
           startDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           endDate: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000),
           duration: "7 days",
-          longDesc: "Experience the breathtaking beauty of the Rocky Mountains with guided hikes, camping, and stunning views.",
+          longDesc:
+            "Experience the breathtaking beauty of the Rocky Mountains with guided hikes, camping, and stunning views.",
           groupSize: "15",
           rhythm: "Active",
           sportLvl: "Intermediate",
@@ -338,7 +425,11 @@ const seed = async () => {
           instaLink: "https://www.instagram.com/rockymountains",
           likedinLink: "https://www.linkedin.com/company/rockymountains",
           promotionalVideo: "https://www.youtube.com/watch?v=rockymountains",
-          galleryImages: ["https://example.com/img1.jpg", "https://example.com/img2.jpg", "https://example.com/img3.jpg"],
+          galleryImages: [
+            "https://example.com/img1.jpg",
+            "https://example.com/img2.jpg",
+            "https://example.com/img3.jpg",
+          ],
           bestPriceMsg: "Book now and save 20%",
           perHeadPrice: "1500",
           status: "active",
@@ -354,18 +445,27 @@ const seed = async () => {
           startDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
           endDate: new Date(Date.now() + 52 * 24 * 60 * 60 * 1000),
           duration: "7 days",
-          longDesc: "Enjoy world-class beaches, water sports, local cuisine, and unforgettable sunsets in beautiful Hawaii.",
+          longDesc:
+            "Enjoy world-class beaches, water sports, local cuisine, and unforgettable sunsets in beautiful Hawaii.",
           groupSize: "20",
           rhythm: "Relaxed",
           sportLvl: "Easy",
           weekendTt: "Beach",
-          included: { accommodation: true, meals: true, waterSports: true, guide: true },
+          included: {
+            accommodation: true,
+            meals: true,
+            waterSports: true,
+            guide: true,
+          },
           notIncluded: { flights: true, activities: true },
           shortDesc: "Tropical beach paradise in Hawaii",
           instaLink: "https://www.instagram.com/hawaiibeach",
           likedinLink: "https://www.linkedin.com/company/hawaiitravel",
           promotionalVideo: "https://www.youtube.com/watch?v=hawaiibeach",
-          galleryImages: ["https://example.com/beach1.jpg", "https://example.com/beach2.jpg"],
+          galleryImages: [
+            "https://example.com/beach1.jpg",
+            "https://example.com/beach2.jpg",
+          ],
           bestPriceMsg: "Early bird discount 15%",
           perHeadPrice: "2000",
           status: "active",
@@ -373,7 +473,8 @@ const seed = async () => {
         },
         {
           title: "Paris Cultural Tour",
-          description: "Immerse yourself in art, history, and cuisine in the City of Light",
+          description:
+            "Immerse yourself in art, history, and cuisine in the City of Light",
           coverImage: "https://example.com/paris-tour.jpg",
           type: "Culture",
           location: "Paris, France",
@@ -381,18 +482,27 @@ const seed = async () => {
           startDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
           endDate: new Date(Date.now() + 67 * 24 * 60 * 60 * 1000),
           duration: "7 days",
-          longDesc: "Visit iconic landmarks, world-class museums, enjoy fine dining, and experience authentic Parisian culture.",
+          longDesc:
+            "Visit iconic landmarks, world-class museums, enjoy fine dining, and experience authentic Parisian culture.",
           groupSize: "12",
           rhythm: "Moderate",
           sportLvl: "Easy",
           weekendTt: "Culture",
-          included: { accommodation: true, tours: true, meals: true, guide: true },
+          included: {
+            accommodation: true,
+            tours: true,
+            meals: true,
+            guide: true,
+          },
           notIncluded: { flights: true },
           shortDesc: "Experience the magic of Paris",
           instaLink: "https://www.instagram.com/paristours",
           likedinLink: "https://www.linkedin.com/company/parisculture",
           promotionalVideo: "https://www.youtube.com/watch?v=paris",
-          galleryImages: ["https://example.com/paris1.jpg", "https://example.com/paris2.jpg"],
+          galleryImages: [
+            "https://example.com/paris1.jpg",
+            "https://example.com/paris2.jpg",
+          ],
           bestPriceMsg: "Limited spots available",
           perHeadPrice: "2500",
           status: "active",
@@ -400,7 +510,8 @@ const seed = async () => {
         },
         {
           title: "Thai Wellness Retreat",
-          description: "Rejuvenate body and mind with yoga, meditation, and spa treatments",
+          description:
+            "Rejuvenate body and mind with yoga, meditation, and spa treatments",
           coverImage: "https://example.com/thailand-wellness.jpg",
           type: "Wellness",
           location: "Bangkok & Phuket, Thailand",
@@ -408,7 +519,8 @@ const seed = async () => {
           startDate: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000),
           endDate: new Date(Date.now() + 82 * 24 * 60 * 60 * 1000),
           duration: "7 days",
-          longDesc: "Complete wellness package including yoga classes, spa treatments, healthy cuisine, and meditation sessions.",
+          longDesc:
+            "Complete wellness package including yoga classes, spa treatments, healthy cuisine, and meditation sessions.",
           groupSize: "10",
           rhythm: "Relaxed",
           sportLvl: "Easy",
@@ -419,7 +531,10 @@ const seed = async () => {
           instaLink: "https://www.instagram.com/thaiwellness",
           likedinLink: "https://www.linkedin.com/company/wellnessretreats",
           promotionalVideo: "https://www.youtube.com/watch?v=wellness",
-          galleryImages: ["https://example.com/wellness1.jpg", "https://example.com/wellness2.jpg"],
+          galleryImages: [
+            "https://example.com/wellness1.jpg",
+            "https://example.com/wellness2.jpg",
+          ],
           bestPriceMsg: "All-inclusive package",
           perHeadPrice: "1800",
           status: "active",
@@ -528,7 +643,8 @@ const seed = async () => {
       {
         chatId: chat1.id,
         senderId: coordinatorUser.id,
-        content: "Welcome to the General Discussion chat! Feel free to introduce yourself and share your travel stories.",
+        content:
+          "Welcome to the General Discussion chat! Feel free to introduce yourself and share your travel stories.",
       },
       {
         chatId: chat1.id,
@@ -538,22 +654,26 @@ const seed = async () => {
       {
         chatId: chat1.id,
         senderId: regularUser2.id,
-        content: "Hi! Looking forward to chatting with you all and planning future trips.",
+        content:
+          "Hi! Looking forward to chatting with you all and planning future trips.",
       },
       {
         chatId: chat2.id,
         senderId: coordinatorUser.id,
-        content: "Welcome to the Rocky Mountains group! Let's prepare for an amazing adventure!",
+        content:
+          "Welcome to the Rocky Mountains group! Let's prepare for an amazing adventure!",
       },
       {
         chatId: chat2.id,
         senderId: regularUser1.id,
-        content: "I'm so excited! This is my first mountain hiking trip. Any tips?",
+        content:
+          "I'm so excited! This is my first mountain hiking trip. Any tips?",
       },
       {
         chatId: chat2.id,
         senderId: regularUser3.id,
-        content: "Same here! I recommend bringing proper hiking boots and plenty of water.",
+        content:
+          "Same here! I recommend bringing proper hiking boots and plenty of water.",
       },
       {
         chatId: chat3.id,
@@ -654,7 +774,8 @@ const seed = async () => {
       {
         userId: regularUser1.id,
         tripId: trip1.id,
-        shortIntro: "I'm an experienced hiker looking for adventure in the mountains.",
+        shortIntro:
+          "I'm an experienced hiker looking for adventure in the mountains.",
         dietaryRestrictions: "Vegetarian",
         introVideo: "https://example.com/video1.mp4",
         status: "approved",
@@ -662,7 +783,8 @@ const seed = async () => {
       {
         userId: regularUser2.id,
         tripId: trip2.id,
-        shortIntro: "Beach lover seeking relaxation and water sports activities.",
+        shortIntro:
+          "Beach lover seeking relaxation and water sports activities.",
         dietaryRestrictions: "None",
         introVideo: "https://example.com/video2.mp4",
         status: "approved",
@@ -670,7 +792,8 @@ const seed = async () => {
       {
         userId: regularUser3.id,
         tripId: trip1.id,
-        shortIntro: "First time hiking, but very enthusiastic and ready to learn!",
+        shortIntro:
+          "First time hiking, but very enthusiastic and ready to learn!",
         dietaryRestrictions: "Gluten-free",
         introVideo: "https://example.com/video3.mp4",
         status: "pending",
@@ -684,19 +807,22 @@ const seed = async () => {
         userId: regularUser1.id,
         tripId: trip1.id,
         rating: 5,
-        review: "Absolutely fantastic experience! The views were breathtaking and the coordinator was very professional.",
+        review:
+          "Absolutely fantastic experience! The views were breathtaking and the coordinator was very professional.",
       },
       {
         userId: regularUser2.id,
         tripId: trip2.id,
         rating: 4,
-        review: "Great trip! Beautiful beaches and good food. Would have appreciated more free time to explore.",
+        review:
+          "Great trip! Beautiful beaches and good food. Would have appreciated more free time to explore.",
       },
       {
         userId: regularUser3.id,
         tripId: trip1.id,
         rating: 5,
-        review: "This was my first hiking trip and it was amazing! Made new friends and learned so much.",
+        review:
+          "This was my first hiking trip and it was amazing! Made new friends and learned so much.",
       },
     ]);
 
@@ -751,28 +877,32 @@ const seed = async () => {
       {
         userId: regularUser1.id,
         title: "Trip Application Approved",
-        description: "Your application for Rocky Mountains Adventure has been approved!",
+        description:
+          "Your application for Rocky Mountains Adventure has been approved!",
         type: "application",
         read: true,
       },
       {
         userId: regularUser2.id,
         title: "Trip Reminder",
-        description: "Your Hawaii Beach Paradise trip starts in 10 days. Don't forget to pack!",
+        description:
+          "Your Hawaii Beach Paradise trip starts in 10 days. Don't forget to pack!",
         type: "reminder",
         read: false,
       },
       {
         userId: regularUser3.id,
         title: "Payment Received",
-        description: "We received your payment for Rocky Mountains Adventure trip.",
+        description:
+          "We received your payment for Rocky Mountains Adventure trip.",
         type: "payment",
         read: true,
       },
       {
         userId: coordinatorUser.id,
         title: "New Application",
-        description: "You have a new application for Rocky Mountains Adventure trip.",
+        description:
+          "You have a new application for Rocky Mountains Adventure trip.",
         type: "application",
         read: false,
       },
@@ -805,8 +935,10 @@ const seed = async () => {
           email: "user2@example.com",
         },
       ]);
-    } catch (e) { 
-      console.log("   ⚠️  Newsletter subscribers table not yet created, skipping...");
+    } catch (e) {
+      console.log(
+        "   ⚠️  Newsletter subscribers table not yet created, skipping...",
+      );
     }
 
     console.log("✅ Database seeding completed successfully!");
@@ -829,29 +961,35 @@ const seed = async () => {
     console.log(`   - Notifications: 5`);
     console.log(`   - Newsletter Subscribers: 5`);
     console.log("\n🔑 Default password for all users: Password123!");
-    console.log("📧 Default emails: admin@example.com, coordinator@example.com, user1@example.com, user2@example.com, user3@example.com");
+    console.log(
+      "📧 Default emails: admin@example.com, coordinator@example.com, user1@example.com, user2@example.com, user3@example.com",
+    );
   } catch (error: any) {
     console.error("\n❌ Error seeding database:");
-    
+
     // Provide helpful error messages
     if (error?.message) {
       console.error(error.message);
     } else {
       console.error(error);
     }
-    
+
     // Additional diagnostics
     if (error?.cause) {
       console.error("\n📋 Additional error details:", error.cause);
     }
-    
+
     console.error("\n💡 Troubleshooting tips:");
     console.error("   1. Verify CONNECTION_URL in your .env file");
     console.error("   2. Check if your Supabase database is active");
     console.error("   3. Ensure your network allows connections to Supabase");
-    console.error("   4. Use the direct connection string (not pooler) from Supabase dashboard");
-    console.error("   5. Try running: npm run dbpush (to ensure schema is up to date)");
-    
+    console.error(
+      "   4. Use the direct connection string (not pooler) from Supabase dashboard",
+    );
+    console.error(
+      "   5. Try running: npm run dbpush (to ensure schema is up to date)",
+    );
+
     throw error;
   }
 };

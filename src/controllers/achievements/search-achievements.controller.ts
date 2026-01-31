@@ -1,7 +1,7 @@
 import { database } from "@/configs/connection.config";
 import { achievements, users, trips } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
-import { eq, or, ilike, and } from "drizzle-orm";
+import { eq, or, ilike } from "drizzle-orm";
 import { Request, Response } from "express";
 import status from "http-status";
 

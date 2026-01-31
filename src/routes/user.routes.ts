@@ -20,6 +20,8 @@ import {
 import { getAllUsers } from "@/controllers/user/get-all-users.controller";
 import { getUserByID } from "@/controllers/user/get-user-by-id.controller";
 import { updateUserStatus } from "@/controllers/user/update-status.controller";
+import { searchUsers } from "@/controllers/user/search-users.controller";
+import { searchCoordinators } from "@/controllers/user/search-coordinators.controller";
 
 const userRoutes = Router();
 
@@ -65,6 +67,69 @@ const userRoutes = Router();
  */
 userRoutes.get("/get-all-users", authenticate, authorize("admin"), getAllUsers);
 
+/**
+ * @swagger
+ * /api/user/search:
+ *   get:
+ *     tags:
+ *       - User
+ *     summary: Search users
+ *     description: Search for users by name or email with partial matching. Returns all matching results (requires authentication)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search query (name or email, min 2 characters)
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [user, coordinator, admin]
+ *         description: Filter by user role
+ *     responses:
+ *       200:
+ *         description: Search completed successfully
+ *       400:
+ *         description: Invalid parameters
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+userRoutes.get("/search", authenticate, searchUsers);
+
+/**
+ * @swagger
+ * /api/user/search-coordinators:
+ *   get:
+ *     tags:
+ *       - User
+ *     summary: Search coordinators
+ *     description: Search for coordinators by name or email with partial matching. Returns all matching coordinators with their details (requires authentication)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search query (name or email, min 2 characters)
+ *     responses:
+ *       200:
+ *         description: Search completed successfully
+ *       400:
+ *         description: Invalid parameters
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+userRoutes.get("/search-coordinators", authenticate, searchCoordinators);
 
 /**
  * @swagger
@@ -145,7 +210,12 @@ userRoutes.get("/settings", authenticate, authorize("user"), getuserSettings);
  *       500:
  *         description: Internal server error
  */
-userRoutes.patch("/:userId/status", authenticate, authorize("admin"), updateUserStatus);
+userRoutes.patch(
+  "/:userId/status",
+  authenticate,
+  authorize("admin"),
+  updateUserStatus,
+);
 /**
  * @swagger
  * /api/user/deleteMe:
