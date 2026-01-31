@@ -3,6 +3,8 @@ import { createTrip } from "@/controllers/trips/create-trip.controller";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { upload } from "@/middlewares/multer.middleware";
 import { getTrips } from "@/controllers/trips/get-trips.controller";
+import { getOpenTrips } from "@/controllers/trips/get-open-trips.controller";
+import { getPastTrips } from "@/controllers/trips/get-past-trips.controller";
 import { getTripById } from "@/controllers/trips/get-unique-tripe.controller";
 import { updateTrip } from "@/controllers/trips/update-trip.controller";
 import { approveTrip } from "@/controllers/trips/Approvetrip.controller";
@@ -54,6 +56,13 @@ tripRoutes.post(
  *     description: Get all trips
  */
 tripRoutes.get("/", authenticate, getTrips);
+
+/** Public: open opportunities - no auth */
+tripRoutes.get("/open", getOpenTrips);
+/** Public: past adventures - no auth */
+tripRoutes.get("/past", getPastTrips);
+/** Public: trip detail by id (for view detail page without login) */
+tripRoutes.get("/detail/:id", getTripById);
 
 /**
  * @swagger

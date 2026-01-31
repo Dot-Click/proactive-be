@@ -395,4 +395,10 @@ export const globalSettings = pgTable("settings", {
   ...timeStamps,
 });
 
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+  id: uuid().primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  ...timeStamps,
+});
+
 export const userInsertSchema = createInsertSchema(users);

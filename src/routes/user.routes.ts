@@ -4,6 +4,7 @@ import {
   getReviews,
 } from "@/controllers/user/insta&reviews.controller";
 import { getContactInfo } from "@/controllers/user/contact-info.controller";
+import { subscribeNewsletter } from "@/controllers/user/subscribe-newsletter.controller";
 import { getUserAchievementsController } from "@/controllers/user/get.achievements.controller";
 import { dashboard } from "@/controllers/user/dashboard.controller";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
@@ -85,6 +86,7 @@ userRoutes.get(
 userRoutes.get("/insta-info", getInstaInfo);
 userRoutes.get("/reviews", getReviews);
 userRoutes.get("/contact-info", getContactInfo);
+userRoutes.post("/subscribe", subscribeNewsletter);
 
 /**
  * @swagger
