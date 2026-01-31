@@ -7,6 +7,7 @@ import { Router } from "express";
 import { dashboardlogic } from "@/controllers/coordinators/dashboard.controller";
 import { settings, updateSettings } from "@/controllers/coordinators/settings.controller";
 import { singleUpload, upload } from "@/middlewares/multer.middleware";
+import { searchAchievements } from "@/controllers/achievements/search-achievements.controller";
 
 const coordinatorRoutes = Router();
 
@@ -44,6 +45,32 @@ coordinatorRoutes.get("/application/:id", authenticate, authorize("coordinator",
  */
 coordinatorRoutes.patch("/applications/:applicationId", authenticate, authorize("coordinator","admin"), updateApplication);
 
+
+/**
+ * @swagger
+ * /api/achievements/search:
+ *   get:
+ *     tags:
+ *       - Achievements
+ *     summary: Search achievements by user name or trip title
+ *     description: Search for achievements using user name or trip title. Returns matching achievements with user and trip details.
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search query for user name or trip title
+ *     responses:
+ *       200:
+ *         description: Search results retrieved successfully
+ *       400:
+ *         description: Search query is required
+ *       500:
+ *         description: Internal server error
+ */
+coordinatorRoutes.get("/achievements/search", authenticate, searchAchievements);
+
 /**
  * @swagger
  * /api/coordinator/achievements:
@@ -64,6 +91,8 @@ coordinatorRoutes.get("/achievements", authenticate, authorize("coordinator","ad
  *    description: get coordinator current settings
  */
 coordinatorRoutes.get("/setting", authenticate, authorize("coordinator"), settings)
+
+
 
 /**
  * @swagger

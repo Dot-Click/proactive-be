@@ -21,7 +21,7 @@ export const getTrips = async (req: Request, res: Response): Promise<Response> =
 
       const conditions = [];
       // Only show approved trips for listing
-      conditions.push(eq(trips.approvalStatus, "approved"));
+      // conditions.push(eq(trips.approvalStatus, "approved"));
 
       if (statusFilter && typeof statusFilter === "string") {
         conditions.push(eq(trips.status, statusFilter as any));
