@@ -985,6 +985,20 @@ const seed = async () => {
   } catch (error: any) {
     console.error("\n❌ Error seeding database:");
 
+    const causeMsg = error?.cause?.message ?? "";
+    const isLocationsMissing =
+      /relation "locations" does not exist|relation.*locations.*does not exist/i.test(causeMsg) ||
+      /relation "locations" does not exist|relation.*locations.*does not exist/i.test(error?.message ?? "");
+
+    if (isLocationsMissing) {
+      console.error(
+        "\n⚠️  The 'locations' table does not exist. Run the migration first:\n",
+      );
+      console.error("   npm run dbmigrate\n");
+      console.error("   Then run: npm run seed");
+      throw error;
+    }
+
     // Provide helpful error messages
     if (error?.message) {
       console.error(error.message);
@@ -998,14 +1012,15 @@ const seed = async () => {
     }
 
     console.error("\n💡 Troubleshooting tips:");
-    console.error("   1. Verify CONNECTION_URL in your .env file");
-    console.error("   2. Check if your Supabase database is active");
-    console.error("   3. Ensure your network allows connections to Supabase");
+    console.error("   1. Run migrations first: npm run dbmigrate (creates locations table)");
+    console.error("   2. Verify CONNECTION_URL in your .env file");
+    console.error("   3. Check if your Supabase database is active");
+    console.error("   4. Ensure your network allows connections to Supabase");
     console.error(
-      "   4. Use the direct connection string (not pooler) from Supabase dashboard",
+      "   5. Use the direct connection string (not pooler) from Supabase dashboard",
     );
     console.error(
-      "   5. Try running: npm run dbpush (to ensure schema is up to date)",
+      "   6. Or try: npm run dbpush (to sync schema without migration files)",
     );
 
     throw error;
