@@ -281,11 +281,174 @@ adminRoutes.get("/dashboard", authenticate, authorize("admin"), dashboardlogic)
 
 adminRoutes.post("/sendMail", authenticate, authorize("admin"), sendMails);
 
-// Location CRUD - list/get allowed for coordinators (for trip form); create/update/delete admin only
+/**
+ * @swagger
+ * /api/admin/location:
+ *   get:
+ *     tags:
+ *       - Admin
+ *     summary: Get all locations
+ *     description: Retrieve all locations. Used by admin and coordinators (e.g. for trip form location dropdown).
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Locations retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 message: { type: string, example: "Locations retrieved successfully" }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     locations:
+ *                       type: array
+ *                       items:
+ *                         $ref: "#/components/schemas/Location"
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 adminRoutes.get("/location", authenticate, authorize("admin", "coordinator"), getLocations);
+
+/**
+ * @swagger
+ * /api/admin/location/{locationId}:
+ *   get:
+ *     tags:
+ *       - Admin
+ *     summary: Get a location by ID
+ *     description: Retrieve a single location by ID (Admin or Coordinator).
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: locationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Location ID (e.g. CUID)
+ *     responses:
+ *       200:
+ *         description: Location retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     location:
+ *                       $ref: "#/components/schemas/Location"
+ *       400:
+ *         description: Bad request - Location ID required
+ *       404:
+ *         description: Location not found
+ */
 adminRoutes.get("/location/:locationId", authenticate, authorize("admin", "coordinator"), getLocation);
+
+/**
+ * @swagger
+ * /api/admin/location:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Create a new location
+ *     description: Create a new location (Admin only). Location names must be unique.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: "#/components/schemas/CreateLocationRequest"
+ *     responses:
+ *       201:
+ *         description: Location created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     location:
+ *                       $ref: "#/components/schemas/Location"
+ *       400:
+ *         description: Validation error
+ *       409:
+ *         description: A location with this name already exists
+ */
 adminRoutes.post("/location", authenticate, authorize("admin"), createLocation);
+
+/**
+ * @swagger
+ * /api/admin/location/{locationId}:
+ *   put:
+ *     tags:
+ *       - Admin
+ *     summary: Update a location
+ *     description: Update an existing location name (Admin only).
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: locationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: "#/components/schemas/UpdateLocationRequest"
+ *     responses:
+ *       200:
+ *         description: Location updated successfully
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Location not found
+ *       409:
+ *         description: A location with this name already exists
+ */
 adminRoutes.put("/location/:locationId", authenticate, authorize("admin"), updateLocation);
+
+/**
+ * @swagger
+ * /api/admin/location/{locationId}:
+ *   delete:
+ *     tags:
+ *       - Admin
+ *     summary: Delete a location
+ *     description: Delete a location (Admin only). Fails if any trip references this location.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: locationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Location deleted successfully
+ *       400:
+ *         description: Cannot delete - one or more trips use this location
+ *       404:
+ *         description: Location not found
+ */
 adminRoutes.delete("/location/:locationId", authenticate, authorize("admin"), deleteLocation);
 
 export default adminRoutes;

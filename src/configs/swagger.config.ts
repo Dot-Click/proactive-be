@@ -55,7 +55,7 @@ const options: Options = {
       },
       {
         name: "Admin",
-        description: "Admin endpoints for managing coordinators and settings",
+        description: "Admin endpoints for managing coordinators, locations, and settings",
       },
       {
         name: "Applications",
@@ -662,6 +662,54 @@ const options: Options = {
             },
           },
         },
+        Location: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              example: "clx123abc456def789",
+              description: "Location ID (CUID)",
+            },
+            name: {
+              type: "string",
+              example: "Colorado, USA",
+              description: "Location display name",
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+            },
+          },
+        },
+        CreateLocationRequest: {
+          type: "object",
+          required: ["name"],
+          properties: {
+            name: {
+              type: "string",
+              minLength: 1,
+              maxLength: 255,
+              example: "Barcelona, Spain",
+              description: "Location name (must be unique)",
+            },
+          },
+        },
+        UpdateLocationRequest: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+              minLength: 1,
+              maxLength: 255,
+              example: "Barcelona, Spain",
+              description: "Updated location name (must remain unique)",
+            },
+          },
+        },
         Trip: {
           type: "object",
           properties: {
@@ -694,7 +742,12 @@ const options: Options = {
             locationId: {
               type: "string",
               example: "clx123abc456def789",
-              description: "ID of the location (from locations table)",
+              description: "ID of the location (FK to locations table)",
+            },
+            location: {
+              type: "string",
+              example: "Colorado, USA",
+              description: "Location display name (from locations table, included in trip responses)",
             },
             mapCoordinates: {
               type: "string",
