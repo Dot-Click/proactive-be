@@ -268,7 +268,7 @@ adminRoutes.patch("/settings", authenticate, authorize("admin"), updateSettings)
  *     summary: Get current banner
  *     description: Returns the current platform banner image URL. Admin only.
  */
-adminRoutes.get("/banner", authenticate, authorize("admin"), getBanner);
+adminRoutes.get("/banner", authenticate, getBanner);
 /**
  * @swagger
  * /api/admin/banner:

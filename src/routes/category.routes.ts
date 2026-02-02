@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { createCategory } from "@/controllers/category/create-category.controller";
 import { getCategories } from "@/controllers/category/get-categories.controller";
+import { getCategoriesStats } from "@/controllers/category/get-categories-stats.controller";
 import { getCategory } from "@/controllers/category/get-category.controller";
 import { updateCategory } from "@/controllers/category/update-category.controller";
 import { deleteCategory } from "@/controllers/category/delete-category.controller";
@@ -26,6 +27,17 @@ const categoryRoutes = Router();
  *     description: Retrieve all categories (Public endpoint)
  */
 categoryRoutes.get("/", getCategories);
+
+/**
+ * @swagger
+ * /api/categories/stats:
+ *   get:
+ *     tags:
+ *       - Categories
+ *     summary: Get categories statistics
+ *     description: Returns trip count and percentage per category (by trip type) relative to total trips. Public endpoint.
+ */
+categoryRoutes.get("/stats", authenticate ,getCategoriesStats);
 
 /**
  * @swagger
