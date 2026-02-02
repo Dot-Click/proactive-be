@@ -35,10 +35,9 @@ export const settings = async (req: Request, res: Response): Promise<Response> =
         const db = await database();
         const settings = await db.select({
             id: users.id,
-            Name: coordinatorDetails.fullName,
-            Email: users.email,
+            fullName: coordinatorDetails.fullName,
+            email: users.email,
             avatar: coordinatorDetails.profilePicture,
-            emai: users.email,
             notificationPref: coordinatorDetails.notificationPref
         }).from(users)
         .leftJoin(coordinatorDetails,eq(coordinatorDetails.id, users.coordinatorDetails))

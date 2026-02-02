@@ -5,6 +5,8 @@ import { deleteCoordinator } from "@/controllers/admin/delete.coordinator.contro
 import { getCoordinatorById } from "@/controllers/admin/get-unique.coordinators.controller";
 import { getCoordinators } from "@/controllers/admin/get.coordinators.controller";
 import { sendMails } from "@/controllers/admin/send.emails.controller";
+import { changeBanner } from "@/controllers/admin/change.banner.controller";
+import { getBanner } from "@/controllers/admin/get.banner.controller";
 import { getSettings, updateSettings } from "@/controllers/admin/settings.controller";
 import { createLocation } from "@/controllers/location/create-location.controller";
 import { getLocations } from "@/controllers/location/get-locations.controller";
@@ -256,6 +258,27 @@ adminRoutes.get("/settings", authenticate, getSettings);
  *     description: Update settings
  */
 adminRoutes.patch("/settings", authenticate, authorize("admin"), updateSettings);
+
+/**
+ * @swagger
+ * /api/admin/banner:
+ *   get:
+ *     tags:
+ *       - Admin
+ *     summary: Get current banner
+ *     description: Returns the current platform banner image URL. Admin only.
+ */
+adminRoutes.get("/banner", authenticate, authorize("admin"), getBanner);
+/**
+ * @swagger
+ * /api/admin/banner:
+ *   patch:
+ *     tags:
+ *       - Admin
+ *     summary: Change banner image
+ *     description: Upload a new banner image (multipart/form-data, field "banner"). Admin only.
+ */
+adminRoutes.patch("/banner", authenticate, authorize("admin"), upload(["image/jpeg", "image/png", "image/jpg"]), changeBanner);
 adminRoutes.patch("/coordinator/:coordinatorId", authenticate, authorize("admin"), toggleCoordinatorStatus);
 
 /**

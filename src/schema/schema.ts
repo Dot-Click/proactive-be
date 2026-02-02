@@ -401,6 +401,16 @@ export const globalSettings = pgTable("settings", {
   ...timeStamps,
 });
 
+/**
+ * Platform banner - single active banner image (one row, updated on each upload).
+ * Independent from settings; admin updates via Change Banner API.
+ */
+export const banner = pgTable("banner", {
+  id: uuid().primaryKey(),
+  url: varchar("url", { length: 500 }).notNull(),
+  ...timeStamps,
+});
+
 export const newsletterSubscribers = pgTable("newsletter_subscribers", {
   id: uuid().primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),

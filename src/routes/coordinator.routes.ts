@@ -90,7 +90,7 @@ coordinatorRoutes.get("/achievements", authenticate, authorize("coordinator","ad
  *    summary: get coordinator current settings
  *    description: get coordinator current settings
  */
-coordinatorRoutes.get("/setting", authenticate, authorize("coordinator"), settings)
+coordinatorRoutes.get("/setting", authenticate,  settings)
 
 
 

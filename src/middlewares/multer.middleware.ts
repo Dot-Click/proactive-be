@@ -38,6 +38,7 @@ const upload = (allowedMimeTypes: any = null) => (req: Request, res: Response, n
   }).fields([
     { name: "image", maxCount: 1 },
     { name: "logo", maxCount: 1 },
+    { name: "banner", maxCount: 1 },
     { name: "prof_pic", maxCount: 1 },
     { name: "cover_img", maxCount: 1 },
     { name: "tt_img", maxCount: 1 },

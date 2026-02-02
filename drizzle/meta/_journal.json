@@ -169,6 +169,13 @@
       "when": 1768800000000,
       "tag": "0023_locations_and_trip_relation",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1768900000000,
+      "tag": "0024_banner_table",
+      "breakpoints": true
     }
   ]
 }

@@ -9,6 +9,7 @@ import {
   locations,
   trips,
   globalSettings,
+  banner,
   coordinatorDetails,
   tripCoordinators,
   payments,
@@ -146,6 +147,11 @@ const seed = async () => {
       }
       try {
         await db.delete(globalSettings);
+      } catch (e) {
+        /* table may not exist */
+      }
+      try {
+        await db.delete(banner);
       } catch (e) {
         /* table may not exist */
       }
@@ -402,6 +408,18 @@ const seed = async () => {
       mapLat: "40.7128",
       mapLng: "-74.0060",
     });
+
+    // Seed Banner (single platform banner row)
+    console.log("🖼️ Seeding banner...");
+    try {
+      await db.insert(banner).values({
+        url: "https://c8.alamy.com/comp/2BFYG5C/fake-news-banner-template-fake-news-ribbon-label-sign-2BFYG5C.jpg",
+      });
+    } catch (e) {
+      console.log(
+        "   ⚠️  Banner table does not exist yet, skipping. Run: npm run dbpush",
+      );
+    }
 
     // Seed Locations
     console.log("📍 Seeding locations...");
@@ -966,6 +984,7 @@ const seed = async () => {
     console.log(`   - Categories: 5`);
     console.log(`   - FAQs: 5`);
     console.log(`   - Settings: 1`);
+    console.log(`   - Banner: 1`);
     console.log(`   - Trips: 4`);
     console.log(`   - Trip Coordinators: 4`);
     console.log(`   - Chats: 3`);
