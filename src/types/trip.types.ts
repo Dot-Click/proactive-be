@@ -25,8 +25,7 @@ export const createTripSchema = z.object({
   coverImage: z
     .string()
     .url("Cover image must be a valid URL")
-    .max(2000, "Cover image URL must be less than 2000 characters")
-    .optional(),
+    .max(2000, "Cover image URL must be less than 2000 characters"),
   type: z
     .string()
     .min(1, "Type is required")
@@ -129,8 +128,7 @@ export const createTripSchema = z.object({
   }))),
   shortDesc: z
     .string()
-    .min(1, "Short description is required")
-    .optional(),
+    .min(1, "Short description is required"),
   instaLink: z
     .string()
     .url("Instagram link must be a valid URL")
@@ -143,24 +141,21 @@ export const createTripSchema = z.object({
     .max(500, "LinkedIn link must be less than 500 characters")
     .optional()
     .nullable(),
+  daysItenary: z.any().optional(),
   promotionalVideo: z
     .string()
     .url("Promotional video must be a valid URL")
-    .max(500, "Promotional video URL must be less than 500 characters")
-    .optional(),
+    .max(500, "Promotional video URL must be less than 500 characters"),
   galleryImages: z
     .array(z.string().url("Gallery image must be a valid URL"))
-    .min(1, "At least one gallery image is required")
-    .optional(),
+    .min(1, "At least one gallery image is required"),
   bestPriceMsg: z
     .string()
-    .min(1, "Best price message is required")
-    .optional(),
+    .min(1, "Best price message is required"),
   perHeadPrice: z
     .string()
     .min(1, "Per head price is required")
-    .max(100, "Per head price must be less than 100 characters")
-    .optional(),
+    .max(100, "Per head price must be less than 100 characters"),
   status: z
     .enum(["pending", "active", "completed", "cancelled"])
     .optional()
@@ -287,6 +282,7 @@ export const updateTripSchema = z.object({
     .max(500, "LinkedIn link must be less than 500 characters")
     .optional()
     .nullable(),
+  daysItenary: z.any().optional(),
   promotionalVideo: z
     .string()
     .url("Promotional video must be a valid URL")

@@ -445,6 +445,24 @@ const seed = async () => {
           coverImage:
             "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
           type: "Mountain",
+          daysItenary: {
+            day1: {
+              title: "Day 1",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 1",
+            },
+            day2: {
+              title: "Day 2",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 2",
+            },
+            day3: {
+              title: "Day 3",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 3",
+            },
+            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          },
           locationId: locColorado.id,
           mapCoordinates: "39.7392,-104.9903",
           startDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
@@ -478,6 +496,44 @@ const seed = async () => {
           coverImage:
             "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
           type: "Beach",
+          daysItenary: {
+            day1: {
+              title: "Day 1",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 1",
+            },
+            day2: {
+              title: "Day 2",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 2",
+            },
+            day3: {
+              title: "Day 3",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 3",
+            },
+            day4: {
+              title: "Day 4",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 4",
+            },
+            day5: {
+              title: "Day 5",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 5",
+            },
+            day6: {
+              title: "Day 6",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 6",
+            },
+            day7: {
+              title: "Day 7",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 7",
+            },
+            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          },
           locationId: locHawaii.id,
           mapCoordinates: "21.3099,-157.8581",
           startDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
@@ -517,6 +573,24 @@ const seed = async () => {
             "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
           type: "Culture",
           locationId: locParis.id,
+          daysItenary: {
+            day1: {
+              title: "Day 1",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 1",
+            },
+            day2: {
+              title: "Day 2",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 2",
+            },
+            day3: {
+              title: "Day 3",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 3",
+            },
+            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          },
           mapCoordinates: "48.8566,2.3522",
           startDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
           endDate: new Date(Date.now() + 67 * 24 * 60 * 60 * 1000),
@@ -562,6 +636,34 @@ const seed = async () => {
           longDesc:
             "Complete wellness package including yoga classes, spa treatments, healthy cuisine, and meditation sessions.",
           groupSize: "10",
+          daysItenary: {
+            day1: {
+              title: "Day 1",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 1",
+            },
+            day2: {
+              title: "Day 2",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 2",
+            },
+            day3: {
+              title: "Day 3",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 3",
+            },
+            day4: {
+              title: "Day 4",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 4",
+            },
+            day5: {
+              title: "Day 5",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Day 5",
+            },
+            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          },
           rhythm: "Relaxed",
           sportLvl: "Easy",
           weekendTt: "Wellness",

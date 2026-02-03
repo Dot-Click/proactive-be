@@ -253,6 +253,7 @@ export const trips = pgTable("trips", {
   promotionalVideo: varchar({ length: 500 }).notNull(),
   galleryImages: jsonb("gallery_images").notNull(), // Array stored as JSONB
   bestPriceMsg: text("best_price_msg").notNull(),
+  daysItenary: jsonb("days_itenary"),
   perHeadPrice: varchar({ length: 100 }).notNull(),
   ...timeStamps,
 });

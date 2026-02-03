@@ -208,6 +208,10 @@ export const createTrip = async (
     const map_coord = await fetchCorrd(locationRow[0].name);
     const mapCoordinates = `${map_coord.lat},${map_coord.lon}`;
 
+    if(validatedPayload.type.toLowerCase() === "wild trips"){
+      // then add daysItenary object otherwise reject and continue the flow
+    }
+
     // Create trip - map validated data to database schema
     const tripValues: any = {
       title: validatedPayload.title,
@@ -234,6 +238,7 @@ export const createTrip = async (
       bestPriceMsg: validatedPayload.bestPriceMsg || "",
       perHeadPrice: validatedPayload.perHeadPrice || "",
       status: validatedPayload.status || "pending",
+      daysItenary: validatedPayload.type.toLowerCase() === "wild trips" ? (validatedPayload.daysItenary || {}) : {},
     };
 
     const newTrip = await db
