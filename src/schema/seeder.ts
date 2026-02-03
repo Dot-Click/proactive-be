@@ -442,7 +442,8 @@ const seed = async () => {
           title: "Rocky Mountains Adventure",
           description:
             "An exciting week exploring the majestic Rocky Mountains",
-          coverImage: "https://example.com/rocky-mountains.jpg",
+          coverImage:
+            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
           type: "Mountain",
           locationId: locColorado.id,
           mapCoordinates: "39.7392,-104.9903",
@@ -474,7 +475,8 @@ const seed = async () => {
         {
           title: "Hawaii Beach Paradise",
           description: "Relax on pristine beaches and explore tropical islands",
-          coverImage: "https://example.com/hawaii-beach.jpg",
+          coverImage:
+            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
           type: "Beach",
           locationId: locHawaii.id,
           mapCoordinates: "21.3099,-157.8581",
@@ -511,7 +513,8 @@ const seed = async () => {
           title: "Paris Cultural Tour",
           description:
             "Immerse yourself in art, history, and cuisine in the City of Light",
-          coverImage: "https://example.com/paris-tour.jpg",
+          coverImage:
+            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
           type: "Culture",
           locationId: locParis.id,
           mapCoordinates: "48.8566,2.3522",
@@ -548,7 +551,8 @@ const seed = async () => {
           title: "Thai Wellness Retreat",
           description:
             "Rejuvenate body and mind with yoga, meditation, and spa treatments",
-          coverImage: "https://example.com/thailand-wellness.jpg",
+          coverImage:
+            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
           type: "Wellness",
           locationId: locThailand.id,
           mapCoordinates: "13.7563,100.5018",

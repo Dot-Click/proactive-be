@@ -55,7 +55,8 @@ tripRoutes.post(
  *     summary: Get all trips
  *     description: Get all trips
  */
-tripRoutes.get("/", authenticate, getTrips);
+tripRoutes.get("/", getTrips);
+// tripRoutes.get("/all", getTrips);
 
 /** Public: open opportunities - no auth */
 tripRoutes.get("/open", getOpenTrips);
