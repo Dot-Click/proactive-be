@@ -329,28 +329,35 @@ const seed = async () => {
 
     // Seed Categories
     console.log("📁 Seeding categories...");
-    await db.insert(categories).values([
-      {
-        name: "Wild Trips",
-        isActive: true,
-      },
-      {
-        name: "Wild Weekends",
-        isActive: true,
-      },
-      {
-        name: "Erasmus+ Experience",
-        isActive: true,
-      },
-      {
-        name: "Internal Events",
-        isActive: true,
-      },
-      // {
-      //   name: "Urban Discovery",
-      //   isActive: true,
-      // },
-    ]);
+    const seededCategories = await db
+      .insert(categories)
+      .values([
+        {
+          name: "Wild Trips",
+          isActive: true,
+        },
+        {
+          name: "Wild Weekends",
+          isActive: true,
+        },
+        {
+          name: "Erasmus+ Experience",
+          isActive: true,
+        },
+        {
+          name: "Internal Events",
+          isActive: true,
+        },
+        // {
+        //   name: "Urban Discovery",
+        //   isActive: true,
+        // },
+      ])
+      .returning({ id: categories.id, name: categories.name });
+
+    const categoryByName = new Map(
+      seededCategories.map((c) => [c.name.trim().toLowerCase(), c.id])
+    );
 
     // Seed FAQs
     console.log("❓ Seeding FAQs...");
@@ -444,7 +451,7 @@ const seed = async () => {
             "An exciting week exploring the majestic Rocky Mountains",
           coverImage:
             "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          type: "wild trips",
+          categoryId: categoryByName.get("wild trips")!,
           daysItenary: {
             day1: {
               title: "Day 1",
@@ -495,7 +502,7 @@ const seed = async () => {
           description: "Relax on pristine beaches and explore tropical islands",
           coverImage:
             "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          type: "erasmus+ experience",
+          categoryId: categoryByName.get("erasmus+ experience")!,
           daysItenary: {
             day1: {
               title: "Day 1",
@@ -571,7 +578,7 @@ const seed = async () => {
             "Immerse yourself in art, history, and cuisine in the City of Light",
           coverImage:
             "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          type: "wild weekends",
+          categoryId: categoryByName.get("wild weekends")!,
           locationId: locParis.id,
           daysItenary: {
             day1: {
@@ -627,7 +634,7 @@ const seed = async () => {
             "Rejuvenate body and mind with yoga, meditation, and spa treatments",
           coverImage:
             "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          type: "internal events",
+          categoryId: categoryByName.get("internal events")!,
           locationId: locThailand.id,
           mapCoordinates: "13.7563,100.5018",
           startDate: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000),

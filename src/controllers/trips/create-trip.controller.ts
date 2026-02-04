@@ -11,6 +11,7 @@ import {
   tripCoordinators,
   users,
   locations,
+  categories,
 } from "@/schema/schema";
 import { createId } from "@paralleldrive/cuid2";
 import { ZodError } from "zod";
@@ -289,19 +290,25 @@ export const createTrip = async (
     if (locationRow.length === 0) {
       return sendError(res, "Invalid location ID", status.BAD_REQUEST);
     }
+
+    const categoryRow = await db
+      .select({ id: categories.id })
+      .from(categories)
+      .where(eq(categories.id, validatedPayload.categoryId))
+      .limit(1);
+    if (categoryRow.length === 0) {
+      return sendError(res, "Invalid category ID", status.BAD_REQUEST);
+    }
+
     const map_coord = await fetchCorrd(locationRow[0].name);
     const mapCoordinates = `${map_coord.lat},${map_coord.lon}`;
-
-    if (validatedPayload.type.toLowerCase() === "wild trips") {
-      // then add daysItenary object otherwise reject and continue the flow
-    }
 
     // Create trip - map validated data to database schema
     const tripValues: any = {
       title: validatedPayload.title,
       description: validatedPayload.description,
       coverImage: validatedPayload.coverImage || "",
-      type: validatedPayload.type,
+      categoryId: validatedPayload.categoryId,
       locationId: validatedPayload.locationId,
       mapCoordinates,
       startDate: validatedPayload.startDate,

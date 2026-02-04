@@ -65,38 +65,25 @@ export const getCategoriesStats = async (
       .from(trips);
     const totalTrips = Number(totalResult?.count) || 0;
 
-    const tripsByType = await db
+    const tripsByCategory = await db
       .select({
-        type: trips.type,
+        categoryId: trips.categoryId,
+        categoryName: categories.name,
         count: sql<number>`count(*)::int`,
       })
       .from(trips)
-      .groupBy(trips.type);
+      .leftJoin(categories, eq(trips.categoryId, categories.id))
+      .groupBy(trips.categoryId, categories.name);
 
-    const allCategories = await db
-      .select({
-        id: categories.id,
-        name: categories.name,
-      })
-      .from(categories)
-      .where(eq(categories.isActive, true));
-
-    const categoryByName = new Map<string, { id: string }>();
-    for (const cat of allCategories) {
-      categoryByName.set(cat.name, { id: cat.id });
-    }
-
-    const stats = tripsByType.map((row) => {
-      const categoryName = row.type ?? "Other";
+    const stats = tripsByCategory.map((row) => {
       const tripCount = Number(row.count);
       const percentage =
         totalTrips > 0
           ? Math.round((tripCount / totalTrips) * 100 * 100) / 100
           : 0;
-      const category = categoryByName.get(categoryName);
       return {
-        categoryId: category?.id ?? null,
-        categoryName,
+        categoryId: row.categoryId ?? null,
+        categoryName: row.categoryName ?? "Other",
         tripCount,
         percentage,
       };

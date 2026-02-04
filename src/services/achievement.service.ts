@@ -5,6 +5,7 @@ import {
   applications,
   tripCoordinators,
   globalSettings,
+  categories,
 } from "@/schema/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
@@ -168,19 +169,26 @@ export const trackTripAchievement = async (
 
   try {
     const tripResults = await db
-      .select()
+      .select({
+        trip: trips,
+        categoryName: categories.name,
+      })
       .from(trips)
+      .leftJoin(categories, eq(trips.categoryId, categories.id))
       .where(eq(trips.id, tripId))
       .limit(1);
 
-    if (tripResults.length === 0) {
+    if (tripResults.length === 0 || !tripResults[0].trip) {
       console.warn(`Trip ${tripId} not found for achievement tracking`);
       return;
     }
 
-    const trip = tripResults[0];
+    const { trip, categoryName } = tripResults[0];
+    const tripTypeForBadges = categoryName ?? "Other";
 
-    const applicableBadges = await getAchievementBadgeForTrip(trip.type);
+    const applicableBadges = await getAchievementBadgeForTrip(
+      tripTypeForBadges
+    );
 
     for (const badge of applicableBadges) {
       const criteria =

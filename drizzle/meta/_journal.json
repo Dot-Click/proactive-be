@@ -197,6 +197,13 @@
       "when": 1770156231146,
       "tag": "0027_tricky_titania",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1771000000000,
+      "tag": "0028_trip_category_relation",
+      "breakpoints": true
     }
   ]
 }

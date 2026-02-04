@@ -9,6 +9,7 @@ import {
   tripCoordinators,
   applications,
   locations,
+  categories,
 } from "@/schema/schema";
 
 export const dashboardlogic = async (req: Request, res: Response) => {
@@ -75,13 +76,14 @@ export const dashboardlogic = async (req: Request, res: Response) => {
 
     const categoriesResult = await db
       .select({
-        type: trips.type,
+        type: categories.name,
         count: sql<number>`COUNT(*)::int`,
       })
       .from(trips)
       .innerJoin(tripCoordinators, eq(tripCoordinators.tripId, trips.id))
+      .leftJoin(categories, eq(trips.categoryId, categories.id))
       .where(eq(tripCoordinators.userId, coordinatorId))
-      .groupBy(trips.type)
+      .groupBy(categories.name)
       .orderBy(sql`count DESC`);
 
     const totalForCategories = categoriesResult.reduce(
@@ -100,7 +102,7 @@ export const dashboardlogic = async (req: Request, res: Response) => {
       .select({
         id: trips.id,
         tripName: trips.title,
-        category: trips.type,
+        category: categories.name,
         startDate: trips.startDate,
         endDate: trips.endDate,
         coverImage: trips.coverImage,
@@ -111,6 +113,7 @@ export const dashboardlogic = async (req: Request, res: Response) => {
       .from(trips)
       .innerJoin(tripCoordinators, eq(tripCoordinators.tripId, trips.id))
       .leftJoin(locations, eq(trips.locationId, locations.id))
+      .leftJoin(categories, eq(trips.categoryId, categories.id))
       .where(eq(tripCoordinators.userId, coordinatorId))
       .orderBy(sql`${trips.createdAt} DESC`)
       .limit(10);

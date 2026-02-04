@@ -41,10 +41,7 @@ export const createTripSchema = z.object({
     .string()
     .url("Cover image must be a valid URL")
     .max(2000, "Cover image URL must be less than 2000 characters"),
-  type: z
-    .string()
-    .min(1, "Type is required")
-    .max(100, "Type must be less than 100 characters"),
+  categoryId: z.string().min(1, "Category is required"),
   locationId: z.string().min(1, "Location is required"),
   mapCoordinates: z.string().optional(),
   startDate: z.preprocess((val) => {
@@ -226,11 +223,7 @@ export const updateTripSchema = z.object({
     .url("Cover image must be a valid URL")
     .max(500, "Cover image URL must be less than 500 characters")
     .optional(),
-  type: z
-    .string()
-    .min(1, "Type is required")
-    .max(100, "Type must be less than 100 characters")
-    .optional(),
+  categoryId: z.string().min(1, "Category is required").optional(),
   locationId: z.string().min(1, "Location is required").optional(),
   mapCoordinates: z.string().optional(),
   startDate: z

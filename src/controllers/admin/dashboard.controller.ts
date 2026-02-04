@@ -1,5 +1,5 @@
 import { database } from "@/configs/connection.config";
-import { users, trips, payments } from "@/schema/schema";
+import { users, trips, payments, categories } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { eq, sql, and, gte, lte, desc } from "drizzle-orm";
 import { Request, Response } from "express";
@@ -187,11 +187,12 @@ export const dashboardlogic = async (_req: Request, res: Response) => {
     // Get trip categories breakdown
     const tripCategoriesResult = await db
       .select({
-        type: trips.type,
+        type: categories.name,
         count: sql<number>`count(*)::int`,
       })
       .from(trips)
-      .groupBy(trips.type);
+      .leftJoin(categories, eq(trips.categoryId, categories.id))
+      .groupBy(categories.name);
 
     const totalTripsForCategories = tripCategoriesResult.reduce(
       (sum, item) => sum + Number(item.count),

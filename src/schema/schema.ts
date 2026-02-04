@@ -241,7 +241,9 @@ export const trips = pgTable("trips", {
   title: varchar({ length: 255 }).notNull(),
   description: text().notNull(),
   coverImage: varchar({ length: 500 }).notNull(),
-  type: varchar({ length: 100 }).notNull(),
+  categoryId: foreignkeyRef("category_id", () => categories.id, {
+    onDelete: "restrict",
+  }).notNull(),
   locationId: foreignkeyRef("location_id", () => locations.id, {
     onDelete: "restrict",
   }).notNull(),

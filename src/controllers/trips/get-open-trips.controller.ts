@@ -5,6 +5,7 @@ import {
   coordinatorDetails,
   users,
   locations,
+  categories,
 } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { and, eq, gte, inArray } from "drizzle-orm";
@@ -30,16 +31,18 @@ export const getOpenTrips = async (
       gte(trips.startDate, now),
     ];
     if (type && typeof type === "string") {
-      conditions.push(eq(trips.type, type));
+      conditions.push(eq(categories.name, type));
     }
 
     const tripsData = await db
       .select({
         trip: trips,
         locationName: locations.name,
+        categoryName: categories.name,
       })
       .from(trips)
       .leftJoin(locations, eq(trips.locationId, locations.id))
+      .leftJoin(categories, eq(trips.categoryId, categories.id))
       .where(and(...conditions));
 
     const tripsWithCoordinators = await Promise.all(
@@ -68,8 +71,8 @@ export const getOpenTrips = async (
           name: trip.title,
           coordinators: coordinatorsResult,
           description: trip.description,
-          category: trip.type,
-          type: trip.type,
+          category: row.categoryName ?? null,
+          type: row.categoryName ?? null,
           startDate: trip.startDate,
           endDate: trip.endDate,
           status: trip.status,

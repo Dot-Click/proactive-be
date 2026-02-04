@@ -1,5 +1,5 @@
 import { database } from "@/configs/connection.config";
-import { trips, discounts, locations } from "@/schema/schema";
+import { trips, discounts, locations, categories } from "@/schema/schema";
 import { fetchCorrd } from "@/utils/geocoding.util";
 import { updateTripSchema } from "@/types/trip.types";
 import { cloudinaryUploader } from "@/utils/cloudinary.util";
@@ -187,6 +187,17 @@ export const updateTrip = async (
       }
       const map_coord = await fetchCorrd(locationRow[0].name);
       (tripData as any).mapCoordinates = `${map_coord.lat},${map_coord.lon}`;
+    }
+
+    if (tripData.categoryId) {
+      const categoryRow = await db
+        .select({ id: categories.id })
+        .from(categories)
+        .where(eq(categories.id, tripData.categoryId))
+        .limit(1);
+      if (categoryRow.length === 0) {
+        return sendError(res, "Invalid category ID", status.BAD_REQUEST);
+      }
     }
 
     // Update trip (excluding discounts from trip update)

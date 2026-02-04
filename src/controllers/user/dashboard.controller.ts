@@ -11,6 +11,7 @@ import {
   reviews,
   payments,
   locations,
+  categories,
 } from "@/schema/schema";
 import "@/middlewares/auth.middleware";
 
@@ -78,13 +79,14 @@ export const dashboard = async (req: Request, res: Response) => {
         startDate: trips.startDate,
         endDate: trips.endDate,
         coverImage: trips.coverImage,
-        type: trips.type,
+        type: categories.name,
         duration: trips.duration,
         status: trips.status,
       })
       .from(trips)
       .innerJoin(applications, eq(applications.tripId, trips.id))
       .leftJoin(locations, eq(trips.locationId, locations.id))
+      .leftJoin(categories, eq(trips.categoryId, categories.id))
       .where(
         and(
           eq(applications.userId, userId),
