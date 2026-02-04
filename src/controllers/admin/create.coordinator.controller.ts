@@ -15,10 +15,16 @@ export const createCoordinator = async (req: Request, res: Response) => {
   try {
     const valid = createCoordinatorSchema.safeParse(req.body);
     if (!valid.success) {
-      return sendError(res, "Invalid request body", status.BAD_REQUEST, undefined, valid.error.flatten().fieldErrors);
+      return sendError(
+        res,
+        "Invalid request body",
+        status.BAD_REQUEST,
+        undefined,
+        valid.error.flatten().fieldErrors
+      );
     }
-    
-    const { 
+
+    const {
       fullName,
       phoneNumber,
       bio,
@@ -30,12 +36,18 @@ export const createCoordinator = async (req: Request, res: Response) => {
       type,
       accessLvl,
       email,
-      password 
+      password,
     } = valid.data;
-    
+
     let profilePictureUrl;
-    if (req.files && (req.files as any).prof_pic && (req.files as any).prof_pic[0]) {
-      const prof_pic = await cloudinaryUploader((req.files as any).prof_pic[0].path) as any;
+    if (
+      req.files &&
+      (req.files as any).prof_pic &&
+      (req.files as any).prof_pic[0]
+    ) {
+      const prof_pic = (await cloudinaryUploader(
+        (req.files as any).prof_pic[0].path
+      )) as any;
       profilePictureUrl = prof_pic.secure_url as string;
     }
 
@@ -103,11 +115,7 @@ export const createCoordinator = async (req: Request, res: Response) => {
       .set({ coordinatorDetails: coordDetail.id })
       .where(eq(users.id, user.id));
 
-      await sendCoordinatorWelcomeEmail(
-        email,
-        fullName,
-        password
-      );
+    await sendCoordinatorWelcomeEmail(email, fullName, password);
     await createNotification({
       userId: user.id,
       title: "Welcome to Proactive!",
@@ -147,6 +155,10 @@ export const createCoordinator = async (req: Request, res: Response) => {
     );
   } catch (error) {
     console.error("Create coordinator error:", error);
-    return sendError(res, "An error occurred while creating coordinator", status.INTERNAL_SERVER_ERROR);
+    return sendError(
+      res,
+      "An error occurred while creating coordinator",
+      status.INTERNAL_SERVER_ERROR
+    );
   }
 };

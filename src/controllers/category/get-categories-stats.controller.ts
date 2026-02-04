@@ -90,7 +90,9 @@ export const getCategoriesStats = async (
       const categoryName = row.type ?? "Other";
       const tripCount = Number(row.count);
       const percentage =
-        totalTrips > 0 ? Math.round((tripCount / totalTrips) * 100 * 100) / 100 : 0;
+        totalTrips > 0
+          ? Math.round((tripCount / totalTrips) * 100 * 100) / 100
+          : 0;
       const category = categoryByName.get(categoryName);
       return {
         categoryId: category?.id ?? null,

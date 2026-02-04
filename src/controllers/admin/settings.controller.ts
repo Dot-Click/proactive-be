@@ -5,7 +5,10 @@ import { cloudinaryUploader } from "@/utils/cloudinary.util";
 import { sendSuccess, sendError } from "@/utils/response.util";
 import { eq } from "drizzle-orm";
 import status from "http-status";
-import { updateSettingsSchema, createSettingsSchema } from "@/types/admin.types";
+import {
+  updateSettingsSchema,
+  createSettingsSchema,
+} from "@/types/admin.types";
 import { createId } from "@paralleldrive/cuid2";
 
 /**
@@ -117,22 +120,24 @@ export const updateSettings = async (
     const settingsData = validationResult.data;
 
     // Auto-generate UUIDs for tripCategories if present
-    if (settingsData.tripCategories && Array.isArray(settingsData.tripCategories)) {
-      settingsData.tripCategories = settingsData.tripCategories.map((category: any) => {
-        // Remove id if provided by client and generate new one
-        const { id, ...categoryWithoutId } = category;
-        return {
-          ...categoryWithoutId,
-          id: createId(),
-        };
-      });
+    if (
+      settingsData.tripCategories &&
+      Array.isArray(settingsData.tripCategories)
+    ) {
+      settingsData.tripCategories = settingsData.tripCategories.map(
+        (category: any) => {
+          // Remove id if provided by client and generate new one
+          const { id, ...categoryWithoutId } = category;
+          return {
+            ...categoryWithoutId,
+            id: createId(),
+          };
+        }
+      );
     }
 
     // Check if settings exist
-    const existingSettings = await db
-      .select()
-      .from(globalSettings)
-      .limit(1);
+    const existingSettings = await db.select().from(globalSettings).limit(1);
 
     let updatedSettings;
 
@@ -171,15 +176,20 @@ export const updateSettings = async (
 
       // Auto-generate UUIDs for tripCategories
       const createData = { ...createValidation.data };
-      if (createData.tripCategories && Array.isArray(createData.tripCategories)) {
-        createData.tripCategories = createData.tripCategories.map((category: any) => {
-          // Remove id if provided by client and generate new one
-          const { id, ...categoryWithoutId } = category;
-          return {
-            ...categoryWithoutId,
-            id: createId(),
-          };
-        });
+      if (
+        createData.tripCategories &&
+        Array.isArray(createData.tripCategories)
+      ) {
+        createData.tripCategories = createData.tripCategories.map(
+          (category: any) => {
+            // Remove id if provided by client and generate new one
+            const { id, ...categoryWithoutId } = category;
+            return {
+              ...categoryWithoutId,
+              id: createId(),
+            };
+          }
+        );
       }
 
       const [created] = await db
@@ -256,17 +266,10 @@ export const getSettings = async (
   try {
     const db = await database();
 
-    const settings = await db
-      .select()
-      .from(globalSettings)
-      .limit(1);
+    const settings = await db.select().from(globalSettings).limit(1);
 
     if (settings.length === 0) {
-      return sendError(
-        res,
-        "Settings not found",
-        status.NOT_FOUND
-      );
+      return sendError(res, "Settings not found", status.NOT_FOUND);
     }
 
     return sendSuccess(

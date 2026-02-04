@@ -36,7 +36,7 @@ import status from "http-status";
  */
 export const searchTrips = async (
   req: Request,
-  res: Response,
+  res: Response
 ): Promise<Response> => {
   try {
     const { query } = req.query;
@@ -61,8 +61,8 @@ export const searchTrips = async (
         or(
           ilike(trips.title, searchTerm),
           ilike(trips.description, searchTerm),
-          ilike(locations.name, searchTerm),
-        ),
+          ilike(locations.name, searchTerm)
+        )
       );
 
     // If no trips found, return empty array
@@ -71,7 +71,7 @@ export const searchTrips = async (
         res,
         "No trips found matching your search",
         { trips: [] },
-        status.OK,
+        status.OK
       );
     }
 
@@ -91,7 +91,7 @@ export const searchTrips = async (
           .from(tripCoordinators)
           .leftJoin(
             coordinatorDetails,
-            eq(coordinatorDetails.userId, tripCoordinators.userId),
+            eq(coordinatorDetails.userId, tripCoordinators.userId)
           )
           .leftJoin(users, eq(users.id, tripCoordinators.userId))
           .where(eq(tripCoordinators.tripId, trip.id));
@@ -114,21 +114,21 @@ export const searchTrips = async (
           perHeadPrice: trip.perHeadPrice,
           shortDesc: trip.shortDesc,
         };
-      }),
+      })
     );
 
     return sendSuccess(
       res,
       `Found ${tripsWithCoordinators.length} trip(s) matching "${query}"`,
       { trips: tripsWithCoordinators, count: tripsWithCoordinators.length },
-      status.OK,
+      status.OK
     );
   } catch (error) {
     console.error("Search trips error:", error);
     return sendError(
       res,
       "An error occurred while searching trips",
-      status.INTERNAL_SERVER_ERROR,
+      status.INTERNAL_SERVER_ERROR
     );
   }
 };

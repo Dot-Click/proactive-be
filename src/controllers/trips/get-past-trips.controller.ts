@@ -1,5 +1,11 @@
 import { database } from "@/configs/connection.config";
-import { trips, tripCoordinators, coordinatorDetails, users, locations } from "@/schema/schema";
+import {
+  trips,
+  tripCoordinators,
+  coordinatorDetails,
+  users,
+  locations,
+} from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { and, desc, eq, lt } from "drizzle-orm";
 import { Request, Response } from "express";
@@ -8,7 +14,10 @@ import status from "http-status";
 /**
  * Public endpoint: Get past trips (endDate < today). No auth required.
  */
-export const getPastTrips = async (req: Request, res: Response): Promise<Response> => {
+export const getPastTrips = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
   try {
     const db = await database();
     const { type } = req.query;
@@ -45,7 +54,10 @@ export const getPastTrips = async (req: Request, res: Response): Promise<Respons
             bio: coordinatorDetails.bio,
           })
           .from(tripCoordinators)
-          .leftJoin(coordinatorDetails, eq(coordinatorDetails.userId, tripCoordinators.userId))
+          .leftJoin(
+            coordinatorDetails,
+            eq(coordinatorDetails.userId, tripCoordinators.userId)
+          )
           .leftJoin(users, eq(users.id, tripCoordinators.userId))
           .where(eq(tripCoordinators.tripId, trip.id));
 
@@ -72,11 +84,20 @@ export const getPastTrips = async (req: Request, res: Response): Promise<Respons
       })
     );
 
-    return sendSuccess(res, "Past trips fetched successfully", {
-      trips: tripsWithCoordinators,
-    }, status.OK);
+    return sendSuccess(
+      res,
+      "Past trips fetched successfully",
+      {
+        trips: tripsWithCoordinators,
+      },
+      status.OK
+    );
   } catch (error) {
     console.error("Get past trips error:", error);
-    return sendError(res, "An error occurred while fetching past trips", status.INTERNAL_SERVER_ERROR);
+    return sendError(
+      res,
+      "An error occurred while fetching past trips",
+      status.INTERNAL_SERVER_ERROR
+    );
   }
 };

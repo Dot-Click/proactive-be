@@ -9,7 +9,24 @@ export const discountSchema = z.object({
   amount: z.coerce.number(),
   valid_till: z.coerce.date(),
   description: z.string().min(5).max(255),
-})
+});
+
+/**
+ * Day itinerary item schema for individual day in the trip
+ */
+export const dayItineraryItemSchema = z.object({
+  day: z.coerce.number().min(1, "Day number must be at least 1"),
+  description: z
+    .string()
+    .max(2000, "Description must be less than 2000 characters")
+    .optional(),
+  image: z.string().url().max(2000).optional(),
+});
+
+/**
+ * Days itinerary schema - array of day items
+ */
+export const daysItinerarySchema = z.array(dayItineraryItemSchema).optional();
 
 /**
  * Create trip request body schema
@@ -19,9 +36,7 @@ export const createTripSchema = z.object({
     .string()
     .min(1, "Title is required")
     .max(255, "Title must be less than 255 characters"),
-  description: z
-    .string()
-    .min(1, "Description is required"),
+  description: z.string().min(1, "Description is required"),
   coverImage: z
     .string()
     .url("Cover image must be a valid URL")
@@ -30,12 +45,8 @@ export const createTripSchema = z.object({
     .string()
     .min(1, "Type is required")
     .max(100, "Type must be less than 100 characters"),
-  locationId: z
-    .string()
-    .min(1, "Location is required"),
-  mapCoordinates: z
-    .string()
-    .optional(),
+  locationId: z.string().min(1, "Location is required"),
+  mapCoordinates: z.string().optional(),
   startDate: z.preprocess((val) => {
     if (typeof val === "string") {
       const s = val.trim();
@@ -59,10 +70,7 @@ export const createTripSchema = z.object({
     .string()
     .min(1, "Duration is required")
     .max(100, "Duration must be less than 100 characters"),
-  longDesc: z
-    .string()
-    .min(1, "Long description is required")
-    .optional(),
+  longDesc: z.string().min(1, "Long description is required").optional(),
   groupSize: z
     .string()
     .min(1, "Group size is required")
@@ -82,53 +90,65 @@ export const createTripSchema = z.object({
     .min(1, "Weekend timetable is required")
     .max(100, "Weekend timetable must be less than 100 characters")
     .optional(),
-  included: z.any().transform((val: any) => {
-    let parsed = [] as any[];
-    if (Array.isArray(val)) parsed = val;
-    else if (typeof val === 'string') {
-      try {
-        parsed = JSON.parse(val);
-      } catch {
-        parsed = [];
+  included: z
+    .any()
+    .transform((val: any) => {
+      let parsed = [] as any[];
+      if (Array.isArray(val)) parsed = val;
+      else if (typeof val === "string") {
+        try {
+          parsed = JSON.parse(val);
+        } catch {
+          parsed = [];
+        }
       }
-    }
-    parsed = parsed.map((item: any) => {
-      if (typeof item === 'string') {
-        return { title: item, description: '', img: '' };
+      parsed = parsed.map((item: any) => {
+        if (typeof item === "string") {
+          return { title: item, description: "", img: "" };
+        }
+        return item;
+      });
+      return parsed;
+    })
+    .pipe(
+      z.array(
+        z.object({
+          title: z.string().min(1).max(255),
+          description: z.string().max(1000).optional(),
+          img: z.string().max(2000).optional(),
+        })
+      )
+    ),
+  notIncluded: z
+    .any()
+    .transform((val: any) => {
+      let parsed = [] as any[];
+      if (Array.isArray(val)) parsed = val;
+      else if (typeof val === "string") {
+        try {
+          parsed = JSON.parse(val);
+        } catch {
+          parsed = [];
+        }
       }
-      return item;
-    });
-    return parsed;
-  }).pipe(z.array(z.object({
-    title: z.string().min(1).max(255),
-    description: z.string().max(1000).optional(),
-    img: z.string().max(2000).optional()
-  }))),
-  notIncluded: z.any().transform((val: any) => {
-    let parsed = [] as any[];
-    if (Array.isArray(val)) parsed = val;
-    else if (typeof val === 'string') {
-      try {
-        parsed = JSON.parse(val);
-      } catch {
-        parsed = [];
-      }
-    }
-    parsed = parsed.map((item: any) => {
-      if (typeof item === 'string') {
-        return { title: item, description: '', img: '' };
-      }
-      return item;
-    });
-    return parsed;
-  }).pipe(z.array(z.object({
-    title: z.string().min(1).max(255),
-    description: z.string().max(1000).optional(),
-    img: z.string().max(2000).optional()
-  }))),
-  shortDesc: z
-    .string()
-    .min(1, "Short description is required"),
+      parsed = parsed.map((item: any) => {
+        if (typeof item === "string") {
+          return { title: item, description: "", img: "" };
+        }
+        return item;
+      });
+      return parsed;
+    })
+    .pipe(
+      z.array(
+        z.object({
+          title: z.string().min(1).max(255),
+          description: z.string().max(1000).optional(),
+          img: z.string().max(2000).optional(),
+        })
+      )
+    ),
+  shortDesc: z.string().min(1, "Short description is required"),
   instaLink: z
     .string()
     .url("Instagram link must be a valid URL")
@@ -141,7 +161,21 @@ export const createTripSchema = z.object({
     .max(500, "LinkedIn link must be less than 500 characters")
     .optional()
     .nullable(),
-  daysItenary: z.any().optional(),
+  // Days itinerary - array of days with description and image
+  daysItinerary: z
+    .any()
+    .transform((val: any) => {
+      if (!val) return [];
+      if (typeof val === "string") {
+        try {
+          return JSON.parse(val);
+        } catch {
+          return [];
+        }
+      }
+      return Array.isArray(val) ? val : [];
+    })
+    .pipe(daysItinerarySchema),
   promotionalVideo: z
     .string()
     .url("Promotional video must be a valid URL")
@@ -149,9 +183,7 @@ export const createTripSchema = z.object({
   galleryImages: z
     .array(z.string().url("Gallery image must be a valid URL"))
     .min(1, "At least one gallery image is required"),
-  bestPriceMsg: z
-    .string()
-    .min(1, "Best price message is required"),
+  bestPriceMsg: z.string().min(1, "Best price message is required"),
   perHeadPrice: z
     .string()
     .min(1, "Per head price is required")
@@ -160,25 +192,23 @@ export const createTripSchema = z.object({
     .enum(["pending", "active", "completed", "cancelled"])
     .optional()
     .default("pending"),
-  coordinators: z
-    .union([
-      z.string(),
-      z.array(z.string()),
-    ])
-    .optional(),
-  discounts: z.any().transform((val: any) => {
-    if (Array.isArray(val)) return val;
-    if (typeof val === 'string') {
-      try {
-        return JSON.parse(val);
-      } catch {
-        return [];
+  coordinators: z.union([z.string(), z.array(z.string())]).optional(),
+  discounts: z
+    .any()
+    .transform((val: any) => {
+      if (Array.isArray(val)) return val;
+      if (typeof val === "string") {
+        try {
+          return JSON.parse(val);
+        } catch {
+          return [];
+        }
       }
-    }
-    return [];
-  }).pipe(z.array(discountSchema))
+      return [];
+    })
+    .pipe(z.array(discountSchema))
     .optional(),
-})
+});
 
 /**
  * Update trip request body schema
@@ -190,10 +220,7 @@ export const updateTripSchema = z.object({
     .min(1, "Title is required")
     .max(255, "Title must be less than 255 characters")
     .optional(),
-  description: z
-    .string()
-    .min(1, "Description is required")
-    .optional(),
+  description: z.string().min(1, "Description is required").optional(),
   coverImage: z
     .string()
     .url("Cover image must be a valid URL")
@@ -204,13 +231,8 @@ export const updateTripSchema = z.object({
     .min(1, "Type is required")
     .max(100, "Type must be less than 100 characters")
     .optional(),
-  locationId: z
-    .string()
-    .min(1, "Location is required")
-    .optional(),
-  mapCoordinates: z
-    .string()
-    .optional(),
+  locationId: z.string().min(1, "Location is required").optional(),
+  mapCoordinates: z.string().optional(),
   startDate: z
     .union([z.string().datetime(), z.date(), z.string()])
     .transform((val) => {
@@ -234,10 +256,7 @@ export const updateTripSchema = z.object({
     .min(1, "Duration is required")
     .max(100, "Duration must be less than 100 characters")
     .optional(),
-  longDesc: z
-    .string()
-    .min(1, "Long description is required")
-    .optional(),
+  longDesc: z.string().min(1, "Long description is required").optional(),
   groupSize: z
     .string()
     .min(1, "Group size is required")
@@ -258,18 +277,9 @@ export const updateTripSchema = z.object({
     .min(1, "Weekend timetable is required")
     .max(100, "Weekend timetable must be less than 100 characters")
     .optional(),
-  included: z
-    .array(z.any())
-    .optional()
-    .nullable(),
-  notIncluded: z
-    .array(z.any())
-    .optional()
-    .nullable(),
-  shortDesc: z
-    .string()
-    .min(1, "Short description is required")
-    .optional(),
+  included: z.array(z.any()).optional().nullable(),
+  notIncluded: z.array(z.any()).optional().nullable(),
+  shortDesc: z.string().min(1, "Short description is required").optional(),
   instaLink: z
     .string()
     .url("Instagram link must be a valid URL")
@@ -282,7 +292,22 @@ export const updateTripSchema = z.object({
     .max(500, "LinkedIn link must be less than 500 characters")
     .optional()
     .nullable(),
-  daysItenary: z.any().optional(),
+  // Days itinerary - array of days with description and image
+  daysItinerary: z
+    .any()
+    .transform((val: any) => {
+      if (!val) return [];
+      if (typeof val === "string") {
+        try {
+          return JSON.parse(val);
+        } catch {
+          return [];
+        }
+      }
+      return Array.isArray(val) ? val : [];
+    })
+    .pipe(daysItinerarySchema)
+    .optional(),
   promotionalVideo: z
     .string()
     .url("Promotional video must be a valid URL")
@@ -292,36 +317,37 @@ export const updateTripSchema = z.object({
     .array(z.string().url("Gallery image must be a valid URL"))
     .min(1, "At least one gallery image is required")
     .optional(),
-  bestPriceMsg: z
-    .string()
-    .min(1, "Best price message is required")
-    .optional(),
+  bestPriceMsg: z.string().min(1, "Best price message is required").optional(),
   perHeadPrice: z
     .string()
     .min(1, "Per head price is required")
     .max(100, "Per head price must be less than 100 characters")
     .optional(),
-  status: z
-    .enum(["pending", "active", "completed", "cancelled"])
-    .optional(),
-  coordinators: z.any().transform((val: any) => {
-    try {
-      return JSON.parse(val);
-    } catch {
-      return Array.isArray(val) ? val : [];
-    }
-  }).pipe(z.array(z.string())),
-  discounts: z.any().transform((val: any) => {
-    if (Array.isArray(val)) return val;
-    if (typeof val === 'string') {
+  status: z.enum(["pending", "active", "completed", "cancelled"]).optional(),
+  coordinators: z
+    .any()
+    .transform((val: any) => {
       try {
         return JSON.parse(val);
       } catch {
-        return [];
+        return Array.isArray(val) ? val : [];
       }
-    }
-    return [];
-  }).pipe(z.array(discountSchema))
+    })
+    .pipe(z.array(z.string())),
+  discounts: z
+    .any()
+    .transform((val: any) => {
+      if (Array.isArray(val)) return val;
+      if (typeof val === "string") {
+        try {
+          return JSON.parse(val);
+        } catch {
+          return [];
+        }
+      }
+      return [];
+    })
+    .pipe(z.array(discountSchema))
     .optional(),
 });
 
@@ -339,3 +365,13 @@ export type UpdateTripRequest = z.infer<typeof updateTripSchema>;
  * Discount type
  */
 export type Discount = z.infer<typeof discountSchema>;
+
+/**
+ * Day itinerary item type
+ */
+export type DayItineraryItem = z.infer<typeof dayItineraryItemSchema>;
+
+/**
+ * Days itinerary type
+ */
+export type DaysItinerary = z.infer<typeof daysItinerarySchema>;

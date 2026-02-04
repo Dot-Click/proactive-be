@@ -33,7 +33,7 @@ const seed = async () => {
       throw new Error(
         "❌ CONNECTION_URL environment variable is not set!\n" +
           "Please ensure your .env file contains a valid CONNECTION_URL.\n" +
-          "Example: CONNECTION_URL=postgresql://user:password@host/database",
+          "Example: CONNECTION_URL=postgresql://user:password@host/database"
       );
     }
 
@@ -66,7 +66,7 @@ const seed = async () => {
             "4. Firewall/VPN - Ensure your network allows connections to Supabase\n" +
             "5. Connection string - Ensure you're using the direct connection string (not pooler)\n\n" +
             `Error details: ${errorMessage}\n` +
-            `Connection URL format: ${env.CONNECTION_URL.substring(0, 20)}...`,
+            `Connection URL format: ${env.CONNECTION_URL.substring(0, 20)}...`
         );
       }
       throw connectionError;
@@ -194,7 +194,7 @@ const seed = async () => {
             `Error details: ${errorMessage}\n` +
             (deleteError?.cause?.message
               ? `Cause: ${deleteError.cause.message}\n`
-              : ""),
+              : "")
         );
       }
       throw deleteError;
@@ -331,25 +331,25 @@ const seed = async () => {
     console.log("📁 Seeding categories...");
     await db.insert(categories).values([
       {
-        name: "Mountain Adventures",
+        name: "Wild Trips",
         isActive: true,
       },
       {
-        name: "Beach & Water Sports",
+        name: "Wild Weekends",
         isActive: true,
       },
       {
-        name: "Cultural Exploration",
+        name: "Erasmus+ Experience",
         isActive: true,
       },
       {
-        name: "Wellness & Relaxation",
+        name: "Internal Events",
         isActive: true,
       },
-      {
-        name: "Urban Discovery",
-        isActive: true,
-      },
+      // {
+      //   name: "Urban Discovery",
+      //   isActive: true,
+      // },
     ]);
 
     // Seed FAQs
@@ -417,7 +417,7 @@ const seed = async () => {
       });
     } catch (e) {
       console.log(
-        "   ⚠️  Banner table does not exist yet, skipping. Run: npm run dbpush",
+        "   ⚠️  Banner table does not exist yet, skipping. Run: npm run dbpush"
       );
     }
 
@@ -444,7 +444,7 @@ const seed = async () => {
             "An exciting week exploring the majestic Rocky Mountains",
           coverImage:
             "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          type: "Mountain",
+          type: "wild trips",
           daysItenary: {
             day1: {
               title: "Day 1",
@@ -495,7 +495,7 @@ const seed = async () => {
           description: "Relax on pristine beaches and explore tropical islands",
           coverImage:
             "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          type: "Beach",
+          type: "erasmus+ experience",
           daysItenary: {
             day1: {
               title: "Day 1",
@@ -571,7 +571,7 @@ const seed = async () => {
             "Immerse yourself in art, history, and cuisine in the City of Light",
           coverImage:
             "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          type: "Culture",
+          type: "wild weekends",
           locationId: locParis.id,
           daysItenary: {
             day1: {
@@ -627,7 +627,7 @@ const seed = async () => {
             "Rejuvenate body and mind with yoga, meditation, and spa treatments",
           coverImage:
             "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          type: "Wellness",
+          type: "internal events",
           locationId: locThailand.id,
           mapCoordinates: "13.7563,100.5018",
           startDate: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000),
@@ -1079,7 +1079,7 @@ const seed = async () => {
       ]);
     } catch (e) {
       console.log(
-        "   ⚠️  Newsletter subscribers table not yet created, skipping...",
+        "   ⚠️  Newsletter subscribers table not yet created, skipping..."
       );
     }
 
@@ -1105,19 +1105,23 @@ const seed = async () => {
     console.log(`   - Newsletter Subscribers: 5`);
     console.log("\n🔑 Default password for all users: Password123!");
     console.log(
-      "📧 Default emails: admin@example.com, coordinator@example.com, user1@example.com, user2@example.com, user3@example.com",
+      "📧 Default emails: admin@example.com, coordinator@example.com, user1@example.com, user2@example.com, user3@example.com"
     );
   } catch (error: any) {
     console.error("\n❌ Error seeding database:");
 
     const causeMsg = error?.cause?.message ?? "";
     const isLocationsMissing =
-      /relation "locations" does not exist|relation.*locations.*does not exist/i.test(causeMsg) ||
-      /relation "locations" does not exist|relation.*locations.*does not exist/i.test(error?.message ?? "");
+      /relation "locations" does not exist|relation.*locations.*does not exist/i.test(
+        causeMsg
+      ) ||
+      /relation "locations" does not exist|relation.*locations.*does not exist/i.test(
+        error?.message ?? ""
+      );
 
     if (isLocationsMissing) {
       console.error(
-        "\n⚠️  The 'locations' table does not exist. Run the migration first:\n",
+        "\n⚠️  The 'locations' table does not exist. Run the migration first:\n"
       );
       console.error("   npm run dbmigrate\n");
       console.error("   Then run: npm run seed");
@@ -1137,15 +1141,17 @@ const seed = async () => {
     }
 
     console.error("\n💡 Troubleshooting tips:");
-    console.error("   1. Run migrations first: npm run dbmigrate (creates locations table)");
+    console.error(
+      "   1. Run migrations first: npm run dbmigrate (creates locations table)"
+    );
     console.error("   2. Verify CONNECTION_URL in your .env file");
     console.error("   3. Check if your Supabase database is active");
     console.error("   4. Ensure your network allows connections to Supabase");
     console.error(
-      "   5. Use the direct connection string (not pooler) from Supabase dashboard",
+      "   5. Use the direct connection string (not pooler) from Supabase dashboard"
     );
     console.error(
-      "   6. Or try: npm run dbpush (to sync schema without migration files)",
+      "   6. Or try: npm run dbpush (to sync schema without migration files)"
     );
 
     throw error;

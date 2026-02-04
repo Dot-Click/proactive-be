@@ -81,20 +81,22 @@ import "@/middlewares/auth.middleware";
  *             schema:
  *               $ref: "#/components/schemas/ErrorResponse"
  */
-export const submitApplication = async (req: Request, res: Response): Promise<Response> => {
+export const submitApplication = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
   try {
-    const {  ...payload }: any = req.body;
-    
+    const { ...payload }: any = req.body;
+
     const userId = req.user!.userId;
     const db = await database();
     if (req.files) {
-
-        if ((req.files as any).introVideo && (req.files as any).introVideo[0]) {
-          const video = await cloudinaryUploader(
-            (req.files as any).introVideo[0].path
-          ) as any;
-          payload.introVideo = video.secure_url;
-        }
+      if ((req.files as any).introVideo && (req.files as any).introVideo[0]) {
+        const video = (await cloudinaryUploader(
+          (req.files as any).introVideo[0].path
+        )) as any;
+        payload.introVideo = video.secure_url;
+      }
     }
     const validationResult = createApplicationSchema.safeParse(payload);
     if (!validationResult.success) {
@@ -130,6 +132,10 @@ export const submitApplication = async (req: Request, res: Response): Promise<Re
       status.CREATED
     );
   } catch (error) {
-    return sendError(res, "Failed to submit application", status.INTERNAL_SERVER_ERROR);
+    return sendError(
+      res,
+      "Failed to submit application",
+      status.INTERNAL_SERVER_ERROR
+    );
   }
-}
+};

@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import { database } from "@/configs/connection.config";
 import { banner } from "@/schema/schema";
-import { cloudinaryUploader, cloudinaryDestroyByUrl } from "@/utils/cloudinary.util";
+import {
+  cloudinaryUploader,
+  cloudinaryDestroyByUrl,
+} from "@/utils/cloudinary.util";
 import { sendSuccess, sendError } from "@/utils/response.util";
 import { createId } from "@paralleldrive/cuid2";
 import { eq } from "drizzle-orm";
@@ -87,13 +90,11 @@ export const changeBanner = async (
   _next: NextFunction
 ): Promise<Response> => {
   try {
-    const bannerFile = req.files && (req.files as Record<string, Express.Multer.File[]>)?.banner?.[0];
+    const bannerFile =
+      req.files &&
+      (req.files as Record<string, Express.Multer.File[]>)?.banner?.[0];
     if (!bannerFile) {
-      return sendError(
-        res,
-        "Banner image is required",
-        status.BAD_REQUEST
-      );
+      return sendError(res, "Banner image is required", status.BAD_REQUEST);
     }
 
     const db = await database();
@@ -103,7 +104,9 @@ export const changeBanner = async (
 
     let bannerUrl: string;
     try {
-      const result = (await cloudinaryUploader(bannerFile.path)) as { secure_url: string };
+      const result = (await cloudinaryUploader(bannerFile.path)) as {
+        secure_url: string;
+      };
       bannerUrl = result.secure_url;
     } catch (error) {
       console.error("Banner upload error:", error);

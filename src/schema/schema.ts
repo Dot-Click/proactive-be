@@ -73,10 +73,7 @@ export const applicationStatusEnum = pgEnum("application_status", [
   "cancelled",
 ]);
 
-export const userStatusEnum = pgEnum("user_status", [
-  "active",
-  "inactive",
-]);
+export const userStatusEnum = pgEnum("user_status", ["active", "inactive"]);
 
 export const users = pgTable("users", {
   id: uuid().primaryKey(),
@@ -96,31 +93,43 @@ export const users = pgTable("users", {
     .notNull(),
   userStatus: userStatusEnum("userStatus").default("active").notNull(),
   userRoles: varchar("userRoles", { length: 20 }).default("user"),
-  lastActive: varchar("lastActive", {length:30}),
+  lastActive: varchar("lastActive", { length: 30 }),
   createdAt: timestamp("createdAt").defaultNow(),
-  coordinatorDetails: foreignkeyRef("coordinator_details_id", (): any => coordinatorDetails.id, { onDelete: "cascade" }),
+  coordinatorDetails: foreignkeyRef(
+    "coordinator_details_id",
+    (): any => coordinatorDetails.id,
+    { onDelete: "cascade" }
+  ),
   updatedAt: timestamp("updatedAt").$onUpdateFn((): Date => new Date()),
 });
 
 export const coordinatorDetails = pgTable("coordinator_details", {
   id: uuid().primaryKey(),
-  userId: foreignkeyRef("user_id", (): any => users.id, { onDelete: "cascade" }).unique().notNull(),
+  userId: foreignkeyRef("user_id", (): any => users.id, { onDelete: "cascade" })
+    .unique()
+    .notNull(),
   fullName: varchar("fullName", { length: 200 }),
   phoneNumber: varchar("phoneNumber", { length: 20 }),
   bio: text("bio"),
   profilePicture: varchar("profilePicture", { length: 255 }),
   specialities: text("specialities").array(),
-  notificationPref: jsonb().default({"emailNotf": false, "appAlert": false, "reviewNotf": false}),
+  notificationPref: jsonb().default({
+    emailNotf: false,
+    appAlert: false,
+    reviewNotf: false,
+  }),
   languages: text("languages").array(),
   certificateLvl: varchar("certificateLvl", { length: 20 }),
   yearsOfExperience: integer("yearsOfExperience"),
   type: varchar("type", { length: 20 }),
   accessLvl: varchar("accessLvl", { length: 20 }),
-  location: varchar("location", {length: 200}),
+  location: varchar("location", { length: 200 }),
   successRate: numeric(),
   repeatCustomers: integer(),
-  totalRevenue: numeric({precision: 100}),
-  isActive: boolean("isActive").$defaultFn(() => true).notNull(),
+  totalRevenue: numeric({ precision: 100 }),
+  isActive: boolean("isActive")
+    .$defaultFn(() => true)
+    .notNull(),
   ...timeStamps,
 });
 
@@ -233,7 +242,9 @@ export const trips = pgTable("trips", {
   description: text().notNull(),
   coverImage: varchar({ length: 500 }).notNull(),
   type: varchar({ length: 100 }).notNull(),
-  locationId: foreignkeyRef("location_id", () => locations.id, { onDelete: "restrict" }).notNull(),
+  locationId: foreignkeyRef("location_id", () => locations.id, {
+    onDelete: "restrict",
+  }).notNull(),
   mapCoordinates: varchar({ length: 255 }),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
@@ -245,7 +256,9 @@ export const trips = pgTable("trips", {
   weekendTt: varchar({ length: 100 }).notNull(),
   included: jsonb("included"),
   status: tripStatusEnum("status").default("pending").notNull(),
-  approvalStatus: tripApprovalStatusEnum("approval_status").default("pending").notNull(),
+  approvalStatus: tripApprovalStatusEnum("approval_status")
+    .default("pending")
+    .notNull(),
   notIncluded: jsonb("not_included"),
   shortDesc: text("short_desc").notNull(),
   instaLink: varchar({ length: 500 }),
@@ -267,7 +280,9 @@ export const tripCoordinators = pgTable("trip_coordinators", {
     onDelete: "cascade",
   }).notNull(),
   createdAt: timestamp().defaultNow(),
-  updatedAt: timestamp().$defaultFn(() => new Date()).$onUpdateFn(() => new Date()),
+  updatedAt: timestamp()
+    .$defaultFn(() => new Date())
+    .$onUpdateFn(() => new Date()),
 });
 
 export const payments = pgTable("payments", {
@@ -342,7 +357,6 @@ export const reviews = pgTable("Reviews", {
   review: text().notNull(),
   ...timeStamps,
 });
-
 
 export const achievements = pgTable("achievements", {
   id: uuid().primaryKey(),

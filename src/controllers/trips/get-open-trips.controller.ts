@@ -1,5 +1,11 @@
 import { database } from "@/configs/connection.config";
-import { trips, tripCoordinators, coordinatorDetails, users, locations } from "@/schema/schema";
+import {
+  trips,
+  tripCoordinators,
+  coordinatorDetails,
+  users,
+  locations,
+} from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { and, eq, gte, inArray } from "drizzle-orm";
 import { Request, Response } from "express";
@@ -9,7 +15,10 @@ import status from "http-status";
  * Public endpoint: Get open/upcoming trips (no auth required).
  * Returns approved trips with status "open" or "live", startDate >= today.
  */
-export const getOpenTrips = async (req: Request, res: Response): Promise<Response> => {
+export const getOpenTrips = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
   try {
     const db = await database();
     const { type } = req.query;
@@ -46,7 +55,10 @@ export const getOpenTrips = async (req: Request, res: Response): Promise<Respons
             bio: coordinatorDetails.bio,
           })
           .from(tripCoordinators)
-          .leftJoin(coordinatorDetails, eq(coordinatorDetails.userId, tripCoordinators.userId))
+          .leftJoin(
+            coordinatorDetails,
+            eq(coordinatorDetails.userId, tripCoordinators.userId)
+          )
           .leftJoin(users, eq(users.id, tripCoordinators.userId))
           .where(eq(tripCoordinators.tripId, trip.id));
 
@@ -75,17 +87,28 @@ export const getOpenTrips = async (req: Request, res: Response): Promise<Respons
 
     const counts = {
       all: tripsWithCoordinators.length,
-      open: tripsWithCoordinators.filter((t: any) => t.status === "open").length,
-      comingSoon: tripsWithCoordinators.filter((t: any) => t.status === "live").length,
+      open: tripsWithCoordinators.filter((t: any) => t.status === "open")
+        .length,
+      comingSoon: tripsWithCoordinators.filter((t: any) => t.status === "live")
+        .length,
       closed: 0,
     };
 
-    return sendSuccess(res, "Open trips fetched successfully", {
-      trips: tripsWithCoordinators,
-      counts,
-    }, status.OK);
+    return sendSuccess(
+      res,
+      "Open trips fetched successfully",
+      {
+        trips: tripsWithCoordinators,
+        counts,
+      },
+      status.OK
+    );
   } catch (error) {
     console.error("Get open trips error:", error);
-    return sendError(res, "An error occurred while fetching open trips", status.INTERNAL_SERVER_ERROR);
+    return sendError(
+      res,
+      "An error occurred while fetching open trips",
+      status.INTERNAL_SERVER_ERROR
+    );
   }
 };

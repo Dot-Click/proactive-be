@@ -33,7 +33,9 @@ export const cloudinaryUploader = async (filePath: string | string[]) => {
  * URL format: https://res.cloudinary.com/<cloud>/image/upload/v<version>/<public_id>.<ext>
  * or with folder: .../upload/v<version>/folder/<public_id>.<ext>
  */
-export const getPublicIdFromCloudinaryUrl = (secureUrl: string): string | null => {
+export const getPublicIdFromCloudinaryUrl = (
+  secureUrl: string
+): string | null => {
   if (!secureUrl || !secureUrl.includes("cloudinary.com")) return null;
   try {
     const match = secureUrl.match(/\/upload\/(?:v\d+\/)?(.+)$/);
@@ -66,4 +68,3 @@ export const cloudinaryDestroyByUrl = async (
     // Don't rethrow - deletion failure should not block the response
   }
 };
-

@@ -5,7 +5,13 @@ import status from "http-status";
 import { cloudinaryUploader } from "@/utils/cloudinary.util";
 import { fetchCorrd } from "@/utils/geocoding.util";
 import { database } from "@/configs/connection.config";
-import { trips, discounts, tripCoordinators, users, locations } from "@/schema/schema";
+import {
+  trips,
+  discounts,
+  tripCoordinators,
+  users,
+  locations,
+} from "@/schema/schema";
 import { createId } from "@paralleldrive/cuid2";
 import { ZodError } from "zod";
 import { createTripSchema } from "@/types/trip.types";
@@ -25,6 +31,7 @@ declare global {
         logo?: Array<{ path: string }>;
         prof_pic?: Array<{ path: string }>;
         file4?: Array<{ path: string }>;
+        day_images?: Array<{ path: string }>;
       };
     }
   }
@@ -85,8 +92,23 @@ export const createTrip = async (
     }
 
     const { id } = req.user as any;
-    const { ...payload }: any = req.body;
 
+    // Parse the payload from FormData - frontend sends JSON string in 'payload' field
+    let payload: any = {};
+    if (req.body.payload) {
+      try {
+        payload =
+          typeof req.body.payload === "string"
+            ? JSON.parse(req.body.payload)
+            : req.body.payload;
+      } catch (e) {
+        console.error("Error parsing payload:", e);
+        payload = req.body;
+      }
+    } else {
+      // Fallback to direct body if no payload field
+      payload = { ...req.body };
+    }
 
     let coordinatorIds: string[] = [];
     if (payload.coordinators) {
@@ -104,28 +126,30 @@ export const createTrip = async (
     }
 
     if (req.files) {
-
-      if ((req.files as any).promotional_video && (req.files as any).promotional_video[0]) {
-        const video = await cloudinaryUploader(
+      if (
+        (req.files as any).promotional_video &&
+        (req.files as any).promotional_video[0]
+      ) {
+        const video = (await cloudinaryUploader(
           (req.files as any).promotional_video[0].path
-        ) as any;
+        )) as any;
         payload.promotionalVideo = video.secure_url;
       }
 
-
-      if ((req.files as any).gallery_images && Array.isArray((req.files as any).gallery_images) && (req.files as any).gallery_images.length > 0) {
+      if (
+        (req.files as any).gallery_images &&
+        Array.isArray((req.files as any).gallery_images) &&
+        (req.files as any).gallery_images.length > 0
+      ) {
         const galleryPaths = (req.files as any).gallery_images.map(
           (file: any) => file.path
         );
-        const gallery_images = (await cloudinaryUploader(
-          galleryPaths
-        )) as any;
+        const gallery_images = (await cloudinaryUploader(galleryPaths)) as any;
         const gallery_images_urls = gallery_images.map(
           (image: any) => image.secure_url
         ) as string[];
         payload.galleryImages = gallery_images_urls;
       }
-
 
       if ((req.files as any).cover_img && (req.files as any).cover_img[0]) {
         const cover_image = (await cloudinaryUploader(
@@ -134,12 +158,69 @@ export const createTrip = async (
         payload.coverImage = cover_image.secure_url;
       }
 
-
       if ((req.files as any).tt_img && (req.files as any).tt_img[0]) {
         const weekend_tt = (await cloudinaryUploader(
           (req.files as any).tt_img[0].path
         )) as any;
         payload.weekendTt = weekend_tt.secure_url;
+      }
+
+      // Handle day images upload
+      if (
+        (req.files as any).day_images &&
+        Array.isArray((req.files as any).day_images) &&
+        (req.files as any).day_images.length > 0
+      ) {
+        // Parse day_image_indices if provided (to map images to correct days)
+        let dayImageIndices: number[] = [];
+        if (payload.day_image_indices) {
+          if (typeof payload.day_image_indices === "string") {
+            // Single index as string
+            dayImageIndices = [parseInt(payload.day_image_indices)];
+          } else if (Array.isArray(payload.day_image_indices)) {
+            dayImageIndices = payload.day_image_indices.map((idx: string) =>
+              parseInt(idx)
+            );
+          }
+        }
+
+        // Upload day images to cloudinary
+        const dayImagePaths = (req.files as any).day_images.map(
+          (file: any) => file.path
+        );
+        const uploadedDayImages = (await cloudinaryUploader(
+          dayImagePaths
+        )) as any;
+        const dayImageUrls = Array.isArray(uploadedDayImages)
+          ? uploadedDayImages.map((img: any) => img.secure_url)
+          : [uploadedDayImages.secure_url];
+
+        // Initialize daysItinerary if not present
+        if (!payload.daysItinerary) {
+          payload.daysItinerary = [];
+        }
+        if (typeof payload.daysItinerary === "string") {
+          try {
+            payload.daysItinerary = JSON.parse(payload.daysItinerary);
+          } catch {
+            payload.daysItinerary = [];
+          }
+        }
+
+        // Map uploaded images to their corresponding days
+        dayImageUrls.forEach((imageUrl: string, i: number) => {
+          const dayIndex = dayImageIndices.length > i ? dayImageIndices[i] : i;
+          if (payload.daysItinerary[dayIndex]) {
+            payload.daysItinerary[dayIndex].image = imageUrl;
+          } else {
+            // Create the day entry if it doesn't exist
+            payload.daysItinerary[dayIndex] = {
+              day: dayIndex + 1,
+              description: "",
+              image: imageUrl,
+            };
+          }
+        });
       }
     }
 
@@ -150,7 +231,6 @@ export const createTrip = async (
       ...(id && typeof id === "string" ? [id] : []),
       ...validCoordinatorIds,
     ].filter((cid, index, self) => cid && self.indexOf(cid) === index);
-
 
     // Normalize date fields that come from multipart/form-data as strings
     if (payload.startDate && typeof payload.startDate === "string") {
@@ -193,7 +273,11 @@ export const createTrip = async (
     }
 
     const validatedPayload = validationResult.data;
-    const { coordinators, discounts: tripDiscounts, ...tripData } = validatedPayload;
+    const {
+      coordinators,
+      discounts: tripDiscounts,
+      ...tripData
+    } = validatedPayload;
 
     const db = await database();
 
@@ -208,7 +292,7 @@ export const createTrip = async (
     const map_coord = await fetchCorrd(locationRow[0].name);
     const mapCoordinates = `${map_coord.lat},${map_coord.lon}`;
 
-    if(validatedPayload.type.toLowerCase() === "wild trips"){
+    if (validatedPayload.type.toLowerCase() === "wild trips") {
       // then add daysItenary object otherwise reject and continue the flow
     }
 
@@ -238,18 +322,20 @@ export const createTrip = async (
       bestPriceMsg: validatedPayload.bestPriceMsg || "",
       perHeadPrice: validatedPayload.perHeadPrice || "",
       status: validatedPayload.status || "pending",
-      daysItenary: validatedPayload.type.toLowerCase() === "wild trips" ? (validatedPayload.daysItenary || {}) : {},
+      // Store days itinerary data (using existing daysItenary column in DB)
+      daysItenary: validatedPayload.daysItinerary || [],
     };
 
-    const newTrip = await db
-      .insert(trips)
-      .values(tripValues)
-      .returning();
+    const newTrip = await db.insert(trips).values(tripValues).returning();
 
     const trip = newTrip[0];
 
     // Create discounts if provided
-    if (tripDiscounts && Array.isArray(tripDiscounts) && tripDiscounts.length > 0) {
+    if (
+      tripDiscounts &&
+      Array.isArray(tripDiscounts) &&
+      tripDiscounts.length > 0
+    ) {
       try {
         const discountValues = tripDiscounts.map((discount: any) => {
           // Map from schema field names (snake_case) to database model fields (camelCase)
@@ -259,10 +345,16 @@ export const createTrip = async (
             discountCode: discount.discount_code, // schema uses discount_code
             discountPercentage: discount.discount_percentage, // schema uses discount_percentage
             amount: discount.amount?.toString() || "0",
-            validTill: discount.valid_till instanceof Date ? discount.valid_till : new Date(discount.valid_till), // schema uses valid_till
+            validTill:
+              discount.valid_till instanceof Date
+                ? discount.valid_till
+                : new Date(discount.valid_till), // schema uses valid_till
             description: discount.description,
             status: (discount.status as any) || "active",
-            maxUsage: discount.maxUsage?.toString() || discount.max_usage?.toString() || "0",
+            maxUsage:
+              discount.maxUsage?.toString() ||
+              discount.max_usage?.toString() ||
+              "0",
           };
         });
 
@@ -272,33 +364,42 @@ export const createTrip = async (
         console.error("Discount data:", JSON.stringify(tripDiscounts, null, 2));
       }
     } else {
-      console.log(`No discounts provided for trip ${trip.id} (tripDiscounts: ${JSON.stringify(tripDiscounts)})`);
+      console.log(
+        `No discounts provided for trip ${
+          trip.id
+        } (tripDiscounts: ${JSON.stringify(tripDiscounts)})`
+      );
     }
 
     // Handle coordinators relationship - create entries in junction table
     if (coordinatorIdsList.length > 0) {
       const validCoordinatorIds = coordinatorIdsList.filter(
-        (coordId: string) => coordId && typeof coordId === "string" && coordId.trim() !== ""
+        (coordId: string) =>
+          coordId && typeof coordId === "string" && coordId.trim() !== ""
       );
-      
+
       // Validate that all coordinator user IDs exist in the users table
       if (validCoordinatorIds.length > 0) {
         const existingUsers = await db
           .select({ id: users.id })
           .from(users)
           .where(inArray(users.id, validCoordinatorIds));
-        
-        const existingUserIds = new Set(existingUsers.map(u => u.id));
-        const invalidIds = validCoordinatorIds.filter(id => !existingUserIds.has(id));
-        
+
+        const existingUserIds = new Set(existingUsers.map((u) => u.id));
+        const invalidIds = validCoordinatorIds.filter(
+          (id) => !existingUserIds.has(id)
+        );
+
         if (invalidIds.length > 0) {
           return sendError(
             res,
-            `Invalid coordinator user IDs: ${invalidIds.join(", ")}. These users do not exist.`,
+            `Invalid coordinator user IDs: ${invalidIds.join(
+              ", "
+            )}. These users do not exist.`,
             status.BAD_REQUEST
           );
         }
-        
+
         const coordinatorValues = validCoordinatorIds
           .map((coordId: string) => {
             const trimmedId = coordId.trim();
@@ -311,14 +412,18 @@ export const createTrip = async (
               userId: trimmedId,
             };
           })
-          .filter((val) => val !== null) as Array<{ id: string; tripId: string; userId: string }>;
+          .filter((val) => val !== null) as Array<{
+          id: string;
+          tripId: string;
+          userId: string;
+        }>;
 
         if (coordinatorValues.length > 0) {
           await db.insert(tripCoordinators).values(coordinatorValues);
         }
       }
     }
-    if (typeof id === 'string' && id.trim()) {
+    if (typeof id === "string" && id.trim()) {
       try {
         await createNotification({
           userId: id.trim(),
@@ -328,13 +433,21 @@ export const createTrip = async (
         });
         console.log("Notification sent to user:", id);
       } catch (notificationError: any) {
-        console.error("Notification failed (trip still created):", notificationError.message);
+        console.error(
+          "Notification failed (trip still created):",
+          notificationError.message
+        );
       }
     } else {
       console.warn("No valid user ID for notification:", id);
     }
 
-    return sendSuccess(res, "Trip created successfully", { trip }, status.CREATED);
+    return sendSuccess(
+      res,
+      "Trip created successfully",
+      { trip },
+      status.CREATED
+    );
   } catch (error: any) {
     console.error("Create trip error:", error);
 

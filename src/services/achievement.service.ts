@@ -1,5 +1,11 @@
 import { database } from "@/configs/connection.config";
-import { achievements, trips, applications, tripCoordinators, globalSettings } from "@/schema/schema";
+import {
+  achievements,
+  trips,
+  applications,
+  tripCoordinators,
+  globalSettings,
+} from "@/schema/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 
@@ -19,7 +25,7 @@ export const ACHIEVEMENT_CRITERIA = {
     requiredTrips: 3,
     pointsPerTrip: 15,
   },
-  "Leader": {
+  Leader: {
     requiredRoles: 1,
     pointsPerRole: 50,
   },
@@ -30,47 +36,51 @@ export const ACHIEVEMENT_CRITERIA = {
  * This mapping determines which badge a trip category contributes to
  */
 const CATEGORY_TO_BADGE_MAPPING: Record<string, string[]> = {
-  "Adventure": ["Mountain Climber"],
-  "Hiking": ["Mountain Climber"],
-  "Trekking": ["Mountain Climber"],
-  "Mountaineering": ["Mountain Climber"],
+  Adventure: ["Mountain Climber"],
+  Hiking: ["Mountain Climber"],
+  Trekking: ["Mountain Climber"],
+  Mountaineering: ["Mountain Climber"],
   "Wild Weekend": ["Mountain Climber"],
-  
-  "Cultural": ["Culture Explorer"],
-  "Heritage": ["Culture Explorer"],
-  "Historical": ["Culture Explorer"],
+
+  Cultural: ["Culture Explorer"],
+  Heritage: ["Culture Explorer"],
+  Historical: ["Culture Explorer"],
   "City Tour": ["Culture Explorer"],
-  
-  "Nature": ["Nature Lover"],
+
+  Nature: ["Nature Lover"],
   "Eco-Friendly": ["Nature Lover"],
-  "Conservation": ["Nature Lover"],
-  "Wildlife": ["Nature Lover"],
-  "Sustainability": ["Nature Lover"],
+  Conservation: ["Nature Lover"],
+  Wildlife: ["Nature Lover"],
+  Sustainability: ["Nature Lover"],
 };
 
 /**
  * Get trip categories from global settings
  */
-const getTripCategoriesFromSettings = async (): Promise<Array<{ id: string; name: string; description?: string; enabled?: boolean }>> => {
+const getTripCategoriesFromSettings = async (): Promise<
+  Array<{ id: string; name: string; description?: string; enabled?: boolean }>
+> => {
   const db = await database();
-  
+
   try {
     const settings = await db
       .select({ tripCategories: globalSettings.tripCategories })
       .from(globalSettings)
       .limit(1);
-    
+
     if (settings.length === 0 || !settings[0].tripCategories) {
-      console.warn("No trip categories found in settings, using default mapping");
+      console.warn(
+        "No trip categories found in settings, using default mapping"
+      );
       return [];
     }
-    
+
     const categories = settings[0].tripCategories as any;
     if (!Array.isArray(categories)) {
       console.warn("Trip categories is not an array, using default mapping");
       return [];
     }
-    
+
     return categories.filter((cat: any) => cat.enabled !== false);
   } catch (error) {
     console.error("Error fetching trip categories from settings:", error);
@@ -81,48 +91,68 @@ const getTripCategoriesFromSettings = async (): Promise<Array<{ id: string; name
 /**
  * Check which achievement badges a trip contributes to based on trip category
  */
-export const getAchievementBadgeForTrip = async (tripType: string): Promise<string[]> => {
+export const getAchievementBadgeForTrip = async (
+  tripType: string
+): Promise<string[]> => {
   const matchingBadges: string[] = [];
 
   const tripCategories = await getTripCategoriesFromSettings();
-  
+
   const normalizedTripType = tripType.toLowerCase().trim();
-  
+
   for (const category of tripCategories) {
     const categoryName = category.name.toLowerCase().trim();
-    
-    if (normalizedTripType === categoryName || normalizedTripType.includes(categoryName) || categoryName.includes(normalizedTripType)) {
+
+    if (
+      normalizedTripType === categoryName ||
+      normalizedTripType.includes(categoryName) ||
+      categoryName.includes(normalizedTripType)
+    ) {
       const badges = CATEGORY_TO_BADGE_MAPPING[category.name] || [];
-      badges.forEach(badge => {
+      badges.forEach((badge) => {
         if (!matchingBadges.includes(badge)) {
           matchingBadges.push(badge);
         }
       });
     }
   }
-  
+
   if (matchingBadges.length === 0) {
     const tripTypeLower = normalizedTripType;
-    
-    if (tripTypeLower.includes("hiking") || tripTypeLower.includes("trekking") || 
-        tripTypeLower.includes("mountain") || tripTypeLower.includes("mountaineering") ||
-        tripTypeLower.includes("climbing") || tripTypeLower.includes("wild weekend")) {
+
+    if (
+      tripTypeLower.includes("hiking") ||
+      tripTypeLower.includes("trekking") ||
+      tripTypeLower.includes("mountain") ||
+      tripTypeLower.includes("mountaineering") ||
+      tripTypeLower.includes("climbing") ||
+      tripTypeLower.includes("wild weekend")
+    ) {
       matchingBadges.push("Mountain Climber");
     }
-    
-    if (tripTypeLower.includes("cultural") || tripTypeLower.includes("city tour") ||
-        tripTypeLower.includes("heritage") || tripTypeLower.includes("historical") ||
-        tripTypeLower.includes("museum")) {
+
+    if (
+      tripTypeLower.includes("cultural") ||
+      tripTypeLower.includes("city tour") ||
+      tripTypeLower.includes("heritage") ||
+      tripTypeLower.includes("historical") ||
+      tripTypeLower.includes("museum")
+    ) {
       matchingBadges.push("Culture Explorer");
     }
-    
-    if (tripTypeLower.includes("eco-friendly") || tripTypeLower.includes("nature") ||
-        tripTypeLower.includes("conservation") || tripTypeLower.includes("wildlife") ||
-        tripTypeLower.includes("sustainability") || tripTypeLower.includes("environmental")) {
+
+    if (
+      tripTypeLower.includes("eco-friendly") ||
+      tripTypeLower.includes("nature") ||
+      tripTypeLower.includes("conservation") ||
+      tripTypeLower.includes("wildlife") ||
+      tripTypeLower.includes("sustainability") ||
+      tripTypeLower.includes("environmental")
+    ) {
       matchingBadges.push("Nature Lover");
     }
   }
-  
+
   return matchingBadges;
 };
 
@@ -153,8 +183,9 @@ export const trackTripAchievement = async (
     const applicableBadges = await getAchievementBadgeForTrip(trip.type);
 
     for (const badge of applicableBadges) {
-      const criteria = ACHIEVEMENT_CRITERIA[badge as keyof typeof ACHIEVEMENT_CRITERIA];
-      
+      const criteria =
+        ACHIEVEMENT_CRITERIA[badge as keyof typeof ACHIEVEMENT_CRITERIA];
+
       const existingAchievement = await db
         .select()
         .from(achievements)
@@ -168,10 +199,13 @@ export const trackTripAchievement = async (
         .limit(1);
 
       if (existingAchievement.length === 0) {
-        const points = badge === "Leader" 
-          ? (ACHIEVEMENT_CRITERIA["Leader"].pointsPerRole || 0)
-          : ("pointsPerTrip" in criteria ? criteria.pointsPerTrip : 0);
-        
+        const points =
+          badge === "Leader"
+            ? ACHIEVEMENT_CRITERIA["Leader"].pointsPerRole || 0
+            : "pointsPerTrip" in criteria
+            ? criteria.pointsPerTrip
+            : 0;
+
         await db.insert(achievements).values({
           id: createId(),
           userId,
@@ -190,7 +224,7 @@ export const trackTripAchievement = async (
 
     if (role === "leader") {
       const leaderCriteria = ACHIEVEMENT_CRITERIA["Leader"];
-      
+
       const existingLeaderAchievement = await db
         .select()
         .from(achievements)
@@ -236,8 +270,9 @@ export const checkAndUnlockBadge = async (
   const db = await database();
 
   try {
-    const criteria = ACHIEVEMENT_CRITERIA[badge as keyof typeof ACHIEVEMENT_CRITERIA];
-    
+    const criteria =
+      ACHIEVEMENT_CRITERIA[badge as keyof typeof ACHIEVEMENT_CRITERIA];
+
     if (!criteria) {
       console.warn(`No criteria found for badge: ${badge}`);
       return false;
@@ -260,7 +295,10 @@ export const checkAndUnlockBadge = async (
       const leaderCriteria = ACHIEVEMENT_CRITERIA["Leader"];
       shouldUnlock = tripCount >= leaderCriteria.requiredRoles;
     } else {
-      const tripBadge = badge as "Mountain Climber" | "Culture Explorer" | "Nature Lover";
+      const tripBadge = badge as
+        | "Mountain Climber"
+        | "Culture Explorer"
+        | "Nature Lover";
       const tripCriteria = ACHIEVEMENT_CRITERIA[tripBadge];
       shouldUnlock = tripCount >= tripCriteria.requiredTrips;
     }
@@ -299,31 +337,41 @@ export const getUserAchievements = async (userId: string) => {
       .from(achievements)
       .where(eq(achievements.userId, userId));
 
-    const badgeProgress: Record<string, {
-      totalTrips: number;
-      unlocked: boolean;
-      progress: number;
-      required: number;
-      percentage: number;
-      points: number;
-    }> = {};
+    const badgeProgress: Record<
+      string,
+      {
+        totalTrips: number;
+        unlocked: boolean;
+        progress: number;
+        required: number;
+        percentage: number;
+        points: number;
+      }
+    > = {};
 
     for (const badge of Object.keys(ACHIEVEMENT_CRITERIA)) {
       const badgeAchievements = userAchievements.filter(
         (a) => a.badges === badge
       );
 
-      const criteria = ACHIEVEMENT_CRITERIA[badge as keyof typeof ACHIEVEMENT_CRITERIA];
+      const criteria =
+        ACHIEVEMENT_CRITERIA[badge as keyof typeof ACHIEVEMENT_CRITERIA];
       const totalTrips = badgeAchievements.length;
       const unlocked = badgeAchievements.some((a) => a.unlocked);
-      const totalPoints = badgeAchievements.reduce((sum, a) => sum + (a.points || 0), 0);
+      const totalPoints = badgeAchievements.reduce(
+        (sum, a) => sum + (a.points || 0),
+        0
+      );
 
       let required = 0;
       if (badge === "Leader") {
         const leaderCriteria = ACHIEVEMENT_CRITERIA["Leader"];
         required = leaderCriteria.requiredRoles;
       } else {
-        const tripBadge = badge as "Mountain Climber" | "Culture Explorer" | "Nature Lover";
+        const tripBadge = badge as
+          | "Mountain Climber"
+          | "Culture Explorer"
+          | "Nature Lover";
         const tripCriteria = ACHIEVEMENT_CRITERIA[tripBadge];
         required = tripCriteria.requiredTrips;
       }
@@ -333,7 +381,8 @@ export const getUserAchievements = async (userId: string) => {
         unlocked,
         progress: totalTrips,
         required,
-        percentage: required > 0 ? Math.min((totalTrips / required) * 100, 100) : 0,
+        percentage:
+          required > 0 ? Math.min((totalTrips / required) * 100, 100) : 0,
         points: totalPoints,
       };
     }
@@ -341,7 +390,10 @@ export const getUserAchievements = async (userId: string) => {
     return {
       achievements: userAchievements,
       badgeProgress,
-      totalPoints: userAchievements.reduce((sum, a) => sum + (a.points || 0), 0),
+      totalPoints: userAchievements.reduce(
+        (sum, a) => sum + (a.points || 0),
+        0
+      ),
       unlockedBadges: userAchievements
         .filter((a) => a.unlocked)
         .map((a) => a.badges)
@@ -352,4 +404,3 @@ export const getUserAchievements = async (userId: string) => {
     throw error;
   }
 };
-
