@@ -5,6 +5,7 @@ import {
   coordinatorDetails,
   users,
   locations,
+  categories,
 } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { eq } from "drizzle-orm";
@@ -28,14 +29,16 @@ export const getTripById = async (
     const { id } = req.params;
     const db = await database();
 
-    // Get trip details with location name
+    // Get trip details with location name and category name
     const tripResult = await db
       .select({
         trip: trips,
         locationName: locations.name,
+        categoryName: categories.name,
       })
       .from(trips)
       .leftJoin(locations, eq(trips.locationId, locations.id))
+      .leftJoin(categories, eq(trips.categoryId, categories.id))
       .where(eq(trips.id, id));
 
     if (tripResult.length === 0) {
@@ -67,11 +70,15 @@ export const getTripById = async (
       .leftJoin(users, eq(users.id, tripCoordinators.userId))
       .where(eq(tripCoordinators.tripId, id));
 
-    // Attach coordinators and location to trip
+    // Attach coordinators, location, and category to trip
     const tripWithCoordinators = {
       ...trip,
       location: row.locationName ?? null,
       locationId: trip.locationId,
+      categoryId: trip.categoryId,
+      category: row.categoryName ?? null, // Category name for backward compatibility
+      categoryName: row.categoryName ?? null, // Explicit category name field
+      type: row.categoryName ?? null, // Legacy field for backward compatibility
       coordinators: coordinatorsResult,
       coordinator: coordinatorsResult[0] || null, // For backward compatibility
       coordinatorId: coordinatorsResult[0]?.id || null, // For backward compatibility
