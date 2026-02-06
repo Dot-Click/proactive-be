@@ -6,6 +6,7 @@ import { createCategorySchema } from "@/types/category.types";
 import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
 import status from "http-status";
 import { createId } from "@paralleldrive/cuid2";
+import { eq } from "drizzle-orm";
 
 /**
  * @swagger
@@ -77,12 +78,27 @@ export const createCategory = async (
     const { name, isActive = true } = validationResult.data;
     const db = await database();
 
+    // Check for duplicate category name (case-insensitive)
+    const existingCategory = await db
+      .select({ id: categories.id, name: categories.name })
+      .from(categories)
+      .where(eq(categories.name, name.trim()))
+      .limit(1);
+
+    if (existingCategory.length > 0) {
+      return sendError(
+        res,
+        `Category with name "${name}" already exists`,
+        status.CONFLICT
+      );
+    }
+
     // Create category
     const newCategory = await db
       .insert(categories)
       .values({
         id: createId(),
-        name,
+        name: name.trim(),
         isActive,
       })
       .returning({

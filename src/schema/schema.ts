@@ -223,7 +223,7 @@ export const faqs = pgTable("faqs", {
 
 export const categories = pgTable("categories", {
   id: uuid().primaryKey(),
-  name: varchar({ length: 255 }).notNull(),
+  name: varchar({ length: 255 }).notNull().unique(),
   isActive: boolean()
     .$defaultFn(() => true)
     .notNull(),
