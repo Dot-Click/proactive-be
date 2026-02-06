@@ -430,19 +430,21 @@ const seed = async () => {
 
     // Seed Locations
     console.log("📍 Seeding locations...");
-    const [locColorado, locHawaii, locParis, locThailand] = await db
+    const [locColorado, locHawaii, locParis, locThailand, locBarcelona] = await db
       .insert(locations)
       .values([
         { name: "Colorado, USA" },
         { name: "Honolulu, Hawaii" },
         { name: "Paris, France" },
         { name: "Bangkok & Phuket, Thailand" },
+        { name: "Barcelona, Spain" },
       ])
       .returning();
 
     // Seed Trips
     console.log("🚗 Seeding trips...");
-    const [trip1, trip2, trip3, trip4] = await db
+    const now = new Date();
+    const [trip1, trip2, trip3, trip4, trip5, trip6, trip7, trip8, trip9, trip10] = await db
       .insert(trips)
       .values([
         {
@@ -472,8 +474,8 @@ const seed = async () => {
           },
           locationId: locColorado.id,
           mapCoordinates: "39.7392,-104.9903",
-          startDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          endDate: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000),
+          startDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+          endDate: new Date(now.getTime() + 37 * 24 * 60 * 60 * 1000),
           duration: "7 days",
           longDesc:
             "Experience the breathtaking beauty of the Rocky Mountains with guided hikes, camping, and stunning views.",
@@ -494,7 +496,7 @@ const seed = async () => {
           ],
           bestPriceMsg: "Book now and save 20%",
           perHeadPrice: "1500",
-          status: "active",
+          status: "open",
           approvalStatus: "approved",
         },
         {
@@ -543,8 +545,8 @@ const seed = async () => {
           },
           locationId: locHawaii.id,
           mapCoordinates: "21.3099,-157.8581",
-          startDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
-          endDate: new Date(Date.now() + 52 * 24 * 60 * 60 * 1000),
+          startDate: new Date(now.getTime() + 45 * 24 * 60 * 60 * 1000),
+          endDate: new Date(now.getTime() + 52 * 24 * 60 * 60 * 1000),
           duration: "7 days",
           longDesc:
             "Enjoy world-class beaches, water sports, local cuisine, and unforgettable sunsets in beautiful Hawaii.",
@@ -569,7 +571,7 @@ const seed = async () => {
           ],
           bestPriceMsg: "Early bird discount 15%",
           perHeadPrice: "2000",
-          status: "active",
+          status: "live",
           approvalStatus: "approved",
         },
         {
@@ -599,8 +601,8 @@ const seed = async () => {
             map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
           },
           mapCoordinates: "48.8566,2.3522",
-          startDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
-          endDate: new Date(Date.now() + 67 * 24 * 60 * 60 * 1000),
+          startDate: new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000),
+          endDate: new Date(now.getTime() + 67 * 24 * 60 * 60 * 1000),
           duration: "7 days",
           longDesc:
             "Visit iconic landmarks, world-class museums, enjoy fine dining, and experience authentic Parisian culture.",
@@ -625,7 +627,7 @@ const seed = async () => {
           ],
           bestPriceMsg: "Limited spots available",
           perHeadPrice: "2500",
-          status: "active",
+          status: "open",
           approvalStatus: "approved",
         },
         {
@@ -637,8 +639,8 @@ const seed = async () => {
           categoryId: categoryByName.get("internal events")!,
           locationId: locThailand.id,
           mapCoordinates: "13.7563,100.5018",
-          startDate: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000),
-          endDate: new Date(Date.now() + 82 * 24 * 60 * 60 * 1000),
+          startDate: new Date(now.getTime() + 75 * 24 * 60 * 60 * 1000),
+          endDate: new Date(now.getTime() + 82 * 24 * 60 * 60 * 1000),
           duration: "7 days",
           longDesc:
             "Complete wellness package including yoga classes, spa treatments, healthy cuisine, and meditation sessions.",
@@ -689,6 +691,309 @@ const seed = async () => {
           status: "active",
           approvalStatus: "approved",
         },
+        // Past Trips (endDate < now)
+        {
+          title: "Alpine Adventure 2024",
+          description:
+            "A memorable journey through the Swiss Alps with breathtaking mountain views",
+          coverImage:
+            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          categoryId: categoryByName.get("wild trips")!,
+          locationId: locColorado.id,
+          daysItenary: {
+            day1: {
+              title: "Day 1",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Arrival and welcome dinner",
+            },
+            day2: {
+              title: "Day 2",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Mountain hiking and exploration",
+            },
+            day3: {
+              title: "Day 3",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Summit climb and descent",
+            },
+            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          },
+          mapCoordinates: "39.7392,-104.9903",
+          startDate: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000),
+          endDate: new Date(now.getTime() - 83 * 24 * 60 * 60 * 1000),
+          duration: "7 days",
+          longDesc:
+            "An unforgettable alpine adventure that took place last season, featuring challenging hikes and stunning vistas.",
+          groupSize: "18",
+          rhythm: "Active",
+          sportLvl: "Advanced",
+          weekendTt: "Mountain",
+          included: { hiking: true, accommodation: true, meals: true, guide: true },
+          notIncluded: { flights: true, equipment: true },
+          shortDesc: "Completed alpine adventure",
+          instaLink: "https://www.instagram.com/alpineadventure",
+          likedinLink: "https://www.linkedin.com/company/alpineadventure",
+          promotionalVideo: "https://www.youtube.com/watch?v=alpine",
+          galleryImages: [
+            "https://example.com/alpine1.jpg",
+            "https://example.com/alpine2.jpg",
+          ],
+          bestPriceMsg: "Trip completed successfully",
+          perHeadPrice: "1700",
+          status: "completed",
+          approvalStatus: "approved",
+        },
+        {
+          title: "Mediterranean Cruise Experience",
+          description:
+            "Sailed through the beautiful Mediterranean Sea visiting multiple countries",
+          coverImage:
+            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          categoryId: categoryByName.get("wild weekends")!,
+          locationId: locHawaii.id,
+          daysItenary: {
+            day1: {
+              title: "Day 1",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Embarkation and welcome",
+            },
+            day2: {
+              title: "Day 2",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Island exploration",
+            },
+            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          },
+          mapCoordinates: "21.3099,-157.8581",
+          startDate: new Date(now.getTime() - 120 * 24 * 60 * 60 * 1000),
+          endDate: new Date(now.getTime() - 113 * 24 * 60 * 60 * 1000),
+          duration: "7 days",
+          longDesc:
+            "A wonderful cruise experience that brought together travelers from around the world.",
+          groupSize: "25",
+          rhythm: "Relaxed",
+          sportLvl: "Easy",
+          weekendTt: "Cruise",
+          included: { accommodation: true, meals: true, activities: true, guide: true },
+          notIncluded: { flights: true },
+          shortDesc: "Completed Mediterranean cruise",
+          instaLink: "https://www.instagram.com/medcruise",
+          likedinLink: "https://www.linkedin.com/company/medcruise",
+          promotionalVideo: "https://www.youtube.com/watch?v=medcruise",
+          galleryImages: [
+            "https://example.com/cruise1.jpg",
+            "https://example.com/cruise2.jpg",
+          ],
+          bestPriceMsg: "Trip completed",
+          perHeadPrice: "2200",
+          status: "completed",
+          approvalStatus: "approved",
+        },
+        {
+          title: "Barcelona City Break",
+          description:
+            "Explored the vibrant city of Barcelona with its rich culture and architecture",
+          coverImage:
+            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          categoryId: categoryByName.get("erasmus+ experience")!,
+          locationId: locBarcelona.id,
+          daysItenary: {
+            day1: {
+              title: "Day 1",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "City tour and tapas",
+            },
+            day2: {
+              title: "Day 2",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Sagrada Familia and Park Güell",
+            },
+            day3: {
+              title: "Day 3",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Beach day and farewell",
+            },
+            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          },
+          mapCoordinates: "41.3851,2.1734",
+          startDate: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000),
+          endDate: new Date(now.getTime() - 53 * 24 * 60 * 60 * 1000),
+          duration: "3 days",
+          longDesc:
+            "A fantastic city break that showcased the best of Barcelona's architecture, food, and culture.",
+          groupSize: "15",
+          rhythm: "Moderate",
+          sportLvl: "Easy",
+          weekendTt: "City",
+          included: { accommodation: true, tours: true, meals: true, guide: true },
+          notIncluded: { flights: true },
+          shortDesc: "Completed Barcelona city break",
+          instaLink: "https://www.instagram.com/barcelonatrip",
+          likedinLink: "https://www.linkedin.com/company/barcelonatrip",
+          promotionalVideo: "https://www.youtube.com/watch?v=barcelona",
+          galleryImages: [
+            "https://example.com/barcelona1.jpg",
+            "https://example.com/barcelona2.jpg",
+          ],
+          bestPriceMsg: "Trip completed",
+          perHeadPrice: "1200",
+          status: "completed",
+          approvalStatus: "approved",
+        },
+        // Additional Closed Trips
+        {
+          title: "Tokyo Cultural Immersion",
+          description:
+            "Explored the vibrant streets of Tokyo, experiencing traditional and modern Japanese culture",
+          coverImage:
+            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          categoryId: categoryByName.get("erasmus+ experience")!,
+          locationId: locParis.id, // Using existing location, can be updated if Tokyo location is added
+          daysItenary: {
+            day1: {
+              title: "Day 1",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Arrival and city exploration",
+            },
+            day2: {
+              title: "Day 2",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Temple visits and traditional experiences",
+            },
+            day3: {
+              title: "Day 3",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Modern Tokyo and farewell",
+            },
+            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          },
+          mapCoordinates: "35.6762,139.6503",
+          startDate: new Date(now.getTime() - 150 * 24 * 60 * 60 * 1000),
+          endDate: new Date(now.getTime() - 143 * 24 * 60 * 60 * 1000),
+          duration: "7 days",
+          longDesc:
+            "A completed journey through Tokyo's unique blend of ancient traditions and cutting-edge modernity.",
+          groupSize: "14",
+          rhythm: "Moderate",
+          sportLvl: "Easy",
+          weekendTt: "Culture",
+          included: { accommodation: true, tours: true, meals: true, guide: true },
+          notIncluded: { flights: true },
+          shortDesc: "Completed Tokyo cultural journey",
+          instaLink: "https://www.instagram.com/tokyotrip",
+          likedinLink: "https://www.linkedin.com/company/tokyotrip",
+          promotionalVideo: "https://www.youtube.com/watch?v=tokyo",
+          galleryImages: [
+            "https://example.com/tokyo1.jpg",
+            "https://example.com/tokyo2.jpg",
+          ],
+          bestPriceMsg: "Trip completed",
+          perHeadPrice: "2800",
+          status: "completed",
+          approvalStatus: "approved",
+        },
+        {
+          title: "Safari Adventure Kenya",
+          description:
+            "Witnessed the incredible wildlife of Kenya's national parks and reserves",
+          coverImage:
+            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          categoryId: categoryByName.get("wild trips")!,
+          locationId: locThailand.id, // Using existing location
+          daysItenary: {
+            day1: {
+              title: "Day 1",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Arrival and first game drive",
+            },
+            day2: {
+              title: "Day 2",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Full day safari experience",
+            },
+            day3: {
+              title: "Day 3",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Wildlife photography and departure",
+            },
+            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          },
+          mapCoordinates: "-1.2921,36.8219",
+          startDate: new Date(now.getTime() - 200 * 24 * 60 * 60 * 1000),
+          endDate: new Date(now.getTime() - 193 * 24 * 60 * 60 * 1000),
+          duration: "7 days",
+          longDesc:
+            "An unforgettable safari adventure that showcased Kenya's magnificent wildlife and natural beauty.",
+          groupSize: "12",
+          rhythm: "Active",
+          sportLvl: "Intermediate",
+          weekendTt: "Safari",
+          included: { accommodation: true, safari: true, meals: true, guide: true },
+          notIncluded: { flights: true, insurance: true },
+          shortDesc: "Completed Kenya safari adventure",
+          instaLink: "https://www.instagram.com/kenyasafari",
+          likedinLink: "https://www.linkedin.com/company/kenyasafari",
+          promotionalVideo: "https://www.youtube.com/watch?v=kenyasafari",
+          galleryImages: [
+            "https://example.com/safari1.jpg",
+            "https://example.com/safari2.jpg",
+          ],
+          bestPriceMsg: "Trip completed",
+          perHeadPrice: "3500",
+          status: "completed",
+          approvalStatus: "approved",
+        },
+        {
+          title: "Iceland Northern Lights Expedition",
+          description:
+            "Chased the aurora borealis across Iceland's stunning landscapes",
+          coverImage:
+            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          categoryId: categoryByName.get("wild weekends")!,
+          locationId: locColorado.id, // Using existing location
+          daysItenary: {
+            day1: {
+              title: "Day 1",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Arrival and Reykjavik exploration",
+            },
+            day2: {
+              title: "Day 2",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Golden Circle tour",
+            },
+            day3: {
+              title: "Day 3",
+              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+              description: "Northern lights hunting",
+            },
+            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+          },
+          mapCoordinates: "64.1466,-21.9426",
+          startDate: new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000),
+          endDate: new Date(now.getTime() - 173 * 24 * 60 * 60 * 1000),
+          duration: "7 days",
+          longDesc:
+            "A magical journey through Iceland's otherworldly landscapes, culminating in breathtaking northern lights displays.",
+          groupSize: "16",
+          rhythm: "Moderate",
+          sportLvl: "Easy",
+          weekendTt: "Adventure",
+          included: { accommodation: true, tours: true, meals: true, guide: true },
+          notIncluded: { flights: true },
+          shortDesc: "Completed Iceland northern lights trip",
+          instaLink: "https://www.instagram.com/icelandlights",
+          likedinLink: "https://www.linkedin.com/company/icelandlights",
+          promotionalVideo: "https://www.youtube.com/watch?v=icelandlights",
+          galleryImages: [
+            "https://example.com/iceland1.jpg",
+            "https://example.com/iceland2.jpg",
+          ],
+          bestPriceMsg: "Trip completed",
+          perHeadPrice: "3200",
+          status: "completed",
+          approvalStatus: "approved",
+        },
       ])
       .returning();
 
@@ -709,6 +1014,30 @@ const seed = async () => {
       },
       {
         tripId: trip4.id,
+        userId: coordinatorUser.id,
+      },
+      {
+        tripId: trip5.id,
+        userId: coordinatorUser.id,
+      },
+      {
+        tripId: trip6.id,
+        userId: coordinatorUser.id,
+      },
+      {
+        tripId: trip7.id,
+        userId: coordinatorUser.id,
+      },
+      {
+        tripId: trip8.id,
+        userId: coordinatorUser.id,
+      },
+      {
+        tripId: trip9.id,
+        userId: coordinatorUser.id,
+      },
+      {
+        tripId: trip10.id,
         userId: coordinatorUser.id,
       },
     ]);
@@ -1098,8 +1427,8 @@ const seed = async () => {
     console.log(`   - FAQs: 5`);
     console.log(`   - Settings: 1`);
     console.log(`   - Banner: 1`);
-    console.log(`   - Trips: 4`);
-    console.log(`   - Trip Coordinators: 4`);
+    console.log(`   - Trips: 10 (4 open/upcoming, 6 closed)`);
+    console.log(`   - Trip Coordinators: 10`);
     console.log(`   - Chats: 3`);
     console.log(`   - Chat Participants: 8`);
     console.log(`   - Messages: 8`);

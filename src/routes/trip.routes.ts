@@ -81,7 +81,7 @@ tripRoutes.get("/detail/:id", getTripById);
  *           type: string
  *         description: Search query for trip name or location
  */
-tripRoutes.get("/search", authenticate, searchTrips);
+tripRoutes.get("/search", searchTrips);
 
 /**
  * @swagger
