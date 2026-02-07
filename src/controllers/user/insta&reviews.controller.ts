@@ -121,6 +121,10 @@ export const getInstaInfo = async (
   }
 };
 
+/** In-memory cache for reviews to reduce API calls and avoid 429 rate limits */
+let reviewsCache: { reviews: Array<{ link?: string; userImage?: string; userName?: string; review?: string }>; expiresAt: number } | null = null;
+const REVIEWS_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
 /**
  * @swagger
  * /api/user/reviews:
@@ -155,6 +159,15 @@ export const getReviews = async (
   _next: NextFunction
 ): Promise<Response> => {
   try {
+    if (reviewsCache && reviewsCache.expiresAt > Date.now()) {
+      return sendSuccess(
+        res,
+        "Reviews fetched successfully",
+        { reviews: reviewsCache.reviews },
+        status.OK
+      );
+    }
+
     const apiKey = process.env.RAPID_API_KEY;
     if (!apiKey) {
       return sendError(
@@ -178,12 +191,12 @@ export const getReviews = async (
     );
 
     if (!data.ok) {
-      let errorMessage = `Failed to fetch reviews: ${data.status} ${data.statusText}`;
-
+      const errorMessage = `Failed to fetch reviews: ${data.status} ${data.statusText}`;
       console.error(
         `Google Reviews API error: ${data.status} ${data.statusText}`,
         errorMessage
       );
+
       if (data.status === 403) {
         return sendError(
           res,
@@ -192,11 +205,28 @@ export const getReviews = async (
         );
       }
 
+      if (data.status === 429) {
+        if (reviewsCache?.reviews?.length) {
+          return sendSuccess(
+            res,
+            "Reviews (cached, rate limit reached). Try again later for fresh data.",
+            { reviews: reviewsCache.reviews },
+            status.OK
+          );
+        }
+        return sendSuccess(
+          res,
+          "Reviews temporarily unavailable (rate limit). Try again later.",
+          { reviews: [] },
+          status.OK
+        );
+      }
+
       throw new Error(errorMessage);
     }
 
     const json = await data.json();
-    
+
     if (!json.data || !Array.isArray(json.data)) {
       return sendSuccess(
         res,
@@ -212,6 +242,11 @@ export const getReviews = async (
       userName: review.author_name,
       review: review.review_text,
     }));
+
+    reviewsCache = {
+      reviews,
+      expiresAt: Date.now() + REVIEWS_CACHE_TTL_MS,
+    };
 
     return sendSuccess(
       res,
