@@ -123,7 +123,7 @@ export const getInstaInfo = async (
 
 /** In-memory cache for reviews to reduce API calls and avoid 429 rate limits */
 let reviewsCache: { reviews: Array<{ link?: string; userImage?: string; userName?: string; review?: string }>; expiresAt: number } | null = null;
-const REVIEWS_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const REVIEWS_CACHE_TTL_MS = 20 * 60 * 1000; // 10 minutes
 
 /**
  * @swagger
