@@ -143,6 +143,9 @@ export const register = async (
       LastName,
       NickName,
       Address,
+      EmergencyContact,
+      DNI,
+      DietRestrictions,
       PhoneNumber,
       Gender,
       DOB,
@@ -177,6 +180,9 @@ export const register = async (
         userRoles: "user",
         emailVerified: false,
         firstName: FirstName || undefined,
+        dni: DNI || undefined,
+        emergencyContact: EmergencyContact || undefined,
+        dietaryRestrictions: DietRestrictions || undefined,
         lastName: LastName || undefined,
         avatar: `https://ui-avatars.com/api/?name=${FirstName}+${LastName}`,
         nickName: NickName || undefined,
@@ -321,7 +327,7 @@ export const googleSignup = async (_req: Request, res: Response) => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: process.env.GOOGLE_REDIRECT_URL!,
+        redirectTo: process.env.NODE_ENV === "production" ? process.env.GOOGLE_REDIRECT_URL! : "http://localhost:3000/api/auth/google-callback",
         queryParams: {
           prompt: "select_account",
           access_type: "offline",

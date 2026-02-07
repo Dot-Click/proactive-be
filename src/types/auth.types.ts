@@ -21,9 +21,13 @@ export const registerSchema = z
     PhoneNumber: z
       .string()
       .max(20, "Phone number must be less than 20 characters")
+      .min(9, "Phone number must be at least 9 characters")
       .regex(/^[\d\s\-\+\(\)]+$/, "Invalid phone number format"),
     DOB: z.string(),
     Gender: z.string(),
+    EmergencyContact: z.string().optional(),
+    DietRestrictions: z.string().optional(),
+    DNI: z.string().optional(),
     Address: z.string(),
     Password: z
       .string()
