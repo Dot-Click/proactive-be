@@ -15,6 +15,9 @@ const updateProfileSchema = z.object({
   phoneNumber: z.string().optional(),
   dob: z.string().optional(),
   gender: z.string().optional(),
+  emergencyContact: z.string().max(100, "Emergency contact must be less than 100 characters").optional(),
+  dni: z.string().max(50, "DNI must be less than 50 characters").optional(),
+  dietaryRestrictions: z.string().max(200, "Diet restrictions must be less than 200 characters").optional(),
 });
 
 /**
@@ -55,6 +58,15 @@ const updateProfileSchema = z.object({
  *               gender:
  *                 type: string
  *                 example: Male
+ *               emergencyContact:
+ *                 type: string
+ *                 example: +1 (555) 987-6543
+ *               dni:
+ *                 type: string
+ *                 example: 12345678A
+ *               dietaryRestrictions:
+ *                 type: string
+ *                 example: Vegetarian
  *     responses:
  *       200:
  *         description: Profile updated successfully
@@ -102,7 +114,7 @@ export const updateProfile = async (
       });
       return sendError(
         res,
-        "Validation failed",
+        "Please check the form fields and correct any errors before submitting.",
         status.BAD_REQUEST,
         undefined,
         errors
@@ -135,11 +147,59 @@ export const updateProfile = async (
       undefined,
       status.OK
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Update profile error:", error);
+
+    // Handle database constraint errors
+    if (error?.cause?.code === "22001" || error?.code === "22001") {
+      // Value too long for column type
+      const columnMatch = error?.cause?.message?.match(/column "(\w+)"/i) || 
+                         error?.message?.match(/column "(\w+)"/i);
+      const columnName = columnMatch ? columnMatch[1] : "field";
+      
+      // Map database column names to user-friendly field names
+      const fieldNameMap: Record<string, string> = {
+        dietaryRestrictions: "Diet Restrictions",
+        dni: "DNI",
+        emergencyContact: "Emergency Contact",
+        firstName: "First Name",
+        lastName: "Last Name",
+        nickName: "Nick Name",
+        phoneNumber: "Phone Number",
+      };
+      
+      const friendlyFieldName = fieldNameMap[columnName] || columnName;
+      return sendError(
+        res,
+        `The ${friendlyFieldName} field is too long. Please shorten it and try again.`,
+        status.BAD_REQUEST
+      );
+    }
+
+    // Handle other database errors
+    if (error?.cause?.code === "42703" || error?.code === "42703") {
+      return sendError(
+        res,
+        "A database error occurred. Please try again or contact support if the problem persists.",
+        status.INTERNAL_SERVER_ERROR
+      );
+    }
+
+    // Handle validation errors from database
+    if (error?.errors) {
+      return sendError(
+        res,
+        "Please check your input and try again.",
+        status.BAD_REQUEST,
+        undefined,
+        error.errors
+      );
+    }
+
+    // Generic error message
     return sendError(
       res,
-      "An error occurred while updating profile",
+      error?.message || "Unable to update your profile. Please check your information and try again.",
       status.INTERNAL_SERVER_ERROR
     );
   }

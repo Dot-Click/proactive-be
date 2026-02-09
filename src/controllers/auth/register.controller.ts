@@ -129,7 +129,7 @@ export const register = async (
       });
       return sendError(
         res,
-        "Validation failed",
+        "Please check the form fields and correct any errors before submitting.",
         status.BAD_REQUEST,
         undefined,
         errors
@@ -276,11 +276,59 @@ export const register = async (
       responseData,
       status.CREATED
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Register error:", error);
+
+    // Handle database constraint errors
+    if (error?.cause?.code === "22001" || error?.code === "22001") {
+      // Value too long for column type
+      const columnMatch = error?.cause?.message?.match(/column "(\w+)"/i) || 
+                         error?.message?.match(/column "(\w+)"/i);
+      const columnName = columnMatch ? columnMatch[1] : "field";
+      
+      // Map database column names to user-friendly field names
+      const fieldNameMap: Record<string, string> = {
+        dietaryRestrictions: "Diet Restrictions",
+        dni: "DNI",
+        emergencyContact: "Emergency Contact",
+        firstName: "First Name",
+        lastName: "Last Name",
+        nickName: "Nick Name",
+        phoneNumber: "Phone Number",
+      };
+      
+      const friendlyFieldName = fieldNameMap[columnName] || columnName;
+      return sendError(
+        res,
+        `The ${friendlyFieldName} field is too long. Please shorten it and try again.`,
+        status.BAD_REQUEST
+      );
+    }
+
+    // Handle unique constraint violations (email already exists)
+    if (error?.cause?.code === "23505" || error?.code === "23505") {
+      if (error?.cause?.message?.includes("email") || error?.message?.includes("email")) {
+        return sendError(
+          res,
+          "An account with this email already exists. Please use a different email or try logging in.",
+          status.CONFLICT
+        );
+      }
+    }
+
+    // Handle other database errors
+    if (error?.cause?.code === "42703" || error?.code === "42703") {
+      return sendError(
+        res,
+        "A database error occurred. Please try again or contact support if the problem persists.",
+        status.INTERNAL_SERVER_ERROR
+      );
+    }
+
+    // Generic error message
     return sendError(
       res,
-      "An error occurred during registration",
+      error?.message || "Unable to create your account. Please check your information and try again.",
       status.INTERNAL_SERVER_ERROR
     );
   }

@@ -25,9 +25,9 @@ export const registerSchema = z
       .regex(/^[\d\s\-\+\(\)]+$/, "Invalid phone number format"),
     DOB: z.string(),
     Gender: z.string(),
-    EmergencyContact: z.string().optional(),
-    DietRestrictions: z.string().optional(),
-    DNI: z.string().optional(),
+    EmergencyContact: z.string().max(100, "Emergency contact must be less than 100 characters").optional(),
+    DietRestrictions: z.string().max(200, "Diet restrictions must be less than 200 characters").optional(),
+    DNI: z.string().max(50, "DNI must be less than 50 characters").optional(),
     Address: z.string(),
     Password: z
       .string()
