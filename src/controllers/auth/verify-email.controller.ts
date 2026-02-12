@@ -4,6 +4,7 @@ import { users, verification } from "@/schema/schema";
 import { sendSuccess, sendError } from "@/utils/response.util";
 import { sendWelcomeEmail } from "@/utils/brevo.util";
 import { verifyEmailSchema } from "@/types/auth.types";
+import { generateAccessToken, generateRefreshToken } from "@/utils/token.util";
 import status from "http-status";
 import { eq, sql } from "drizzle-orm";
 
@@ -53,27 +54,41 @@ export const verifyEmail = async (
   res: Response
 ): Promise<Response> => {
   try {
-    // Validate request body
-    const validationResult = verifyEmailSchema.safeParse(req.body);
-    if (!validationResult.success) {
-      const errors: Record<string, string[]> = {};
-      validationResult.error.issues.forEach((err) => {
-        const path = err.path.join(".");
-        if (!errors[path]) {
-          errors[path] = [];
-        }
-        errors[path].push(err.message);
-      });
-      return sendError(
-        res,
-        "Validation failed",
-        status.BAD_REQUEST,
-        undefined,
-        errors
-      );
+    // Handle both GET (query param) and POST (body) requests
+    let token: string;
+    
+    if (req.method === "GET") {
+      // GET request - token from query parameter
+      token = req.query.token as string;
+      if (!token) {
+        return sendError(
+          res,
+          "Verification token is required",
+          status.BAD_REQUEST
+        );
+      }
+    } else {
+      // POST request - token from body
+      const validationResult = verifyEmailSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        const errors: Record<string, string[]> = {};
+        validationResult.error.issues.forEach((err) => {
+          const path = err.path.join(".");
+          if (!errors[path]) {
+            errors[path] = [];
+          }
+          errors[path].push(err.message);
+        });
+        return sendError(
+          res,
+          "Validation failed",
+          status.BAD_REQUEST,
+          undefined,
+          errors
+        );
+      }
+      token = validationResult.data.token;
     }
-
-    const { token } = validationResult.data;
     const db = await database();
 
     // Trim token to handle any whitespace issues
@@ -155,10 +170,40 @@ export const verifyEmail = async (
       await sendWelcomeEmail(user.email, user.firstName || undefined);
     }
 
+    // Generate tokens for auto-login
+    const accessToken = generateAccessToken({
+      userId: user.id,
+      email: user.email,
+      role: user.userRoles || "user",
+    });
+
+    const refreshToken = generateRefreshToken({
+      userId: user.id,
+      email: user.email,
+      role: user.userRoles || "user",
+    });
+
+    // Set refresh token as HTTP-only cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    // Return success with tokens for auto-login
     return sendSuccess(
       res,
       "Email verified successfully",
-      undefined,
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.userRoles || "user",
+          emailVerified: true,
+        },
+        accessToken,
+      },
       status.OK
     );
   } catch (error) {

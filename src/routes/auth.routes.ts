@@ -93,6 +93,24 @@ authRoutes.post("/verify-email", verifyEmail);
 
 /**
  * @swagger
+ * /api/auth/verify-email/:token:
+ *   get:
+ *     tags:
+ *       - Authentication
+ *     summary: Verify email address via link
+ *     description: Verify user's email address using verification token from email link
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Verification token from email
+ */
+authRoutes.get("/verify-email", verifyEmail);
+
+/**
+ * @swagger
  * /api/auth/resend-verification:
  *   post:
  *     tags:
