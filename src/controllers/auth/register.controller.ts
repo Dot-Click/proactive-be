@@ -457,6 +457,37 @@ export const googleSignupCallback = async (req: Request, res: Response) => {
       .limit(1);
 
     if (existingUser.length) {
+      // Always update avatar from Google if available (Google photos are always up-to-date)
+      const googleAvatar = data.user.user_metadata.avatar_url || data.user.user_metadata.picture;
+      if (googleAvatar) {
+        await db
+          .update(users)
+          .set({ 
+            avatar: googleAvatar,
+            provider: "google",
+            lastActive: new Date().toISOString()
+          })
+          .where(eq(users.id, existingUser[0].id));
+        
+        // Fetch updated user
+        const updatedUser = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, existingUser[0].id))
+          .limit(1);
+        
+        return sendSuccess(res, "User already exists", updatedUser[0], status.OK);
+      }
+      
+      // Update lastActive even if no avatar update
+      await db
+        .update(users)
+        .set({ 
+          provider: "google",
+          lastActive: new Date().toISOString()
+        })
+        .where(eq(users.id, existingUser[0].id));
+      
       return sendSuccess(res, "User already exists", existingUser[0], status.OK);
     }
 
