@@ -244,14 +244,14 @@ const getEmailVerificationTemplate = (
               </table>
               
               <!-- Alternative Token -->
-              <div style="margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 6px; border-left: 4px solid #667eea;">
-                <p style="margin: 0 0 10px; color: #666666; font-size: 14px; font-weight: 600;">
-                  Or use this verification token:
-                </p>
-                <p style="margin: 0; color: #333333; font-size: 16px; font-family: 'Courier New', monospace; word-break: break-all; background-color: #ffffff; padding: 12px; border-radius: 4px;">
-                  ${token}
-                </p>
-              </div>
+              // <div style="margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 6px; border-left: 4px solid #667eea;">
+              //   <p style="margin: 0 0 10px; color: #666666; font-size: 14px; font-weight: 600;">
+              //     Or use this verification token:
+              //   </p>
+              //   <p style="margin: 0; color: #333333; font-size: 16px; font-family: 'Courier New', monospace; word-break: break-all; background-color: #ffffff; padding: 12px; border-radius: 4px;">
+              //     ${token}
+              //   </p>
+              // </div>
               
               <p style="margin: 30px 0 0; color: #999999; font-size: 14px; line-height: 1.6;">
                 This verification link will expire in <strong>24 hours</strong>.
