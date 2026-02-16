@@ -47,8 +47,19 @@ export const subscribeNewsletter = async (
   try {
     const parsed = subscribeSchema.safeParse(req.body);
     if (!parsed.success) {
-      const message = parsed.error.message ?? "Invalid request";
-      return sendError(res, message, status.BAD_REQUEST);
+      // Extract user-friendly validation errors
+      const errors: Record<string, string[]> = {};
+      parsed.error.issues.forEach((err) => {
+        const path = err.path.join(".") || "email";
+        if (!errors[path]) {
+          errors[path] = [];
+        }
+        errors[path].push(err.message);
+      });
+      
+      // Use the first error message for user-friendly display
+      const firstError = parsed.error.issues[0]?.message ?? "Invalid request";
+      return sendError(res, firstError, status.BAD_REQUEST, undefined, errors);
     }
     const { email } = parsed.data;
     const normalizedEmail = email.trim().toLowerCase();
