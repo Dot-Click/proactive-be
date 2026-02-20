@@ -199,8 +199,9 @@ Proactive Team`;
 const getEmailVerificationTemplate = (
   userName: string,
   verificationLink: string,
-  // token?: string
+  token: string
 ): string => {
+  console.log(token);
   return `
 <!DOCTYPE html>
 <html lang="en">
