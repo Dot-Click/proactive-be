@@ -21,6 +21,8 @@ export const dayItineraryItemSchema = z.object({
     .max(2000, "Description must be less than 2000 characters")
     .optional(),
   image: z.string().url().max(2000).optional(),
+  lat: z.string().optional(),
+  long: z.string().optional()
 });
 
 /**

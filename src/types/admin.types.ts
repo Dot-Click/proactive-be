@@ -118,7 +118,7 @@ export const createSettingsSchema = updateSettingsSchema.extend({
 });
 
 export const emailSendings = z.object({
-  subject: z.string().optional(),
+  subject: z.string(),
   emailText: z.string(),
   userEmail: z.string()
 })
