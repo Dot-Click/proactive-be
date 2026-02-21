@@ -8,6 +8,7 @@ import paymentRoutes from "./payment.routes";
 import userRoutes from "./user.routes";
 import coordinatorRoutes from "./coordinator.routes";
 import adminRoutes from "./admin.routes";
+import inviteRoutes from "./invite.routes";
 import { Router } from "express";
 
 export const apiRoutes = Router();
@@ -22,6 +23,7 @@ apiRoutes.use("/api/payment", paymentRoutes);
 apiRoutes.use("/api/user", userRoutes);
 apiRoutes.use("/api/coordinator", coordinatorRoutes);
 apiRoutes.use("/api/admin", adminRoutes);
+apiRoutes.use("/api/invite", inviteRoutes);
  
 
 export default apiRoutes;

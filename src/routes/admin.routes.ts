@@ -15,6 +15,7 @@ import { updateLocation } from "@/controllers/location/update-location.controlle
 import { deleteLocation } from "@/controllers/location/delete-location.controller";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { upload } from "@/middlewares/multer.middleware";
+import { inviteCoordinator } from "@/controllers/admin/invite.coordinator.controller";
 import { Router } from "express";
 
 const adminRoutes = Router();
@@ -84,6 +85,11 @@ const adminRoutes = Router();
  *               $ref: "#/components/schemas/ErrorResponse"
  */
 adminRoutes.post("/coordinator", authenticate, authorize("admin"), upload(['image/jpeg', 'image/png', 'image/jpg']), createCoordinator);
+
+/**
+ * Invite coordinator (admin only)
+ */
+adminRoutes.post("/coordinator/invite", authenticate, authorize("admin"), inviteCoordinator);
 
 /**
  * @swagger

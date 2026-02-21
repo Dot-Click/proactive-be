@@ -12,6 +12,7 @@ export const cloudinaryUploader = async (filePath: string | string[]) => {
       const uploadPromises = filePath.map((path) =>
         cloudinary.uploader.upload(path, {
           resource_type: "auto",
+          chunk_size: 3000000, // 3MB chunk size for large files
         })
       );
       return await Promise.all(uploadPromises);
