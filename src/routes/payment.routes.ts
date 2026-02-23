@@ -1,6 +1,7 @@
 import { createMembership } from "@/controllers/payment_&_memberships/create.membership.controller";
 import { createPayment } from "@/controllers/payment_&_memberships/create.payment.controller";
 import { getPayments } from "@/controllers/payment_&_memberships/get.payments.controller";
+import { getMyPayments } from "@/controllers/payment_&_memberships/get.my.payments.controller";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { Router } from "express";
 
@@ -138,6 +139,10 @@ paymentRoutes.post("/membership", authenticate, authorize("user"), createMembers
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
+// Admin: get all payments
 paymentRoutes.get("/", authenticate, authorize("admin"), getPayments);
+
+// Authenticated user: get own payments
+paymentRoutes.get("/me", authenticate, getMyPayments);
 
 export default paymentRoutes;

@@ -177,6 +177,7 @@ export const searchCoordinators = async (
         if (coordinator.coordinatorDetailsId) {
           const coordDetails = await db
             .select({
+              id: coordinatorDetails.id,
               fullName: coordinatorDetails.fullName,
               bio: coordinatorDetails.bio,
               specialities: coordinatorDetails.specialities,

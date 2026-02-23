@@ -20,6 +20,7 @@ import {
 import { getAllUsers } from "@/controllers/user/get-all-users.controller";
 import { getUserByID } from "@/controllers/user/get-user-by-id.controller";
 import { updateUserStatus } from "@/controllers/user/update-status.controller";
+import { updateUserRole } from "@/controllers/user/update-role.controller";
 import { searchUsers } from "@/controllers/user/search-users.controller";
 import { searchCoordinators } from "@/controllers/user/search-coordinators.controller";
 
@@ -215,6 +216,57 @@ userRoutes.patch(
   authenticate,
   authorize("admin"),
   updateUserStatus,
+);
+
+/**
+ * @swagger
+ * /api/user/{userId}/role:
+ *   patch:
+ *     tags:
+ *       - User
+ *     summary: Update user role
+ *     description: Update the role of a specific user (Admin only). Can upgrade member to coordinator/admin or downgrade between roles.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - role
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: [user, coordinator, admin]
+ *                 description: New role for the user
+ *     responses:
+ *       200:
+ *         description: User role updated successfully
+ *       400:
+ *         description: Bad request - Validation failed
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+userRoutes.patch(
+  "/:userId/role",
+  authenticate,
+  authorize("admin"),
+  updateUserRole,
 );
 /**
  * @swagger
