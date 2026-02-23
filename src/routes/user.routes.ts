@@ -280,6 +280,16 @@ userRoutes.patch(
  *       - bearerAuth: []
  */
 userRoutes.delete("/deleteMe", authenticate, authorize("user"), deleteAuthUser);
+import { getMyApplications } from "@/controllers/user/get.my.applications.controller";
+
+// ... (existing imports)
+
+userRoutes.get(
+  "/applications",
+  authenticate,
+  authorize("user", "admin"),
+  getMyApplications
+);
 userRoutes.post(
   "/applications",
   authenticate,

@@ -29,6 +29,11 @@ notificationRoutes.get("/", authenticate, getAllNotificationsController);
  *     security:
  *       - bearerAuth: []
  */
+import { markAllNotificationsAsReadController } from "@/controllers/notifications/markAllRead.notification";
+
+// ...
+
+notificationRoutes.patch("/mark-all-read", authenticate, markAllNotificationsAsReadController);
 notificationRoutes.patch("/:id", authenticate, markAsReadNotificationController);
 
 export default notificationRoutes;

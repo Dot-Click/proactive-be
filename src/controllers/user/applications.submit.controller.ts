@@ -6,81 +6,10 @@ import { createId } from "@paralleldrive/cuid2";
 import { Request, Response } from "express";
 import status from "http-status";
 import { createApplicationSchema } from "@/types/user.types";
+import { and, eq } from "drizzle-orm";
 // Import auth middleware to get Request type extension
 import "@/middlewares/auth.middleware";
 
-/**
- * @swagger
- * /api/user/applications:
- *   post:
- *     tags:
- *       - User
- *       - Applications
- *     summary: Submit an application for a trip
- *     description: Submit an application for a trip. Video can be uploaded as a file (mp4/mov) or provided as a URL. Requires user or admin authentication.
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             required:
- *               - tripId
- *               - shortIntro
- *             properties:
- *               tripId:
- *                 type: string
- *                 example: "clx123abc456def789"
- *                 description: "Trip ID to apply for"
- *               shortIntro:
- *                 type: string
- *                 example: "I am a 20 year old male from the United States."
- *                 description: "Short introduction about yourself"
- *               introVideo:
- *                 type: string
- *                 format: binary
- *                 description: "Introduction video file (mp4 or mov)"
- *               dietaryRestrictions:
- *                 type: string
- *                 example: "I am a vegetarian."
- *                 description: "Dietary restrictions or preferences (optional)"
- *         application/json:
- *           schema:
- *             $ref: "#/components/schemas/CreateApplicationRequest"
- *     responses:
- *       201:
- *         description: Application submitted successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ApplicationResponse"
- *       400:
- *         description: Validation error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
- *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
- *       403:
- *         description: Forbidden - User role required
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
- */
 export const submitApplication = async (
   req: Request,
   res: Response
@@ -90,6 +19,29 @@ export const submitApplication = async (
 
     const userId = req.user!.userId;
     const db = await database();
+
+    // Check if application already exists for this trip and user
+    if (payload.tripId) {
+      const existingApplication = await db
+        .select()
+        .from(applications)
+        .where(
+          and(
+            eq(applications.tripId, payload.tripId),
+            eq(applications.userId, userId)
+          )
+        )
+        .limit(1);
+
+      if (existingApplication.length > 0) {
+        return sendError(
+          res,
+          "You have already applied for this trip",
+          status.BAD_REQUEST
+        );
+      }
+    }
+
     if (req.files) {
       if ((req.files as any).introVideo && (req.files as any).introVideo[0]) {
         const video = (await cloudinaryUploader(
