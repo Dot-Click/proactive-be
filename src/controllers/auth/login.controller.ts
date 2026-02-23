@@ -252,3 +252,6 @@ export const googleAuth = async (req: Request, res: Response) => {
     return sendError(res, error?.message, status.INTERNAL_SERVER_ERROR);
   }
 };
+
+
+
