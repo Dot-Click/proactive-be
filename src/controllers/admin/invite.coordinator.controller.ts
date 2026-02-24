@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { database } from "@/configs/connection.config";
 import { verification, users, coordinatorDetails } from "@/schema/schema";
 import { createId } from "@paralleldrive/cuid2";
-import { sendEmail, sendCoordinatorWelcomeEmail } from "@/utils/brevo.util";
+import { sendEmail, sendCoordinatorWelcomeEmail, sendCoordinatorInviteEmail } from "@/utils/brevo.util";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import status from "http-status";
 import { eq } from "drizzle-orm";
@@ -90,15 +90,7 @@ export const inviteCoordinator = async (req: Request, res: Response) => {
     const frontend = process.env.FRONTEND_DOMAIN || "http://localhost:4000";
     const link = `${frontend}/coordinator/onboard?token=${token}`;
 
-    const subject = "You're invited to be a coordinator on Proactive";
-    const htmlContent = `
-      <p>Hello,</p>
-      <p>You have been invited to join Proactive as a coordinator. Click the link below to complete your onboarding:</p>
-      <p><a href="${link}">Complete coordinator onboarding</a></p>
-      <p>This link will expire in 7 days.</p>
-    `;
-
-    await sendEmail({ to: email, subject, htmlContent });
+    await sendCoordinatorInviteEmail(email, link);
 
     return sendSuccess(res, "Invite sent successfully", { email }, status.CREATED);
   } catch (error) {

@@ -43,19 +43,17 @@ export const sendEmail = async (
     const data = await transport.sendMail({
       from:
         options.from ||
-        `"Proactive" <${
-          process.env.BREVO_SENDER_EMAIL || "noreply@proactive.com"
+        `"Proactive" <${process.env.BREVO_SENDER_EMAIL || "noreply@proactive.com"
         }>`,
       to: options.to,
       subject: options.subject,
       html: options.htmlContent,
       text: options.textContent,
     });
-      
+
 
     logger.info(
-      `Email sent successfully to ${options.to}. Message ID: ${
-        data.messageId || "unknown"
+      `Email sent successfully to ${options.to}. Message ID: ${data.messageId || "unknown"
       }`
     );
     return true;
@@ -117,12 +115,12 @@ export const sendVerificationEmail = async (
     Best regards,
     Proactive Team`;
 
-      return sendEmail({
-        to: email,
-        subject,
-        htmlContent,
-        textContent,
-      });
+  return sendEmail({
+    to: email,
+    subject,
+    htmlContent,
+    textContent,
+  });
 };
 
 /**
@@ -464,7 +462,7 @@ export const sendCoordinatorWelcomeEmail = async (
   const subject = "Welcome to Proactive!";
   const frontendUrl = process.env.FRONTEND_DOMAIN || "http://localhost:4000";
 
-    const htmlContent = `
+  const htmlContent = `
     <h2>Welcome to Proactive 👋</h2>
 
     <p>Hi ${userName || "there"},</p>
@@ -493,6 +491,94 @@ export const sendCoordinatorWelcomeEmail = async (
     htmlContent,
   });
 };
+
+/**
+ * Send coordinator invitation email
+ */
+export const sendCoordinatorInviteEmail = async (
+  email: string,
+  inviteLink: string
+): Promise<boolean> => {
+  const subject = "You're invited to join Proactive as a Coordinator";
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f9f9f9;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eeeeee;">
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <h2 style="margin: 0 0 20px; color: #221E33; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em;">Welcome to the Team! 🚀</h2>
+              
+              <p style="margin: 0 0 20px; color: #666373; font-size: 16px; line-height: 1.6;">
+                Hello,
+              </p>
+              
+              <p style="margin: 0 0 24px; color: #666373; font-size: 16px; line-height: 1.6;">
+                You have been invited to join <strong>Proactive</strong> as a coordinator. We're excited to have you on board! Click the link below to complete your onboarding and set up your professional profile:
+              </p>
+              
+              <!-- CTA Button -->
+              <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 32px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="${inviteLink}" style="display: inline-block; padding: 18px 36px; background-color: #0DAC87; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 800; font-size: 16px; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 8px 16px rgba(13, 172, 135, 0.2);">
+                      Complete coordinator onboarding
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="margin: 24px 0 0; color: #A1A1A1; font-size: 13px; line-height: 1.6; font-weight: 500;">
+                Note: This invitation link will expire in <strong>7 days</strong> for security reasons.
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px 40px; text-align: center; background-color: #FAFAFA; border-top: 1px solid #eeeeee;">
+              <p style="margin: 0; color: #666373; font-size: 14px; font-weight: 600;">
+                Best regards,<br>
+                <span style="color: #0DAC87; font-weight: 800; text-transform: uppercase; font-size: 12px; letter-spacing: 0.1em;">Proactive Team</span>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+
+  const textContent = `Hello,
+
+You have been invited to join Proactive as a coordinator. Click the link below to complete your onboarding:
+
+${inviteLink}
+
+This link will expire in 7 days.
+
+Best regards,
+Proactive Team`;
+
+  return sendEmail({
+    to: email,
+    subject,
+    htmlContent,
+    textContent,
+  });
+};
+
 
 export const sendSMS = async (
   phoneNumber: string,

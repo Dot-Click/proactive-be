@@ -16,6 +16,18 @@ export const completeInvite = async (req: Request, res: Response) => {
       return sendError(res, "Token is required", status.BAD_REQUEST);
     }
 
+    // Handle profile picture if uploaded via multer
+    const files = req.files as any;
+    let profilePictureUrl = null;
+    if (files && files["prof_pic"] && files["prof_pic"][0]) {
+      profilePictureUrl = `/uploads/${files["prof_pic"][0].filename}`;
+    }
+
+    // Parse JSON strings if they come from FormData (which sends everything as strings)
+    const parsedSpecialities = typeof specialities === 'string' ? JSON.parse(specialities) : specialities;
+    const parsedLanguages = typeof languages === 'string' ? JSON.parse(languages) : languages;
+    const parsedYears = yearsOfExperience ? parseInt(yearsOfExperience as string, 10) : null;
+
     const db = await database();
     const rows = await db
       .select()
@@ -71,14 +83,14 @@ export const completeInvite = async (req: Request, res: Response) => {
         fullName,
         phoneNumber: phoneNumber ?? null,
         bio: bio ?? null,
-        profilePicture: null,
-        specialities: specialities ?? [],
-        languages: languages ?? [],
+        profilePicture: profilePictureUrl,
+        specialities: parsedSpecialities ?? [],
+        languages: parsedLanguages ?? [],
         certificateLvl: certificateLvl ?? null,
-        yearsOfExperience: yearsOfExperience ?? null,
+        yearsOfExperience: parsedYears,
         location: location ?? null,
         type: type ?? null,
-        accessLvl: accessLvl ?? null,
+        accessLvl: accessLvl ?? "Editor", // Default access level
       })
       .returning();
 
