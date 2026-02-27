@@ -19,8 +19,6 @@ import { cloudinaryConfig } from "@/configs/cloudinary.config";
 import createSocketServer from "@/socket";
 
 
-
-
 config();
 const app = express();
 const httpServer = createServer(app);
@@ -76,7 +74,7 @@ app.use(express.json());
 cloudinaryConfig();
 
 app.use(morgan("dev"));
-app.use(throttle(50, "1m")); 
+app.use(throttle(50, "1m"));
 
 // API Routes
 app.use(apiRoutes);

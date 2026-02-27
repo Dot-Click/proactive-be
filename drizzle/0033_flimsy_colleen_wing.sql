@@ -1,0 +1,1 @@
+ALTER TABLE "google_reviews" ADD COLUMN "review_link" varchar(500);

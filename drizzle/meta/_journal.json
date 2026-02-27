@@ -218,6 +218,27 @@
       "when": 1770618244316,
       "tag": "0030_clammy_argent",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1772159331189,
+      "tag": "0031_nasty_ezekiel_stane",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1772159913207,
+      "tag": "0032_stiff_shooting_star",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1772161636719,
+      "tag": "0033_flimsy_colleen_wing",
+      "breakpoints": true
     }
   ]
 }

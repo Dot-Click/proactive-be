@@ -16,7 +16,12 @@ import { deleteLocation } from "@/controllers/location/delete-location.controlle
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { upload } from "@/middlewares/multer.middleware";
 import { inviteCoordinator } from "@/controllers/admin/invite.coordinator.controller";
+import { createGoogleReview } from "@/controllers/admin/google-reviews/create.google-review.controller";
+import { getGoogleReviews } from "@/controllers/admin/google-reviews/get.google-reviews.controller";
+import { updateGoogleReview } from "@/controllers/admin/google-reviews/update.google-review.controller";
+import { deleteGoogleReview } from "@/controllers/admin/google-reviews/delete.google-review.controller";
 import { Router } from "express";
+
 
 const adminRoutes = Router();
 
@@ -479,5 +484,93 @@ adminRoutes.put("/location/:locationId", authenticate, authorize("admin"), updat
  *         description: Location not found
  */
 adminRoutes.delete("/location/:locationId", authenticate, authorize("admin"), deleteLocation);
+
+// ─── Google Reviews (Admin CRUD) ────────────────────────────────────────────
+
+/**
+ * @swagger
+ * /api/admin/google-reviews:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Create a Google review
+ *     description: Create a new Google review entry. Accepts multipart/form-data with optional prof_pic image.
+ *     security:
+ *       - bearerAuth: []
+ */
+adminRoutes.post(
+    "/google-reviews",
+    authenticate,
+    authorize("admin"),
+    upload(["image/jpeg", "image/png", "image/jpg", "image/webp"]),
+    createGoogleReview
+);
+
+/**
+ * @swagger
+ * /api/admin/google-reviews:
+ *   get:
+ *     tags:
+ *       - Admin
+ *     summary: Get all Google reviews
+ *     description: Returns all reviews (including inactive). Admin only.
+ *     security:
+ *       - bearerAuth: []
+ */
+adminRoutes.get(
+    "/google-reviews",
+    authenticate,
+    authorize("admin"),
+    getGoogleReviews
+);
+
+/**
+ * @swagger
+ * /api/admin/google-reviews/{id}:
+ *   put:
+ *     tags:
+ *       - Admin
+ *     summary: Update a Google review
+ *     description: Update any field of a review, including optional profile picture replacement.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ */
+adminRoutes.put(
+    "/google-reviews/:id",
+    authenticate,
+    authorize("admin"),
+    upload(["image/jpeg", "image/png", "image/jpg", "image/webp"]),
+    updateGoogleReview
+);
+
+/**
+ * @swagger
+ * /api/admin/google-reviews/{id}:
+ *   delete:
+ *     tags:
+ *       - Admin
+ *     summary: Delete a Google review
+ *     description: Delete a review and its Cloudinary profile picture.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ */
+adminRoutes.delete(
+    "/google-reviews/:id",
+    authenticate,
+    authorize("admin"),
+    deleteGoogleReview
+);
 
 export default adminRoutes;

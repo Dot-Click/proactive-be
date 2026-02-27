@@ -437,4 +437,19 @@ export const newsletterSubscribers = pgTable("newsletter_subscribers", {
   ...timeStamps,
 });
 
+export const googleReviews = pgTable("google_reviews", {
+  id: uuid().primaryKey(),
+  reviewerName: varchar("reviewer_name", { length: 255 }).notNull(),
+  profilePicture: varchar("profile_picture", { length: 500 }),
+  reviewText: text("review_text").notNull(),
+  stars: integer("stars").notNull(), // 1–5
+  language: varchar("language", { length: 10 }).$defaultFn(() => "en").notNull(),
+  reviewLink: varchar("review_link", { length: 500 }),
+  isActive: boolean("is_active")
+
+    .$defaultFn(() => true)
+    .notNull(),
+  ...timeStamps,
+});
+
 export const userInsertSchema = createInsertSchema(users);

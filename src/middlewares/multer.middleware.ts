@@ -19,50 +19,51 @@ const storage = multer.diskStorage({
  */
 const upload =
   (allowedMimeTypes: any = null) =>
-  (req: Request, res: Response, next: NextFunction) => {
-    multer({
-      storage,
-      limits: {
-        fileSize: 100 * 1024 * 1024, // 100MB
-      },
-      fileFilter: (_req, file, cb) => {
-        // If specific MIME types are allowed, validate them
-        if (allowedMimeTypes) {
-          if (allowedMimeTypes.includes(file.mimetype)) {
-            cb(null, true);
+    (req: Request, res: Response, next: NextFunction) => {
+      multer({
+        storage,
+        limits: {
+          fileSize: 100 * 1024 * 1024, // 100MB
+        },
+        fileFilter: (_req, file, cb) => {
+          // If specific MIME types are allowed, validate them
+          if (allowedMimeTypes) {
+            if (allowedMimeTypes.includes(file.mimetype)) {
+              cb(null, true);
+            } else {
+              cb(
+                new Error(
+                  `Invalid file type. Allowed types: ${allowedMimeTypes.join(
+                    ", "
+                  )}`
+                ) as any,
+                false
+              );
+            }
           } else {
-            cb(
-              new Error(
-                `Invalid file type. Allowed types: ${allowedMimeTypes.join(
-                  ", "
-                )}`
-              ) as any,
-              false
-            );
+            cb(null, true);
           }
-        } else {
-          cb(null, true);
+        },
+      }).fields([
+        { name: "image", maxCount: 1 },
+        { name: "logo", maxCount: 1 },
+        { name: "banner", maxCount: 1 },
+        { name: "prof_pic", maxCount: 1 },
+        { name: "profilePicture", maxCount: 1 },
+        { name: "cover_img", maxCount: 1 },
+        { name: "tt_img", maxCount: 1 },
+        { name: "gallery_images", maxCount: 8 },
+        { name: "introVideo", maxCount: 1 },
+        { name: "promotional_video", maxCount: 1 },
+        { name: "file4", maxCount: 1 },
+        { name: "day_images", maxCount: 30 }, // Support up to 30 day images
+      ])(req, res, (err) => {
+        if (err) {
+          return sendError(res, err, 400);
         }
-      },
-    }).fields([
-      { name: "image", maxCount: 1 },
-      { name: "logo", maxCount: 1 },
-      { name: "banner", maxCount: 1 },
-      { name: "prof_pic", maxCount: 1 },
-      { name: "cover_img", maxCount: 1 },
-      { name: "tt_img", maxCount: 1 },
-      { name: "gallery_images", maxCount: 8 },
-      { name: "introVideo", maxCount: 1 },
-      { name: "promotional_video", maxCount: 1 },
-      { name: "file4", maxCount: 1 },
-      { name: "day_images", maxCount: 30 }, // Support up to 30 day images
-    ])(req, res, (err) => {
-      if (err) {
-        return sendError(res, err, 400);
-      }
-      next();
-    });
-  };
+        next();
+      });
+    };
 
 /**
  * Middleware for handling single file uploads using Multer.
