@@ -39,3 +39,6 @@ export const deleteCoordinator = async (req: Request, res: Response) => {
     return sendError(res, "An error occurred while deleting coordinator", status.INTERNAL_SERVER_ERROR);
   }
 };
+
+
+

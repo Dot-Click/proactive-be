@@ -200,3 +200,6 @@ export const updateSettings = async (
     return sendError(res, "server error", status.INTERNAL_SERVER_ERROR);
   }
 };
+
+
+
