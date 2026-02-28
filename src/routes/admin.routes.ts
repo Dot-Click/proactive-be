@@ -129,6 +129,7 @@ adminRoutes.post("/coordinator/invite", authenticate, authorize("admin"), invite
  */
 adminRoutes.get("/coordinator", getCoordinators);
 
+
 /**
  * @swagger
  * /api/admin/coordinator/{id}:
