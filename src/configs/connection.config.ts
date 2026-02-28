@@ -14,6 +14,9 @@ export const database = async (logger = false) => {
       postgresClient = postgres(env.CONNECTION_URL, {
         max: 10, // Connection pool size
         prepare: false, // Required for PgBouncer/Railway transaction poolers
+        fetch_types: false, // Prevents 08P01 invalid message format errors
+        idle_timeout: 20, // Close idle connections before the pooler does
+        max_lifetime: 60 * 30, // Drop connections older than 30 minutes
         onnotice: () => { }, // Suppress NOTICE logs
         connection: {
           application_name: "proactive-be",
@@ -38,6 +41,9 @@ export const migrationDatabase = async () => {
     const sql = postgres(env.CONNECTION_URL, {
       max: 1,
       prepare: false,
+      fetch_types: false,
+      idle_timeout: 20,
+      max_lifetime: 60 * 30,
       onnotice: () => { },
       connection: {
         application_name: "drizzle-migrator",
