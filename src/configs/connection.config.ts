@@ -13,13 +13,14 @@ export const database = async (logger = false) => {
     if (!postgresClient) {
       postgresClient = postgres(env.CONNECTION_URL, {
         max: 10, // Connection pool size
-        onnotice: () => {}, // Suppress NOTICE logs
+        prepare: false, // Required for PgBouncer/Railway transaction poolers
+        onnotice: () => { }, // Suppress NOTICE logs
         connection: {
           application_name: "proactive-be",
         },
       });
     }
-    
+
     return drizzlePostgres({
       client: postgresClient,
       schema,
@@ -36,17 +37,18 @@ export const migrationDatabase = async () => {
   try {
     const sql = postgres(env.CONNECTION_URL, {
       max: 1,
-      onnotice: () => {},
+      prepare: false,
+      onnotice: () => { },
       connection: {
         application_name: "drizzle-migrator",
       },
     });
-    
+
     const db = drizzlePostgres({
       client: sql,
       schema,
     });
-    
+
     return { db, sql };
   } catch (error) {
     console.error("Error creating migration database connection:", error);
@@ -57,25 +59,25 @@ export const migrationDatabase = async () => {
 export const migrateSchema = async () => {
   const { db, sql } = await migrationDatabase();
   try {
-    await migrate(db, { 
+    await migrate(db, {
       migrationsFolder: "drizzle",
       migrationsTable: "__drizzle_migrations"
     });
   } catch (error: any) {
     // Check if error is about existing tables/relations (already migrated)
-    const isAlreadyExistsError = 
+    const isAlreadyExistsError =
       error?.cause?.code === "42P07" ||
       error?.code === "42P07" ||
       error?.code === "23505" ||
       error?.message?.includes("already exists") ||
       (error?.message?.includes("relation") && error?.message?.includes("already exists"));
-    
+
     if (isAlreadyExistsError) {
       // Tables already exist - migration likely already applied
       // This is normal when database is already set up, silently continue
       return;
     }
-    
+
     console.error("Migration error:", error?.message || "Unknown migration error");
     throw error;
   } finally {
