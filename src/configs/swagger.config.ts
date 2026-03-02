@@ -1529,24 +1529,43 @@ const options: Options = {
         Review: {
           type: "object",
           properties: {
-            link: {
+            id: {
               type: "string",
-              format: "uri",
-              example: "https://www.google.com/maps/review/123",
+              format: "uuid",
+              example: "a1b2c3d4-...",
             },
-            userImage: {
-              type: "string",
-              format: "uri",
-                        nullable: true,
-              example: "https://lh3.googleusercontent.com/photo.jpg",
-                      },
-            userName: {
+            reviewerName: {
               type: "string",
               example: "John Doe",
             },
-            review: {
+            reviewText: {
               type: "string",
               example: "Great experience! Highly recommended.",
+            },
+            stars: {
+              type: "integer",
+              example: 5,
+            },
+            language: {
+              type: "string",
+              enum: ["en", "es"],
+              example: "en",
+            },
+            profilePicture: {
+              type: "string",
+              format: "uri",
+              nullable: true,
+              example: "https://lh3.googleusercontent.com/photo.jpg",
+            },
+            reviewLink: {
+              type: "string",
+              format: "uri",
+              nullable: true,
+              example: "https://g.page/r/abc123",
+            },
+            isActive: {
+              type: "boolean",
+              example: true,
             },
           },
         },

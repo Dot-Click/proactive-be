@@ -15,6 +15,12 @@ import { updateLocation } from "@/controllers/location/update-location.controlle
 import { deleteLocation } from "@/controllers/location/delete-location.controller";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { upload } from "@/middlewares/multer.middleware";
+import {
+  getAllGoogleReviews,
+  createGoogleReview,
+  updateGoogleReview,
+  deleteGoogleReview,
+} from "@/controllers/admin/googleReviews.controller";
 import { inviteCoordinator } from "@/controllers/admin/invite.coordinator.controller";
 import { Router } from "express";
 
@@ -287,6 +293,34 @@ adminRoutes.get("/banner", authenticate, getBanner);
  */
 adminRoutes.patch("/banner", authenticate, authorize("admin"), upload(["image/jpeg", "image/png", "image/jpg"]), changeBanner);
 adminRoutes.patch("/coordinator/:coordinatorId", authenticate, authorize("admin"), toggleCoordinatorStatus);
+
+// google review management
+adminRoutes.get(
+  "/google-reviews",
+  authenticate,
+  authorize("admin"),
+  getAllGoogleReviews
+);
+adminRoutes.post(
+  "/google-reviews",
+  authenticate,
+  authorize("admin"),
+  upload(["image/jpeg", "image/png", "image/jpg"]),
+  createGoogleReview
+);
+adminRoutes.put(
+  "/google-reviews/:id",
+  authenticate,
+  authorize("admin"),
+  upload(["image/jpeg", "image/png", "image/jpg"]),
+  updateGoogleReview
+);
+adminRoutes.delete(
+  "/google-reviews/:id",
+  authenticate,
+  authorize("admin"),
+  deleteGoogleReview
+);
 
 /**
  * @swagger

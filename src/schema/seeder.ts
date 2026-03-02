@@ -16,6 +16,7 @@ import {
   discounts,
   applications,
   reviews,
+  googleReviews,
   achievements,
   notifications,
   newsletterSubscribers,
@@ -87,6 +88,7 @@ const seed = async () => {
       }
       try {
         await db.delete(reviews);
+    await db.delete(googleReviews);
       } catch (e) {
         /* table may not exist */
       }
@@ -1313,6 +1315,31 @@ const seed = async () => {
       },
     ]);
 
+    // Seed Google Reviews
+    console.log("⭐ Seeding google reviews...");
+    await db.insert(googleReviews).values([
+      {
+        id: createId(),
+        reviewerName: "Jane Smith",
+        reviewText: "The team at Proactive made our trip unforgettable!",
+        stars: 5,
+        language: "en",
+        profilePicture: "",
+        reviewLink: "",
+        isActive: true,
+      },
+      {
+        id: createId(),
+        reviewerName: "Carlos Ruiz",
+        reviewText: "¡Excelente servicio y atención!",
+        stars: 4,
+        language: "es",
+        profilePicture: "",
+        reviewLink: "",
+        isActive: true,
+      },
+    ]);
+
     // Seed Achievements
     console.log("🏆 Seeding achievements...");
     await db.insert(achievements).values([
@@ -1517,3 +1544,7 @@ if (require.main === module) {
 }
 
 export default seed;
+function createId(): string | import("drizzle-orm").SQL<unknown> | import("drizzle-orm").Placeholder<string, any> | undefined {
+  throw new Error("Function not implemented.");
+}
+

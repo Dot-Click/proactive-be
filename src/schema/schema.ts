@@ -363,6 +363,19 @@ export const reviews = pgTable("Reviews", {
   ...timeStamps,
 });
 
+// Google reviews written by admin for display on frontend landing page.
+export const googleReviews = pgTable("google_reviews", {
+  id: uuid().primaryKey(),
+  reviewerName: varchar("reviewer_name", { length: 255 }).notNull(),
+  reviewText: text("review_text").notNull(),
+  stars: integer().notNull().default(5),
+  language: varchar("language", { length: 2 }).notNull(),
+  profilePicture: varchar("profile_picture", { length: 500 }),
+  reviewLink: varchar("review_link", { length: 500 }),
+  isActive: boolean("is_active").default(true).notNull(),
+  ...timeStamps,
+});
+
 export const achievements = pgTable("achievements", {
   id: uuid().primaryKey(),
   points: integer().notNull().default(0),
