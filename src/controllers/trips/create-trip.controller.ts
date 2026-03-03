@@ -126,103 +126,101 @@ export const createTrip = async (
       }
     }
 
+    const uploadPromises: Promise<void>[] = [];
     if (req.files) {
-      if (
-        (req.files as any).promotional_video &&
-        (req.files as any).promotional_video[0]
-      ) {
-        const video = (await cloudinaryUploader(
-          (req.files as any).promotional_video[0].path
-        )) as any;
-        payload.promotionalVideo = video.secure_url;
-      }
+      const files = req.files as any;
 
-      if (
-        (req.files as any).gallery_images &&
-        Array.isArray((req.files as any).gallery_images) &&
-        (req.files as any).gallery_images.length > 0
-      ) {
-        const galleryPaths = (req.files as any).gallery_images.map(
-          (file: any) => file.path
+      if (files.promotional_video && files.promotional_video[0]) {
+        uploadPromises.push(
+          (async () => {
+            const video = (await cloudinaryUploader(
+              files.promotional_video[0].path
+            )) as any;
+            payload.promotionalVideo = video.secure_url;
+          })()
         );
-        const gallery_images = (await cloudinaryUploader(galleryPaths)) as any;
-        const gallery_images_urls = gallery_images.map(
-          (image: any) => image.secure_url
-        ) as string[];
-        payload.galleryImages = gallery_images_urls;
       }
 
-      if ((req.files as any).cover_img && (req.files as any).cover_img[0]) {
-        const cover_image = (await cloudinaryUploader(
-          (req.files as any).cover_img[0].path
-        )) as any;
-        payload.coverImage = cover_image.secure_url;
+      if (files.gallery_images && Array.isArray(files.gallery_images) && files.gallery_images.length > 0) {
+        const galleryPaths = files.gallery_images.map((file: any) => file.path);
+        uploadPromises.push(
+          (async () => {
+            const gallery_images = (await cloudinaryUploader(galleryPaths)) as any;
+            payload.galleryImages = gallery_images.map((image: any) => image.secure_url);
+          })()
+        );
       }
 
-      if ((req.files as any).tt_img && (req.files as any).tt_img[0]) {
-        const weekend_tt = (await cloudinaryUploader(
-          (req.files as any).tt_img[0].path
-        )) as any;
-        payload.weekendTt = weekend_tt.secure_url;
+      if (files.cover_img && files.cover_img[0]) {
+        uploadPromises.push(
+          (async () => {
+            const cover_image = (await cloudinaryUploader(
+              files.cover_img[0].path
+            )) as any;
+            payload.coverImage = cover_image.secure_url;
+          })()
+        );
       }
 
-      // Handle day images upload
-      if (
-        (req.files as any).day_images &&
-        Array.isArray((req.files as any).day_images) &&
-        (req.files as any).day_images.length > 0
-      ) {
-        // Parse day_image_indices if provided (to map images to correct days)
+      if (files.tt_img && files.tt_img[0]) {
+        uploadPromises.push(
+          (async () => {
+            const weekend_tt = (await cloudinaryUploader(
+              files.tt_img[0].path
+            )) as any;
+            payload.weekendTt = weekend_tt.secure_url;
+          })()
+        );
+      }
+
+      if (files.day_images && Array.isArray(files.day_images) && files.day_images.length > 0) {
         let dayImageIndices: number[] = [];
         if (payload.day_image_indices) {
           if (typeof payload.day_image_indices === "string") {
-            // Single index as string
             dayImageIndices = [parseInt(payload.day_image_indices)];
           } else if (Array.isArray(payload.day_image_indices)) {
-            dayImageIndices = payload.day_image_indices.map((idx: string) =>
-              parseInt(idx)
-            );
+            dayImageIndices = payload.day_image_indices.map((idx: string) => parseInt(idx));
           }
         }
 
-        // Upload day images to cloudinary
-        const dayImagePaths = (req.files as any).day_images.map(
-          (file: any) => file.path
+        const dayImagePaths = files.day_images.map((file: any) => file.path);
+        uploadPromises.push(
+          (async () => {
+            const uploadedDayImages = (await cloudinaryUploader(dayImagePaths)) as any;
+            const dayImageUrls = Array.isArray(uploadedDayImages)
+              ? uploadedDayImages.map((img: any) => img.secure_url)
+              : [uploadedDayImages.secure_url];
+
+            if (!payload.daysItinerary) {
+              payload.daysItinerary = [];
+            }
+            if (typeof payload.daysItinerary === "string") {
+              try {
+                payload.daysItinerary = JSON.parse(payload.daysItinerary);
+              } catch {
+                payload.daysItinerary = [];
+              }
+            }
+
+            dayImageUrls.forEach((imageUrl: string, i: number) => {
+              const dayIndex = dayImageIndices.length > i ? dayImageIndices[i] : i;
+              if (payload.daysItinerary[dayIndex]) {
+                payload.daysItinerary[dayIndex].image = imageUrl;
+              } else {
+                payload.daysItinerary[dayIndex] = {
+                  day: dayIndex + 1,
+                  description: "",
+                  image: imageUrl,
+                };
+              }
+            });
+          })()
         );
-        const uploadedDayImages = (await cloudinaryUploader(
-          dayImagePaths
-        )) as any;
-        const dayImageUrls = Array.isArray(uploadedDayImages)
-          ? uploadedDayImages.map((img: any) => img.secure_url)
-          : [uploadedDayImages.secure_url];
-
-        // Initialize daysItinerary if not present
-        if (!payload.daysItinerary) {
-          payload.daysItinerary = [];
-        }
-        if (typeof payload.daysItinerary === "string") {
-          try {
-            payload.daysItinerary = JSON.parse(payload.daysItinerary);
-          } catch {
-            payload.daysItinerary = [];
-          }
-        }
-
-        // Map uploaded images to their corresponding days
-        dayImageUrls.forEach((imageUrl: string, i: number) => {
-          const dayIndex = dayImageIndices.length > i ? dayImageIndices[i] : i;
-          if (payload.daysItinerary[dayIndex]) {
-            payload.daysItinerary[dayIndex].image = imageUrl;
-          } else {
-            // Create the day entry if it doesn't exist
-            payload.daysItinerary[dayIndex] = {
-              day: dayIndex + 1,
-              description: "",
-              image: imageUrl,
-            };
-          }
-        });
       }
+    }
+
+    if (uploadPromises.length) {
+      await Promise.all(uploadPromises);
     }
 
     const validCoordinatorIds = coordinatorIds.filter(
@@ -291,6 +289,9 @@ export const createTrip = async (
       return sendError(res, "Invalid location ID", status.BAD_REQUEST);
     }
 
+    // start geocoding immediately (will await later)
+    const mapPromise = fetchCorrd(locationRow[0].name);
+
     const categoryRow = await db
       .select({ id: categories.id })
       .from(categories)
@@ -300,7 +301,7 @@ export const createTrip = async (
       return sendError(res, "Invalid category ID", status.BAD_REQUEST);
     }
 
-    const map_coord = await fetchCorrd(locationRow[0].name);
+    const map_coord = await mapPromise;
     const mapCoordinates = `${map_coord.lat},${map_coord.lon}`;
 
     // Create trip - map validated data to database schema

@@ -3,7 +3,7 @@ import { coordinatorDetails, users, tripCoordinators, trips, payments, reviews }
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { Request, Response } from "express";
 import status from "http-status";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and } from "drizzle-orm";
 
 export const getCoordinatorById = async (req: Request, res: Response) => {
   try {
@@ -78,11 +78,15 @@ export const getCoordinatorById = async (req: Request, res: Response) => {
         updatedAt: coordinatorDetails.updatedAt,
         email: users.email,
         emailVerified: users.emailVerified,
+        userRole: users.userRoles,
         userCreatedAt: users.createdAt,
       })
       .from(coordinatorDetails)
       .innerJoin(users, eq(coordinatorDetails.userId, users.id))
-      .where(eq(coordinatorDetails.id, id))
+      .where(and(
+        eq(coordinatorDetails.id, id),
+        eq(users.userRoles, "coordinator")
+      ))
       .limit(1);
 
     if (coordinatorResults.length === 0) {

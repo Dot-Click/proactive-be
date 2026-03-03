@@ -83,7 +83,8 @@ export const getCoordinators = async (_req: Request, res: Response) => {
         isActive: coordinatorDetails.isActive
       })
       .from(coordinatorDetails)
-      .innerJoin(users, eq(coordinatorDetails.userId, users.id));
+      .innerJoin(users, eq(coordinatorDetails.userId, users.id))
+      .where(eq(users.userRoles, "coordinator")); // Only return users with coordinator role
     
     const coordinators = coordinatorsData.map(coordinator => {
         const stat = tripStats.find(s => s.userId === coordinator.userId) ?? {

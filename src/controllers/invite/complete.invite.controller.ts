@@ -6,6 +6,7 @@ import { sendError, sendSuccess } from "@/utils/response.util";
 import status from "http-status";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "@/utils/password.util";
+import { z } from "zod";
 import { sendCoordinatorWelcomeEmail } from "@/utils/brevo.util";
 import { createNotification } from "@/services/notifications.services";
 
@@ -58,6 +59,27 @@ export const completeInvite = async (req: Request, res: Response) => {
 
     if (!password || !fullName) {
       return sendError(res, "fullName and password are required", status.BAD_REQUEST);
+    }
+
+    // Validate password complexity server-side (same rules as registration)
+    const pwdSchema = z
+      .string()
+      .min(8, "Password must be at least 8 characters long")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number")
+      .regex(/[!@#$%^&*(),.?\":{}|<>]/, "Password must contain at least one special character");
+    try {
+      pwdSchema.parse(password);
+    } catch (err: any) {
+      const errors: Record<string, string[]> = {};
+      if (err?.errors) {
+        err.errors.forEach((e: any) => {
+          const msg = e.message || "Invalid password";
+          if (!errors.password) errors.password = [];
+          errors.password.push(msg);
+        });
+      }
+      return sendError(res, "Password does not meet complexity requirements", status.BAD_REQUEST, undefined, errors);
     }
 
     const hashedPassword = await hashPassword(password);

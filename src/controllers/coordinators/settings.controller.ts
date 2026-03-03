@@ -39,6 +39,8 @@ export const settings = async (
         id: users.id,
         fullName: coordinatorDetails.fullName,
         email: users.email,
+        phoneNumber: coordinatorDetails.phoneNumber,
+        bio: coordinatorDetails.bio,
         avatar: coordinatorDetails.profilePicture,
         notificationPref: coordinatorDetails.notificationPref,
       })
@@ -72,7 +74,8 @@ export const updateSettings = async (
     const userId = req.user?.userId;
     const db = await database();
 
-    const { Name, Email } = req.body;
+    // allow updating a few personal fields
+    const { Name, Email, PhoneNumber, Bio, notificationPref } = req.body;
 
     // Handle profile picture upload if present
     let profilePictureUrl: string | undefined;
@@ -139,6 +142,18 @@ export const updateSettings = async (
       const updateData: any = {};
       if (Name) updateData.fullName = Name;
       if (profilePictureUrl) updateData.profilePicture = profilePictureUrl;
+      if (PhoneNumber) updateData.phoneNumber = PhoneNumber;
+      if (Bio) updateData.bio = Bio;
+      if (notificationPref) {
+        try {
+          updateData.notificationPref =
+            typeof notificationPref === "string"
+              ? JSON.parse(notificationPref)
+              : notificationPref;
+        } catch (err) {
+          console.error("Failed to parse notificationPref", err);
+        }
+      }
 
       if (Object.keys(updateData).length > 0) {
         await db
@@ -177,9 +192,12 @@ export const updateSettings = async (
     const updatedSettings = await db
       .select({
         id: users.id,
-        Name: coordinatorDetails.fullName,
-        Email: users.email,
+        fullName: coordinatorDetails.fullName,
+        email: users.email,
+        phoneNumber: coordinatorDetails.phoneNumber,
+        bio: coordinatorDetails.bio,
         avatar: coordinatorDetails.profilePicture,
+        notificationPref: coordinatorDetails.notificationPref,
       })
       .from(users)
       .leftJoin(
