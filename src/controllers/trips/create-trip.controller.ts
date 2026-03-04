@@ -111,6 +111,50 @@ export const createTrip = async (
       payload = { ...req.body };
     }
 
+    // If frontend provided a location name but not a locationId, try to resolve
+    // an existing location or create one so validation (which requires locationId)
+    // passes and the trips table can reference a valid location.
+    if (!payload.locationId && payload.location && typeof payload.location === "string") {
+      payload.location = payload.location.trim();
+      try {
+        const dbEarly = await database();
+        // Try exact match first
+        const existing = await dbEarly
+          .select({ id: locations.id })
+          .from(locations)
+          .where(eq(locations.name, payload.location))
+          .limit(1);
+
+        if (existing && existing.length > 0) {
+          payload.locationId = existing[0].id;
+        } else {
+          try {
+            // Try to create new location
+            const insertRes = await dbEarly
+              .insert(locations)
+              .values({ name: payload.location })
+              .returning();
+            if (insertRes && insertRes.length > 0) {
+              payload.locationId = insertRes[0].id;
+            }
+          } catch (insertErr) {
+            // If insert failed (unique constraint race), attempt to re-query existing row
+            console.warn("Location insert failed, retrying lookup:", (insertErr as any)?.message || insertErr);
+            const retry = await dbEarly
+              .select({ id: locations.id })
+              .from(locations)
+              .where(eq(locations.name, payload.location))
+              .limit(1);
+            if (retry && retry.length > 0) {
+              payload.locationId = retry[0].id;
+            }
+          }
+        }
+      } catch (locErr) {
+        console.warn("Could not auto-resolve/create location:", locErr);
+      }
+    }
+
     let coordinatorIds: string[] = [];
     if (payload.coordinators) {
       if (typeof payload.coordinators === "string") {

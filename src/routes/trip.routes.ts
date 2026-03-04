@@ -9,6 +9,7 @@ import { getTripById } from "@/controllers/trips/get-unique-tripe.controller";
 import { updateTrip } from "@/controllers/trips/update-trip.controller";
 import { approveTrip } from "@/controllers/trips/Approvetrip.controller";
 import { rejectTrip } from "@/controllers/trips/rejectTrip.controller";
+import { deleteTrip } from "@/controllers/trips/delete-trip.controller";
 import { searchTrips } from "@/controllers/trips/search-trips.controller";
 
 const tripRoutes = Router();
@@ -134,6 +135,22 @@ tripRoutes.patch(
   authenticate,
   authorize("admin", "coordinator"),
   rejectTrip,
+);
+
+/**
+ * @swagger
+ * /api/trips/{id}:
+ *   delete:
+ *     tags:
+ *       - Trips
+ *     summary: Delete a trip by ID
+ *     description: Delete a trip by ID (Admin/Coordinator only)
+ */
+tripRoutes.delete(
+  "/:id",
+  authenticate,
+  authorize("admin", "coordinator"),
+  deleteTrip,
 );
 
 export default tripRoutes;
