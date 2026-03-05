@@ -192,6 +192,70 @@ export const createTripSchema = z.object({
     .optional()
     .default("pending"),
   coordinators: z.union([z.string(), z.array(z.string())]).optional(),
+
+  /* ---------- NEW DYNAMIC FIELDS ---------- */
+  highlights: z
+    .any()
+    .transform((val: any) => {
+      if (!val) return [];
+      if (typeof val === "string") {
+        try {
+          return JSON.parse(val);
+        } catch {
+          return [];
+        }
+      }
+      return Array.isArray(val) ? val : [];
+    })
+    .pipe(z.array(z.string())),
+  mood: z
+    .any()
+    .transform((val: any) => {
+      if (!val) return [];
+      if (typeof val === "string") {
+        try {
+          return JSON.parse(val);
+        } catch {
+          return [];
+        }
+      }
+      return Array.isArray(val) ? val : [];
+    })
+    .pipe(
+      z.array(
+        z.object({
+          label: z.string(),
+          value: z.number().min(0).max(5),
+        })
+      )
+    ),
+  commonFund: z.string().optional(),
+  commonFundDescription: z.string().optional(),
+  commonFundCount: z.coerce.number().optional(),
+  thingsToKnow: z
+    .any()
+    .transform((val: any) => {
+      if (!val) return [];
+      if (typeof val === "string") {
+        try {
+          return JSON.parse(val);
+        } catch {
+          return [];
+        }
+      }
+      return Array.isArray(val) ? val : [];
+    })
+    .pipe(
+      z.array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        })
+      )
+    ),
+
+  /* ---------- END NEW FIELDS ---------- */
+
   discounts: z
     .any()
     .transform((val: any) => {
@@ -329,6 +393,71 @@ export const updateTripSchema = z.object({
       }
     })
     .pipe(z.array(z.string())),
+
+  /* dynamic fields for updates */
+  highlights: z
+    .any()
+    .transform((val: any) => {
+      if (!val) return [];
+      if (typeof val === "string") {
+        try {
+          return JSON.parse(val);
+        } catch {
+          return [];
+        }
+      }
+      return Array.isArray(val) ? val : [];
+    })
+    .pipe(z.array(z.string()))
+    .optional(),
+  mood: z
+    .any()
+    .transform((val: any) => {
+      if (!val) return [];
+      if (typeof val === "string") {
+        try {
+          return JSON.parse(val);
+        } catch {
+          return [];
+        }
+      }
+      return Array.isArray(val) ? val : [];
+    })
+    .pipe(
+      z.array(
+        z.object({
+          label: z.string(),
+          value: z.number().min(0).max(5),
+        })
+      )
+    )
+    .optional(),
+  commonFund: z.string().optional(),
+  commonFundDescription: z.string().optional(),
+  commonFundCount: z.coerce.number().optional(),
+  thingsToKnow: z
+    .any()
+    .transform((val: any) => {
+      if (!val) return [];
+      if (typeof val === "string") {
+        try {
+          return JSON.parse(val);
+        } catch {
+          return [];
+        }
+      }
+      return Array.isArray(val) ? val : [];
+    })
+    .pipe(
+      z.array(
+        z.object({
+          title: z.string(),
+          description: z.string(),
+        })
+      )
+    )
+    .optional(),
+
   discounts: z
     .any()
     .transform((val: any) => {

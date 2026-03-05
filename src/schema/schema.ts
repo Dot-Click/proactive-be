@@ -273,6 +273,13 @@ export const trips = pgTable("trips", {
   bestPriceMsg: text("best_price_msg").notNull(),
   daysItenary: jsonb("days_itenary"),
   perHeadPrice: varchar({ length: 100 }).notNull(),
+  // Dynamic content sections added for editable trip details
+  highlights: jsonb("highlights"), // array of strings
+  mood: jsonb("mood"), // array of { label, value } objects to drive "¿Este viaje es para mí?" ratings
+  commonFund: text("common_fund"),
+  commonFundDescription: text("common_fund_description"),
+  commonFundCount: integer("common_fund_count"),
+  thingsToKnow: jsonb("things_to_know"), // array of { title, description }
   ...timeStamps,
 });
 

@@ -32,6 +32,7 @@ export const getTripById = async (
     // Get trip details with location name and category name
     const tripResult = await db
       .select({
+        // Core fields
         trip: trips,
         locationName: locations.name,
         categoryName: categories.name,
@@ -70,7 +71,7 @@ export const getTripById = async (
       .leftJoin(users, eq(users.id, tripCoordinators.userId))
       .where(eq(tripCoordinators.tripId, id));
 
-    // Attach coordinators, location, and category to trip
+    // Attach coordinators, location, category, and all dynamic fields to trip
     const tripWithCoordinators = {
       ...trip,
       location: row.locationName ?? null,
@@ -82,7 +83,23 @@ export const getTripById = async (
       coordinators: coordinatorsResult,
       coordinator: coordinatorsResult[0] || null, // For backward compatibility
       coordinatorId: coordinatorsResult[0]?.id || null, // For backward compatibility
+      // Ensure dynamic fields are included
+      highlights: trip.highlights || [],
+      mood: trip.mood || [],
+      commonFund: trip.commonFund || null,
+      commonFundDescription: trip.commonFundDescription || null,
+      commonFundCount: trip.commonFundCount || null,
+      thingsToKnow: trip.thingsToKnow || [],
     };
+
+    console.log("📤 GET Trip by ID - Returning Dynamic Fields:", {
+      highlights: tripWithCoordinators.highlights,
+      mood: tripWithCoordinators.mood,
+      commonFund: tripWithCoordinators.commonFund,
+      commonFundDescription: tripWithCoordinators.commonFundDescription,
+      commonFundCount: tripWithCoordinators.commonFundCount,
+      thingsToKnow: tripWithCoordinators.thingsToKnow,
+    });
 
     return sendSuccess(
       res,

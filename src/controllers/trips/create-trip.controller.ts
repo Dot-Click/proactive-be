@@ -376,7 +376,23 @@ export const createTrip = async (
       status: validatedPayload.status || "pending",
       // Store days itinerary data (using existing daysItenary column in DB)
       daysItenary: validatedPayload.daysItinerary || [],
+      /* dynamic sections */
+      highlights: validatedPayload.highlights || [],
+      mood: validatedPayload.mood || [],
+      commonFund: validatedPayload.commonFund || "",
+      commonFundDescription: validatedPayload.commonFundDescription || "",
+      commonFundCount: validatedPayload.commonFundCount || 0,
+      thingsToKnow: validatedPayload.thingsToKnow || [],
     };
+
+    console.log("💾 Saving Dynamic Fields to DB:", {
+      highlights: tripValues.highlights,
+      mood: tripValues.mood,
+      commonFund: tripValues.commonFund,
+      commonFundDescription: tripValues.commonFundDescription,
+      commonFundCount: tripValues.commonFundCount,
+      thingsToKnow: tripValues.thingsToKnow,
+    });
 
     const newTrip = await db.insert(trips).values(tripValues).returning();
 

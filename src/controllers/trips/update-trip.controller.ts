@@ -169,6 +169,15 @@ export const updateTrip = async (
       ...tripData
     } = validatedPayload;
 
+    console.log("📝 Validated Payload - Dynamic Fields:", {
+      highlights: validatedPayload.highlights,
+      mood: validatedPayload.mood,
+      commonFund: validatedPayload.commonFund,
+      commonFundDescription: validatedPayload.commonFundDescription,
+      commonFundCount: validatedPayload.commonFundCount,
+      thingsToKnow: validatedPayload.thingsToKnow,
+    });
+
     // Map daysItinerary to daysItenary (database column name)
     if (daysItinerary !== undefined) {
       (tripData as any).daysItenary = daysItinerary;
@@ -211,6 +220,15 @@ export const updateTrip = async (
     if (trip.length === 0) {
       return sendError(res, "Trip not found", status.NOT_FOUND);
     }
+
+    console.log("✅ Trip Updated - Dynamic Fields in DB:", {
+      highlights: trip[0].highlights,
+      mood: trip[0].mood,
+      commonFund: trip[0].commonFund,
+      commonFundDescription: trip[0].commonFundDescription,
+      commonFundCount: trip[0].commonFundCount,
+      thingsToKnow: trip[0].thingsToKnow,
+    });
 
     // Handle discounts update - add new discounts to existing ones if provided
     if (
