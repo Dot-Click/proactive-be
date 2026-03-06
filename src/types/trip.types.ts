@@ -114,7 +114,7 @@ export const createTripSchema = z.object({
         z.object({
           title: z.string().min(1).max(255),
           description: z.string().max(1000).optional(),
-          img: z.string().max(2000).optional(),
+          img: z.string().max(10000000).optional(),
         })
       )
     ),
@@ -143,7 +143,7 @@ export const createTripSchema = z.object({
         z.object({
           title: z.string().min(1).max(255),
           description: z.string().max(1000).optional(),
-          img: z.string().max(2000).optional(),
+          img: z.string().max(10000000).optional(),
         })
       )
     ),

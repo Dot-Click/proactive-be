@@ -23,7 +23,8 @@ const upload =
     multer({
       storage,
       limits: {
-        fileSize: 100 * 1024 * 1024, // 100MB
+        fieldSize: 10 * 1024 * 1024, // 10MB for form fields (like payload)
+        fileSize: 100 * 1024 * 1024, // 100MB for files
       },
       fileFilter: (_req, file, cb) => {
         // If specific MIME types are allowed, validate them
