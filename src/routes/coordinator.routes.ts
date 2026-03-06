@@ -21,7 +21,7 @@ const coordinatorRoutes = Router();
  *    description: get coordinator applications
  * 
  */
-coordinatorRoutes.get("/applications", authenticate, authorize("coordinator","admin"), getAllApplications);
+coordinatorRoutes.get("/applications", authenticate, authorize("coordinator", "admin"), getAllApplications);
 
 /**
  * @swagger
@@ -43,7 +43,7 @@ coordinatorRoutes.get("/application/:id", authenticate, authorize("coordinator",
  *    summary: update application by id
  *    description: update application by id
  */
-coordinatorRoutes.patch("/applications/:applicationId", authenticate, authorize("coordinator","admin"), updateApplication);
+coordinatorRoutes.patch("/applications/:applicationId", authenticate, authorize("coordinator", "admin"), updateApplication);
 
 
 /**
@@ -80,7 +80,7 @@ coordinatorRoutes.get("/achievements/search", authenticate, searchAchievements);
  *    summary: get all achievements
  *    description: get all achievements
  */
-coordinatorRoutes.get("/achievements", authenticate, authorize("coordinator","admin"), getAllAchievements);
+coordinatorRoutes.get("/achievements", authenticate, authorize("coordinator", "admin"), getAllAchievements);
 /**
  * @swagger
  * /api/coordinator/setting:
@@ -90,7 +90,7 @@ coordinatorRoutes.get("/achievements", authenticate, authorize("coordinator","ad
  *    summary: get coordinator current settings
  *    description: get coordinator current settings
  */
-coordinatorRoutes.get("/setting", authenticate,  settings)
+coordinatorRoutes.get("/setting", authenticate, settings)
 
 
 
@@ -162,7 +162,7 @@ coordinatorRoutes.get("/setting", authenticate,  settings)
  *             message:
  *              type: string
  */
-coordinatorRoutes.patch("/updateSettings/:cid", authenticate, authorize("coordinator","admin"),singleUpload("prof_pic"), updateCoordinator);
+coordinatorRoutes.patch("/updateSettings/:cid", authenticate, authorize("coordinator", "admin"), singleUpload("prof_pic"), updateCoordinator);
 
 /**
  * @swagger
