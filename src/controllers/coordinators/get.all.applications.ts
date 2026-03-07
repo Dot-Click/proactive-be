@@ -1,7 +1,7 @@
 import { database } from "@/configs/connection.config";
-import { applications, users, trips } from "@/schema/schema";
+import { applications, users, trips, payments } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { Request, Response } from "express";
 import status from "http-status";
 
@@ -82,10 +82,18 @@ export const getAllApplications = async (_req: Request, res: Response): Promise<
         userLastName: users.lastName,
         userEmail: users.email,
         tripTitle: trips.title,
+        paymentStatus: payments.status,
       })
       .from(applications)
       .leftJoin(users, eq(applications.userId, users.id))
-      .leftJoin(trips, eq(applications.tripId, trips.id));
+      .leftJoin(trips, eq(applications.tripId, trips.id))
+      .leftJoin(
+        payments,
+        and(
+          eq(payments.userId, applications.userId),
+          eq(payments.tripId, applications.tripId)
+        )
+      );
 
     return sendSuccess(res, "Applications fetched successfully", application);
   } catch (error) {
@@ -96,12 +104,12 @@ export const getAllApplications = async (_req: Request, res: Response): Promise<
 
 export const getApplicationById = async (req: Request, res: Response): Promise<Response> => {
   try {
-   const appId = req.params.id 
-   const db = await database()
+    const appId = req.params.id
+    const db = await database()
 
-   const [newApp] = await db.select().from(applications).where(eq(applications.id, appId))
-   if(!newApp) return sendError(res, "Not found", status.NOT_FOUND);
-   return sendSuccess(res, "application retrived successfully", newApp, status.OK);
+    const [newApp] = await db.select().from(applications).where(eq(applications.id, appId))
+    if (!newApp) return sendError(res, "Not found", status.NOT_FOUND);
+    return sendSuccess(res, "application retrived successfully", newApp, status.OK);
   } catch (error) {
     return sendError(res, "server error", status.INTERNAL_SERVER_ERROR)
   }
