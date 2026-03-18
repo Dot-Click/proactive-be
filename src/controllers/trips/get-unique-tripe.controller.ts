@@ -6,9 +6,11 @@ import {
   users,
   locations,
   categories,
+  applications,
+  payments,
 } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { Request, Response } from "express";
 import status from "http-status";
 
@@ -83,6 +85,31 @@ export const getTripById = async (
       coordinators: coordinatorsResult,
       coordinator: coordinatorsResult[0] || null, // For backward compatibility
       coordinatorId: coordinatorsResult[0]?.id || null, // For backward compatibility
+      
+      // Get confirmed participants manually as a fast query
+      participants: await db
+        .select({
+          userId: users.id,
+          userFirstName: users.firstName,
+          userLastName: users.lastName,
+          avatar: users.avatar,
+          paymentStatus: payments.status,
+        })
+        .from(applications)
+        .innerJoin(users, eq(users.id, applications.userId))
+        .leftJoin(
+          payments,
+          and(
+            eq(payments.userId, applications.userId),
+            eq(payments.tripId, id)
+          )
+        )
+        .where(
+          and(
+            eq(applications.tripId, id),
+            eq(applications.status, "approved")
+          )
+        ),
       // Ensure dynamic fields are included
       highlights: trip.highlights || [],
       mood: trip.mood || [],
