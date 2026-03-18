@@ -36,6 +36,7 @@ const allowedOrigins = [
   "http://localhost:4000",
   "http://127.0.0.1:5500",
   "https://proactive-fe.vercel.app",
+  "https://proactive-fe.lively-hill-ef84.workers.dev",
 ].filter(Boolean) as string[];
 
 
