@@ -5,18 +5,18 @@ import { eq } from "drizzle-orm";
 
 export const createNotification = async (notification: any): Promise<any> => {
   try {
-        const db = await database();
-        const notf = await db.insert(notifications).values({
-            userId: notification.userId,
-            title: notification.title,
-            description: notification.description,
-            type: notification.type,
-        }).returning()
-        return notf[0];
-    } catch (error) {
-        console.error("Create notification error:", error);
-        throw error;
-    }
+    const db = await database();
+    const notf = await db.insert(notifications).values({
+      userId: notification.userId,
+      title: notification.title,
+      description: notification.description,
+      type: notification.type,
+    }).returning()
+    return notf[0];
+  } catch (error) {
+    console.error("Create notification error:", error);
+    throw error;
+  }
 };
 
 export const updateNotification = async (notification: any): Promise<any> => {
