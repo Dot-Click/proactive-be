@@ -1,9 +1,9 @@
 import { database } from "@/configs/connection.config";
-import { users, coordinatorDetails } from "@/schema/schema";
+import { users, coordinatorDetails, payments } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
 import { Request, Response } from "express";
 import status from "http-status";
-import { eq } from "drizzle-orm";
+import { eq, and, gte, sql } from "drizzle-orm";
 
 /**
  * Get all users controller
@@ -15,6 +15,19 @@ export const getAllUsers = async (
 ): Promise<Response> => {
   try {
     const db = await database();
+
+    const now = new Date();
+    
+    // Subquery to get latest membership for each user
+    const latestMembership = db
+      .select({
+        userId: payments.userId,
+        maxExpiry: sql`max(${payments.membershipExpiry})`.as("maxExpiry"),
+      })
+      .from(payments)
+      .where(and(eq(payments.status, "paid"), gte(payments.membershipExpiry, now)))
+      .groupBy(payments.userId)
+      .as("latestMembership");
 
     const allUsers = await db
       .select({
@@ -36,8 +49,11 @@ export const getAllUsers = async (
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
         coordinatorDetailsId: users.coordinatorDetails,
+        membershipExpiry: latestMembership.maxExpiry,
       })
-      .from(users).where(eq(users.userRoles, "user"));
+      .from(users)
+      .leftJoin(latestMembership, eq(users.id, latestMembership.userId))
+      .where(eq(users.userRoles, "user"));
 
     return sendSuccess(
       res,

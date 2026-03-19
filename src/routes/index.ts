@@ -9,6 +9,7 @@ import userRoutes from "./user.routes";
 import coordinatorRoutes from "./coordinator.routes";
 import adminRoutes from "./admin.routes";
 import inviteRoutes from "./invite.routes";
+import discountRoutes from "./discount.routes";
 import { getActiveGoogleReviews } from "@/controllers/user/googleReviews.controller";
 import { Router } from "express";
 
@@ -25,6 +26,7 @@ apiRoutes.use("/api/user", userRoutes);
 apiRoutes.use("/api/coordinator", coordinatorRoutes);
 apiRoutes.use("/api/admin", adminRoutes);
 apiRoutes.use("/api/invite", inviteRoutes);
+apiRoutes.use("/api/discounts", discountRoutes);
 
 // public shortcut for google reviews (same as GET /api/user/google-reviews)
 apiRoutes.get("/api/google-reviews", getActiveGoogleReviews);

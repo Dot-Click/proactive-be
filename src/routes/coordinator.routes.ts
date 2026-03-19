@@ -1,4 +1,5 @@
-import { getAllApplications, getApplicationById } from "@/controllers/coordinators/get.all.applications";
+/** Coordinator Specific Routes - Application Management and Dashboard */
+import { getAllApplications, getApplicationById, getApplicationsByTripId } from "@/controllers/coordinators/get.all.applications";
 import { getAllAchievements } from "@/controllers/coordinators/get.all.acheivemnets";
 import { updateApplication } from "@/controllers/coordinators/update.application.controller";
 import { updateCoordinator } from "@/controllers/coordinators/update..controller";
@@ -22,6 +23,7 @@ const coordinatorRoutes = Router();
  * 
  */
 coordinatorRoutes.get("/applications", authenticate, authorize("coordinator", "admin"), getAllApplications);
+coordinatorRoutes.get("/applications/trip/:tripId", authenticate, authorize("coordinator", "admin"), getApplicationsByTripId);
 
 /**
  * @swagger

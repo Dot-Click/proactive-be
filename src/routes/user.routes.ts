@@ -24,6 +24,7 @@ import { updateUserStatus } from "@/controllers/user/update-status.controller";
 import { updateUserRole } from "@/controllers/user/update-role.controller";
 import { searchUsers } from "@/controllers/user/search-users.controller";
 import { searchCoordinators } from "@/controllers/user/search-coordinators.controller";
+import { updateMembership } from "@/controllers/user/update-membership.controller";
 
 const userRoutes = Router();
 
@@ -354,5 +355,6 @@ userRoutes.get(
  *         description: Internal server error
  */
 userRoutes.get("/:userId", authenticate, authorize("admin"), getUserByID);
+userRoutes.put("/membership/:userId", authenticate, authorize("admin"), updateMembership);
 
 export default userRoutes;

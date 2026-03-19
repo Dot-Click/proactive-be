@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import { database } from "@/configs/connection.config";
-import { users, coordinatorDetails } from "@/schema/schema";
+import { users, coordinatorDetails, payments } from "@/schema/schema";
 import { sendSuccess, sendError } from "@/utils/response.util";
 import status from "http-status";
-import { or, ilike, eq, and } from "drizzle-orm";
+import { or, ilike, eq, and, gte, sql } from "drizzle-orm";
 
 /**
  * @swagger
@@ -129,7 +129,20 @@ export const searchUsers = async (
       whereCondition = and(searchConditions, eq(users.userRoles, role));
     }
 
-    // Fetch all matching users
+    const now = new Date();
+    
+    // Subquery to get latest membership for each user
+    const latestMembership = db
+      .select({
+        userId: payments.userId,
+        maxExpiry: sql<string>`max(${payments.membershipExpiry})`.as("maxExpiry"),
+      })
+      .from(payments)
+      .where(and(eq(payments.status, "paid"), gte(payments.membershipExpiry, now)))
+      .groupBy(payments.userId)
+      .as("latestMembership");
+
+    // Fetch all matching users with membership status
     const searchResults = await db
       .select({
         id: users.id,
@@ -145,8 +158,10 @@ export const searchUsers = async (
         emailVerified: users.emailVerified,
         createdAt: users.createdAt,
         coordinatorDetailsId: users.coordinatorDetails,
+        membershipExpiry: latestMembership.maxExpiry,
       })
       .from(users)
+      .leftJoin(latestMembership, eq(users.id, latestMembership.userId))
       .where(whereCondition)
       .orderBy(users.firstName);
 

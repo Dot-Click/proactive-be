@@ -24,6 +24,7 @@ import {
 import { hashPassword } from "@/utils/password.util";
 import { env } from "@/utils/env.utils";
 import { sql } from "drizzle-orm";
+import { createId } from "@paralleldrive/cuid2";
 
 const seed = async () => {
   try {
@@ -1231,7 +1232,7 @@ const seed = async () => {
         status: "active",
         discountCode: "EARLYBIRD20",
         description: "20% off for early bookings",
-        discountPercentage: 20,
+        discountPercentage: "20",
         maxUsage: "50",
         amount: "300",
       },
@@ -1241,7 +1242,7 @@ const seed = async () => {
         status: "active",
         discountCode: "SUMMER15",
         description: "15% summer discount",
-        discountPercentage: 15,
+        discountPercentage: "15",
         maxUsage: "100",
         amount: "300",
       },
@@ -1251,7 +1252,7 @@ const seed = async () => {
         status: "expired",
         discountCode: "EXPIRED10",
         description: "Expired discount",
-        discountPercentage: 10,
+        discountPercentage: "10",
         maxUsage: "0",
         amount: "0",
       },
@@ -1544,7 +1545,4 @@ if (require.main === module) {
 }
 
 export default seed;
-function createId(): string | import("drizzle-orm").SQL<unknown> | import("drizzle-orm").Placeholder<string, any> | undefined {
-  throw new Error("Function not implemented.");
-}
 

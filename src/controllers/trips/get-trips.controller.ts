@@ -6,9 +6,10 @@ import {
   users,
   locations,
   categories,
+  applications,
 } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
-import { and, eq, lt, gte } from "drizzle-orm";
+import { and, eq, lt, gte, sql } from "drizzle-orm";
 import { Request, Response } from "express";
 import status from "http-status";
 
@@ -99,6 +100,7 @@ export const getTrips = async (
           groupSize: trip.groupSize,
           perHeadPrice: trip.perHeadPrice,
           shortDesc: trip.shortDesc,
+          participantCount: (await db.select({ count: sql<number>`count(*)::int` }).from(applications).where(eq(applications.tripId, trip.id)))[0]?.count || 0,
         };
       })
     );

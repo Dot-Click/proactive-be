@@ -109,6 +109,8 @@ export const dashboardlogic = async (req: Request, res: Response) => {
         location: locations.name,
         status: trips.status,
         approvalStatus: trips.approvalStatus,
+        groupSize: trips.groupSize,
+        participantCount: sql<number>`(SELECT COUNT(*) FROM ${applications} WHERE ${applications.tripId} = ${trips.id})::int`,
       })
       .from(trips)
       .innerJoin(tripCoordinators, eq(tripCoordinators.tripId, trips.id))

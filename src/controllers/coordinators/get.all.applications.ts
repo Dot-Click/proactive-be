@@ -1,3 +1,4 @@
+// Updated controller to include trip participant fetching
 import { database } from "@/configs/connection.config";
 import { applications, users, trips, payments } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
@@ -114,3 +115,40 @@ export const getApplicationById = async (req: Request, res: Response): Promise<R
     return sendError(res, "server error", status.INTERNAL_SERVER_ERROR)
   }
 }
+export const getApplicationsByTripId = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const tripId = req.params.tripId;
+    const db = await database();
+    
+    const participants = await db
+      .select({
+        id: applications.id,
+        userId: applications.userId,
+        tripId: applications.tripId,
+        shortIntro: applications.shortIntro,
+        dietaryRestrictions: applications.dietaryRestrictions,
+        introVideo: applications.introVideo,
+        status: applications.status,
+        createdAt: applications.createdAt,
+        userFirstName: users.firstName,
+        userLastName: users.lastName,
+        userEmail: users.email,
+        paymentStatus: payments.status,
+      })
+      .from(applications)
+      .leftJoin(users, eq(applications.userId, users.id))
+      .leftJoin(
+        payments,
+        and(
+          eq(payments.userId, applications.userId),
+          eq(payments.tripId, applications.tripId)
+        )
+      )
+      .where(eq(applications.tripId, tripId));
+
+    return sendSuccess(res, "Trip participants fetched successfully", participants);
+  } catch (error) {
+    console.error(error);
+    return sendError(res, "Failed to get trip participants", 500);
+  }
+};
