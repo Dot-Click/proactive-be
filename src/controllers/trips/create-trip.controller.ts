@@ -373,7 +373,8 @@ export const createTrip = async (
       galleryImages: validatedPayload.galleryImages || [],
       bestPriceMsg: validatedPayload.bestPriceMsg || "",
       perHeadPrice: validatedPayload.perHeadPrice || "",
-      status: validatedPayload.status || "pending",
+      status: validatedPayload.status || "active",
+      approvalStatus: "approved",
       // Store days itinerary data (using existing daysItenary column in DB)
       daysItenary: validatedPayload.daysItinerary || [],
       /* dynamic sections */
@@ -383,6 +384,8 @@ export const createTrip = async (
       commonFundDescription: validatedPayload.commonFundDescription || "",
       commonFundCount: validatedPayload.commonFundCount || 0,
       thingsToKnow: validatedPayload.thingsToKnow || [],
+      applicationType: validatedPayload.applicationType || "video",
+      depositAmount: validatedPayload.depositAmount || "",
     };
 
     console.log("💾 Saving Dynamic Fields to DB:", {

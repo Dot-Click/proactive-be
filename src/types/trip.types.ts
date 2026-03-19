@@ -188,7 +188,7 @@ export const createTripSchema = z.object({
     .min(1, "Per head price is required")
     .max(100, "Per head price must be less than 100 characters"),
   status: z
-    .enum(["pending", "active", "completed", "cancelled"])
+    .enum(["pending", "active", "completed", "cancelled", "coming soon"])
     .optional()
     .default("pending"),
   coordinators: z.union([z.string(), z.array(z.string())]).optional(),
@@ -253,6 +253,8 @@ export const createTripSchema = z.object({
         })
       )
     ),
+  applicationType: z.string().optional(),
+  depositAmount: z.string().optional(),
 
   /* ---------- END NEW FIELDS ---------- */
 
@@ -382,7 +384,7 @@ export const updateTripSchema = z.object({
     .min(1, "Per head price is required")
     .max(100, "Per head price must be less than 100 characters")
     .optional(),
-  status: z.enum(["pending", "active", "completed", "cancelled"]).optional(),
+  status: z.enum(["pending", "active", "completed", "cancelled", "coming soon"]).optional(),
   coordinators: z
     .any()
     .transform((val: any) => {
@@ -457,6 +459,8 @@ export const updateTripSchema = z.object({
       )
     )
     .optional(),
+  applicationType: z.string().optional(),
+  depositAmount: z.string().optional(),
 
   discounts: z
     .any()

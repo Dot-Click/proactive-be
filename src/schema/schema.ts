@@ -50,6 +50,7 @@ export const tripStatusEnum = pgEnum("trip_status", [
   "completed",
   "open",
   "live",
+  "coming soon",
 ]);
 
 export const discountStatusEnum = pgEnum("discount_status", [
@@ -262,7 +263,7 @@ export const trips = pgTable("trips", {
   included: jsonb("included"),
   status: tripStatusEnum("status").default("pending").notNull(),
   approvalStatus: tripApprovalStatusEnum("approval_status")
-    .default("pending")
+    .default("approved")
     .notNull(),
   notIncluded: jsonb("not_included"),
   shortDesc: text("short_desc").notNull(),
@@ -273,6 +274,8 @@ export const trips = pgTable("trips", {
   bestPriceMsg: text("best_price_msg").notNull(),
   daysItenary: jsonb("days_itenary"),
   perHeadPrice: varchar({ length: 100 }).notNull(),
+  applicationType: varchar("application_type", { length: 50 }).default("video"),
+  depositAmount: varchar("deposit_amount", { length: 100 }),
   // Dynamic content sections added for editable trip details
   highlights: jsonb("highlights"), // array of strings
   mood: jsonb("mood"), // array of { label, value } objects to drive "¿Este viaje es para mí?" ratings

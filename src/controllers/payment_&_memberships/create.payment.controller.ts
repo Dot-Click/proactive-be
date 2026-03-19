@@ -6,7 +6,7 @@ import { database } from "@/configs/connection.config";
 import { payments } from "@/schema/schema";
 import { createId } from "@paralleldrive/cuid2";
 import { trips } from "@/schema/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import Stripe from "stripe";
 import { createNotification } from "@/services/notifications.services";
 
@@ -84,9 +84,11 @@ export const createPayment = async (
 
     // check in db if user has already paid for this trip
     const existingPayment = await db.query.payments.findFirst({
-      where: eq(payments.tripId, trip_id),
+      where: and(eq(payments.tripId, trip_id), eq(payments.userId, userId)),
     });
     if (existingPayment) {
+      // NOTE: Consider allowing multiple payments later (e.g. deposit vs full)
+      // but for now, just restrict to one payment per user per trip.
       return sendError(res, "You have already paid for this trip", 400);
     }
 

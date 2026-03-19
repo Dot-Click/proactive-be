@@ -26,8 +26,7 @@ export const getOpenTrips = async (
     const now = new Date();
 
     const conditions = [
-      eq(trips.approvalStatus, "approved"),
-      inArray(trips.status, ["open", "live"]),
+      inArray(trips.status, ["open", "live", "active", "coming soon"]),
       gte(trips.startDate, now),
     ];
     if (type && typeof type === "string") {
