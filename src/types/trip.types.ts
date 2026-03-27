@@ -89,64 +89,9 @@ export const createTripSchema = z.object({
     .min(1, "Weekend timetable is required")
     .max(100, "Weekend timetable must be less than 100 characters")
     .optional(),
-  included: z
-    .any()
-    .transform((val: any) => {
-      let parsed = [] as any[];
-      if (Array.isArray(val)) parsed = val;
-      else if (typeof val === "string") {
-        try {
-          parsed = JSON.parse(val);
-        } catch {
-          parsed = [];
-        }
-      }
-      parsed = parsed.map((item: any) => {
-        if (typeof item === "string") {
-          return { title: item, description: "", img: "" };
-        }
-        return item;
-      });
-      return parsed;
-    })
-    .pipe(
-      z.array(
-        z.object({
-          title: z.string().min(1).max(255),
-          description: z.string().max(1000).optional(),
-          img: z.string().max(10000000).optional(),
-        })
-      )
-    ),
-  notIncluded: z
-    .any()
-    .transform((val: any) => {
-      let parsed = [] as any[];
-      if (Array.isArray(val)) parsed = val;
-      else if (typeof val === "string") {
-        try {
-          parsed = JSON.parse(val);
-        } catch {
-          parsed = [];
-        }
-      }
-      parsed = parsed.map((item: any) => {
-        if (typeof item === "string") {
-          return { title: item, description: "", img: "" };
-        }
-        return item;
-      });
-      return parsed;
-    })
-    .pipe(
-      z.array(
-        z.object({
-          title: z.string().min(1).max(255),
-          description: z.string().max(1000).optional(),
-          img: z.string().max(10000000).optional(),
-        })
-      )
-    ),
+  included: z.array(z.any()).optional().nullable(),
+  notIncluded: z.array(z.any()).optional().nullable(),
+
   shortDesc: z.string().min(1, "Short description is required"),
   instaLink: z
     .string()
