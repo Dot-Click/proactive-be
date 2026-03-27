@@ -5,6 +5,7 @@ import { validateDiscount } from "@/controllers/discounts/validate-discount.cont
 import { getDiscountsByTrip } from "@/controllers/discounts/get-discounts-by-trip.controller";
 import { getAllDiscounts } from "@/controllers/discounts/get-all-discounts.controller";
 import { deleteDiscount } from "@/controllers/discounts/delete-discount.controller";
+import { updateDiscount } from "@/controllers/discounts/update-discount.controller";
 
 const discountRoutes = Router();
 
@@ -20,6 +21,7 @@ discountRoutes.post("/", authenticate, authorize("coordinator", "admin"), create
 discountRoutes.get("/", authenticate, authorize("admin"), getAllDiscounts);
 discountRoutes.get("/trip/:tripId", authenticate, authorize("coordinator", "admin"), getDiscountsByTrip);
 discountRoutes.delete("/:id", authenticate, authorize("coordinator", "admin"), deleteDiscount);
+discountRoutes.patch("/:id", authenticate, authorize("coordinator", "admin"), updateDiscount);
 
 // User: validate
 discountRoutes.post("/validate", validateDiscount);
