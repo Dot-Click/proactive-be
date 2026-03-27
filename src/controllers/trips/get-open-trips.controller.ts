@@ -89,10 +89,12 @@ export const getOpenTrips = async (
 
     const counts = {
       all: tripsWithCoordinators.length,
-      open: tripsWithCoordinators.filter((t: any) => t.status === "open")
-        .length,
-      comingSoon: tripsWithCoordinators.filter((t: any) => t.status === "live")
-        .length,
+      open: tripsWithCoordinators.filter((t: any) => 
+        t.status === "open" || t.status === "active"
+      ).length,
+      comingSoon: tripsWithCoordinators.filter((t: any) => 
+        t.status === "live" || t.status === "coming soon"
+      ).length,
       closed: 0,
     };
 
