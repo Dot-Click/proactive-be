@@ -44,7 +44,11 @@ export const createDiscount = async (
         id: createId(),
         tripId,
         discountCode,
-        validTill: new Date(validTill),
+        validTill: (() => {
+          const date = new Date(validTill);
+          date.setHours(23, 59, 59, 999);
+          return date;
+        })(),
         description,
         discountPercentage: (discountPercentage || 0).toString(),
         amount: (amount || 0).toString(),

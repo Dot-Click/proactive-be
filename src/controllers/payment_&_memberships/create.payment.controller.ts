@@ -175,7 +175,8 @@ export const createPayment = async (
         stripeCustomerId: customer.id,
         stripePaymentId: paymentIntent.id,
         membershipAvailable: false,
-        discountAvailable: false,
+        discountAvailable: !!req.body.discount_id,
+        discountId: req.body.discount_id || null,
       })
       .returning();
 

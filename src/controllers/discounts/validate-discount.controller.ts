@@ -1,7 +1,7 @@
 import { database } from "@/configs/connection.config";
-import { discounts } from "@/schema/schema";
+import { discounts, payments } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
-import { and, eq, lte, gte, or, isNull } from "drizzle-orm";
+import { and, eq, lte, gte, or, isNull, sql } from "drizzle-orm";
 import { Request, Response } from "express";
 import status from "http-status";
 
@@ -26,32 +26,54 @@ export const validateDiscount = async (
     }
 
     const db = await database();
-    const now = new Date();
+    const normalizedCode = discountCode.trim().toUpperCase();
 
     const whereClause = tripId 
       ? and(
-          eq(discounts.discountCode, discountCode),
+          eq(discounts.discountCode, normalizedCode),
           or(eq(discounts.tripId, tripId), isNull(discounts.tripId)),
           eq(discounts.status, "active"),
-          gte(discounts.validTill, now)
+          gte(discounts.validTill, sql`NOW()`)
         )
       : and(
-          eq(discounts.discountCode, discountCode),
+          eq(discounts.discountCode, normalizedCode),
           isNull(discounts.tripId),
           eq(discounts.status, "active"),
-          gte(discounts.validTill, now)
+          gte(discounts.validTill, sql`NOW()`)
         );
 
     const [discount] = await db
-      .select()
+      .select({
+        id: discounts.id,
+        tripId: discounts.tripId,
+        validTill: discounts.validTill,
+        status: discounts.status,
+        discountCode: discounts.discountCode,
+        discountPercentage: discounts.discountPercentage,
+        amount: discounts.amount,
+        maxUsage: discounts.maxUsage,
+        currentUsage: sql`count(${payments.id})`.mapWith(Number),
+      })
       .from(discounts)
-      .where(whereClause);
+      .leftJoin(payments, eq(discounts.id, payments.discountId))
+      .where(whereClause)
+      .groupBy(discounts.id);
 
     if (!discount) {
       return sendError(
         res,
         "Invalid or expired discount code for this trip",
         status.NOT_FOUND
+      );
+    }
+
+    // Check usage limit
+    const maxUsage = parseInt(discount.maxUsage as string) || 0;
+    if (maxUsage > 0 && discount.currentUsage >= maxUsage) {
+      return sendError(
+        res,
+        "This discount code has reached its maximum usage limit",
+        status.BAD_REQUEST
       );
     }
 

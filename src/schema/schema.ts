@@ -325,6 +325,9 @@ export const payments = pgTable("payments", {
     .$defaultFn(() => false)
     .notNull(),
   validTill: varchar({ length: 50 }),
+  discountId: foreignkeyRef("discount_id", () => discounts.id, {
+    onDelete: "set null",
+  }),
   stripePaymentId: varchar({ length: 255 }).notNull(),
   ...timeStamps,
 });

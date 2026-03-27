@@ -1,7 +1,7 @@
 import { database } from "@/configs/connection.config";
-import { discounts, trips } from "@/schema/schema";
+import { discounts, trips, payments } from "@/schema/schema";
 import { sendError, sendSuccess } from "@/utils/response.util";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { Request, Response } from "express";
 import status from "http-status";
 
@@ -34,10 +34,13 @@ export const getAllDiscounts = async (
         discountPercentage: discounts.discountPercentage,
         amount: discounts.amount,
         maxUsage: discounts.maxUsage,
+        currentUsage: sql`count(${payments.id})`.mapWith(Number),
         createdAt: discounts.createdAt,
       })
       .from(discounts)
       .leftJoin(trips, eq(discounts.tripId, trips.id))
+      .leftJoin(payments, eq(discounts.id, payments.discountId))
+      .groupBy(discounts.id, trips.id)
       .orderBy(desc(discounts.createdAt));
 
     return sendSuccess(res, "All discounts retrieved successfully", result);
