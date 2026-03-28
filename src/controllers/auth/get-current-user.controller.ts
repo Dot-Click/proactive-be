@@ -4,7 +4,7 @@ import { coordinatorDetails, payments, users } from "@/schema/schema";
 import { sendSuccess, sendError } from "@/utils/response.util";
 import "@/middlewares/auth.middleware"; // Import to ensure type augmentation
 import status from "http-status";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 /**
  * @swagger
@@ -117,8 +117,8 @@ export const getCurrentUser = async (
 
     const user = userResults[0];
 
-    // Fetch latest payment
-    const latestPayment = await db
+    // Fetch all user payments to determine status and membership
+    const userPayments = await db
       .select({
         membershipId: payments.membershipId,
         membershipAvailable: payments.membershipAvailable,
@@ -126,11 +126,21 @@ export const getCurrentUser = async (
         membershipExpiry: payments.membershipExpiry,
         discountAvailable: payments.discountAvailable,
         status: payments.status,
+        createdAt: payments.createdAt,
       })
       .from(payments)
       .where(eq(payments.userId, user.id))
-      .orderBy(desc(payments.createdAt))
-      .limit(1);
+      .orderBy(desc(payments.createdAt));
+
+    const latestOverallPayment = userPayments[0];
+    
+    // Find the latest successful membership record - using truthy check for resilience
+    const latestMembership = userPayments.find(p => p.status === "paid" && !!p.membershipAvailable);
+
+    const now = new Date();
+    const isMembershipValid = 
+      latestMembership && 
+      (!latestMembership.membershipExpiry || new Date(latestMembership.membershipExpiry) > now);
 
     // Fetch coordinator details if user is a coordinator
     let coordDetails = null;
@@ -165,12 +175,12 @@ export const getCurrentUser = async (
       role: user.userRoles || "user",
       emailVerified: user.emailVerified || false,
       createdAt: user.createdAt,
-      membershipId: latestPayment[0]?.membershipId || null,
-      discountAvailable: latestPayment[0]?.discountAvailable || false,
-      membershipAvailable: latestPayment[0]?.membershipAvailable || false,
-      membershipType: latestPayment[0]?.membershipType || null,
-      membershipExpiry: latestPayment[0]?.membershipExpiry || null,
-      status: latestPayment[0]?.status || null,
+      membershipId: latestMembership?.membershipId || null,
+      discountAvailable: latestOverallPayment?.discountAvailable || false,
+      membershipAvailable: !!isMembershipValid,
+      membershipType: latestMembership?.membershipType || null,
+      membershipExpiry: latestMembership?.membershipExpiry || null,
+      status: latestOverallPayment?.status || null,
     };
 
     // Add coordinator details if available
