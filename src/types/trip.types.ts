@@ -200,6 +200,9 @@ export const createTripSchema = z.object({
     ),
   applicationType: z.string().optional(),
   depositAmount: z.string().optional(),
+  rating: z.string().optional().default("4.9"),
+  reviewsCount: z.coerce.number().optional().default(92),
+  reviewLink: z.string().optional().default("https://www.google.com/maps/place/Proactive+Future/@35.67445,-6.8143,2933475m/data=!3m2!1e3!4b1!4m6!3m5!1s0x65e285d9dffa46ab:0x3dd1b18e867e6183!8m2!3d35.67445!4d-6.8143!16s%2Fg%2F11t6yzt6vh?entry=ttu&g_ep=EgoyMDI2MDMyOS4wIKXMDSoASAFQAw%3D%3D"),
 
   /* ---------- END NEW FIELDS ---------- */
 
@@ -406,6 +409,9 @@ export const updateTripSchema = z.object({
     .optional(),
   applicationType: z.string().optional(),
   depositAmount: z.string().optional(),
+  rating: z.string().optional(),
+  reviewsCount: z.coerce.number().optional(),
+  reviewLink: z.string().optional(),
 
   discounts: z
     .any()

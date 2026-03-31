@@ -283,6 +283,9 @@ export const trips = pgTable("trips", {
   commonFundDescription: text("common_fund_description"),
   commonFundCount: integer("common_fund_count"),
   thingsToKnow: jsonb("things_to_know"), // array of { title, description }
+  rating: numeric("rating").default("4.9"),
+  reviewsCount: integer("reviews_count").default(92),
+  reviewLink: varchar("review_link", { length: 1500 }).default("https://www.google.com/maps/place/Proactive+Future/@35.67445,-6.8143,2933475m/data=!3m2!1e3!4b1!4m6!3m5!1s0x65e285d9dffa46ab:0x3dd1b18e867e6183!8m2!3d35.67445!4d-6.8143!16s%2Fg%2F11t6yzt6vh?entry=ttu&g_ep=EgoyMDI2MDMyOS4wIKXMDSoASAFQAw%3D%3D"),
   ...timeStamps,
 });
 
@@ -444,6 +447,8 @@ export const globalSettings = pgTable("settings", {
   contactEmail: varchar("contact_email", { length: 255 }),
   mapLat: varchar("map_lat", { length: 50 }),
   mapLng: varchar("map_lng", { length: 50 }),
+  googleReviewsMark: numeric("google_reviews_mark").default("4.9"),
+  googleReviewsCount: integer("google_reviews_count").default(92),
   ...timeStamps,
 });
 

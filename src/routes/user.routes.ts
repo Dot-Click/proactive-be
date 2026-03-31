@@ -3,7 +3,7 @@ import {
   getInstaInfo,
   getReviews,
 } from "@/controllers/user/insta&reviews.controller";
-import { getActiveGoogleReviews } from "@/controllers/user/googleReviews.controller";
+import { getActiveGoogleReviews, getGoogleReviewStats } from "@/controllers/user/googleReviews.controller";
 import { getContactInfo } from "@/controllers/user/contact-info.controller";
 import { subscribeNewsletter } from "@/controllers/user/subscribe-newsletter.controller";
 import { getUserAchievementsController } from "@/controllers/user/get.achievements.controller";
@@ -154,6 +154,7 @@ userRoutes.get(
 userRoutes.get("/insta-info", getInstaInfo);
 userRoutes.get("/reviews", getReviews);
 userRoutes.get("/google-reviews", getActiveGoogleReviews);
+userRoutes.get("/google-reviews/stats", getGoogleReviewStats);
 userRoutes.get("/contact-info", getContactInfo);
 userRoutes.post("/subscribe", subscribeNewsletter);
 

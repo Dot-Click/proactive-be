@@ -80,6 +80,8 @@ export const updateSettingsSchema = z.object({
   contactEmail: z.string().email().max(255).optional(),
   mapLat: z.string().max(50).optional(),
   mapLng: z.string().max(50).optional(),
+  googleReviewsMark: z.string().optional(), // Using string for numeric compatibility
+  googleReviewsCount: z.coerce.number().int().nonnegative().optional(),
 }).strict();
 
 /**
