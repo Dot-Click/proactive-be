@@ -35,7 +35,7 @@ export const fetchCorrd = async (location: string): Promise<Coordinates> => {
     console.error("Geocoding error:", error);
     return {
       lat: "35.67445",
-      lon: "-6.8143,5",
+      lon: "-6.8143",
       display_name: "Proactive Future Technologies",
     };
   }
