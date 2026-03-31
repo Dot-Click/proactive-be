@@ -361,7 +361,6 @@ export const createTrip = async (
       duration: validatedPayload.duration,
       longDesc: validatedPayload.longDesc || "",
       groupSize: validatedPayload.groupSize || "",
-      rhythm: validatedPayload.rhythm,
       sportLvl: validatedPayload.sportLvl || "",
       weekendTt: validatedPayload.weekendTt || "",
       included: validatedPayload.included || null,

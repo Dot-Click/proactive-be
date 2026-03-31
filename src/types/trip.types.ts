@@ -19,10 +19,13 @@ export const dayItineraryItemSchema = z.object({
   description: z
     .string()
     .max(2000, "Description must be less than 2000 characters")
-    .optional(),
-  image: z.string().url().max(2000).optional(),
-  lat: z.string().optional(),
-  long: z.string().optional()
+    .optional()
+    .nullable(),
+  image: z.string().max(2000).optional().nullable(),
+  location: z.string().optional().nullable(),
+  coordinates: z.string().optional().nullable(),
+  lat: z.string().optional().nullable(),
+  long: z.string().optional().nullable(),
 });
 
 /**
@@ -75,15 +78,7 @@ export const createTripSchema = z.object({
     .min(1, "Group size is required")
     .max(50, "Group size must be less than 50 characters")
     .optional(),
-  rhythm: z
-    .string()
-    .min(1, "Rhythm is required")
-    .max(100, "Rhythm must be less than 100 characters"),
-  sportLvl: z
-    .string()
-    .min(1, "Sport level is required")
-    .max(100, "Sport level must be less than 100 characters")
-    .optional(),
+  sportLvl: z.enum(["Bajo", "Medio", "Alto"]).optional(),
   weekendTt: z
     .string()
     .min(1, "Weekend timetable is required")
@@ -271,16 +266,7 @@ export const updateTripSchema = z.object({
     .min(1, "Group size is required")
     .max(50, "Group size must be less than 50 characters")
     .optional(),
-  rhythm: z
-    .string()
-    .min(1, "Rhythm is required")
-    .max(100, "Rhythm must be less than 100 characters")
-    .optional(),
-  sportLvl: z
-    .string()
-    .min(1, "Sport level is required")
-    .max(100, "Sport level must be less than 100 characters")
-    .optional(),
+  sportLvl: z.enum(["Bajo", "Medio", "Alto"]).optional(),
   weekendTt: z
     .string()
     .min(1, "Weekend timetable is required")
