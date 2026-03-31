@@ -469,3 +469,12 @@ export const newsletterSubscribers = pgTable("newsletter_subscribers", {
 });
 
 export const userInsertSchema = createInsertSchema(users);
+
+export const extraItems = pgTable("extra_items", {
+  id: uuid().primaryKey(),
+  type: varchar("type", { length: 20 }).notNull(), // 'included' or 'not_included'
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  icon: text("icon"),
+  ...timeStamps,
+});
