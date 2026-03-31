@@ -561,3 +561,7 @@ export const createTrip = async (
     );
   }
 };
+
+
+
+
