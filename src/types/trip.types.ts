@@ -184,7 +184,7 @@ export const createTripSchema = z.object({
     ),
   commonFund: z.string().optional(),
   commonFundDescription: z.string().optional(),
-  commonFundCount: z.coerce.number().optional(),
+
   thingsToKnow: z
     .any()
     .transform((val: any) => {
@@ -396,7 +396,7 @@ export const updateTripSchema = z.object({
     .optional(),
   commonFund: z.string().optional(),
   commonFundDescription: z.string().optional(),
-  commonFundCount: z.coerce.number().optional(),
+
   thingsToKnow: z
     .any()
     .transform((val: any) => {

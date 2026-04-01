@@ -174,7 +174,7 @@ export const updateTrip = async (
       mood: validatedPayload.mood,
       commonFund: validatedPayload.commonFund,
       commonFundDescription: validatedPayload.commonFundDescription,
-      commonFundCount: validatedPayload.commonFundCount,
+
       thingsToKnow: validatedPayload.thingsToKnow,
     });
 
@@ -226,7 +226,7 @@ export const updateTrip = async (
       mood: trip[0].mood,
       commonFund: trip[0].commonFund,
       commonFundDescription: trip[0].commonFundDescription,
-      commonFundCount: trip[0].commonFundCount,
+
       thingsToKnow: trip[0].thingsToKnow,
     });
 

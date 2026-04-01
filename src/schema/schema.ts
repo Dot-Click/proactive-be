@@ -283,7 +283,6 @@ export const trips = pgTable("trips", {
   mood: jsonb("mood"), // array of { label, value } objects to drive "¿Este viaje es para mí?" ratings
   commonFund: text("common_fund"),
   commonFundDescription: text("common_fund_description"),
-  commonFundCount: integer("common_fund_count"),
   thingsToKnow: jsonb("things_to_know"), // array of { title, description }
   rating: numeric("rating").default("4.9"),
   reviewsCount: integer("reviews_count").default(92),

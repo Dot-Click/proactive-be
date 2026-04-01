@@ -115,7 +115,7 @@ export const getTripById = async (
       mood: trip.mood || [],
       commonFund: trip.commonFund || null,
       commonFundDescription: trip.commonFundDescription || null,
-      commonFundCount: trip.commonFundCount || null,
+
       thingsToKnow: trip.thingsToKnow || [],
       rating: trip.rating || "4.9",
       reviewsCount: trip.reviewsCount || 92,
@@ -127,7 +127,7 @@ export const getTripById = async (
       mood: tripWithCoordinators.mood,
       commonFund: tripWithCoordinators.commonFund,
       commonFundDescription: tripWithCoordinators.commonFundDescription,
-      commonFundCount: tripWithCoordinators.commonFundCount,
+
       thingsToKnow: tripWithCoordinators.thingsToKnow,
     });
 
