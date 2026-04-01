@@ -781,14 +781,10 @@ const options: Options = {
               example: "",
               description: "The trip group size",
             },
-            rhythm: {
-              type: "string",
-              example: "Moderate",
-              description: "The trip rhythm",
-            },
             sportLvl: {
               type: "string",
-              example: "",
+              enum: ["bajo", "medio", "alto"],
+              example: "medio",
               description: "The trip sport level",
             },
             weekendTt: {
@@ -997,16 +993,10 @@ const options: Options = {
               example: "10-15 people",
               description: "The trip group size",
             },
-            rhythm: {
-              type: "string",
-              minLength: 1,
-              maxLength: 100,
-              example: "Moderate",
-              description: "The trip rhythm",
-            },
             sport_lvl: {
               type: "string",
-              example: "Intermediate",
+              enum: ["bajo", "medio", "alto"],
+              example: "medio",
               description: "The trip sport level",
             },
             tt_img: {

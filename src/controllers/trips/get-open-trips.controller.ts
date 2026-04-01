@@ -44,48 +44,65 @@ export const getOpenTrips = async (
       .leftJoin(categories, eq(trips.categoryId, categories.id))
       .where(and(...conditions));
 
-    const tripsWithCoordinators = await Promise.all(
-      tripsData.map(async (row: any) => {
-        const trip = row.trip;
-        const coordinatorsResult = await db
-          .select({
-            id: tripCoordinators.userId,
-            _id: tripCoordinators.userId,
-            fullName: coordinatorDetails.fullName,
-            email: users.email,
-            profilePicture: coordinatorDetails.profilePicture,
-            bio: coordinatorDetails.bio,
-          })
-          .from(tripCoordinators)
-          .leftJoin(
-            coordinatorDetails,
-            eq(coordinatorDetails.userId, tripCoordinators.userId)
-          )
-          .leftJoin(users, eq(users.id, tripCoordinators.userId))
-          .where(eq(tripCoordinators.tripId, trip.id));
+    if (tripsData.length === 0) {
+      return sendSuccess(
+        res,
+        "No open trips found",
+        {
+          trips: [],
+          counts: { all: 0, open: 0, comingSoon: 0, closed: 0 },
+        },
+        status.OK
+      );
+    }
 
-        return {
-          id: trip.id,
-          title: trip.title,
-          name: trip.title,
-          coordinators: coordinatorsResult,
-          description: trip.description,
-          category: row.categoryName ?? null,
-          type: row.categoryName ?? null,
-          startDate: trip.startDate,
-          endDate: trip.endDate,
-          status: trip.status,
-          approvalStatus: trip.approvalStatus,
-          coverImage: trip.coverImage,
-          location: row.locationName ?? null,
-          locationId: trip.locationId,
-          duration: trip.duration,
-          groupSize: trip.groupSize,
-          perHeadPrice: trip.perHeadPrice,
-          shortDesc: trip.shortDesc,
-        };
+    // Bulk fetch coordinators for all trips
+    const allCoordinators = await db
+      .select({
+        tripId: tripCoordinators.tripId,
+        userId: tripCoordinators.userId,
+        _id: tripCoordinators.userId,
+        fullName: coordinatorDetails.fullName,
+        email: users.email,
+        profilePicture: coordinatorDetails.profilePicture,
+        bio: coordinatorDetails.bio,
       })
-    );
+      .from(tripCoordinators)
+      .leftJoin(coordinatorDetails, eq(coordinatorDetails.userId, tripCoordinators.userId))
+      .leftJoin(users, eq(users.id, tripCoordinators.userId))
+      .where(inArray(tripCoordinators.tripId, tripsData.map(t => t.trip.id)));
+
+    const coordinatorsByTrip = new Map();
+    allCoordinators.forEach(c => {
+      if (!coordinatorsByTrip.has(c.tripId)) {
+        coordinatorsByTrip.set(c.tripId, []);
+      }
+      coordinatorsByTrip.get(c.tripId).push(c);
+    });
+
+    const tripsWithCoordinators = tripsData.map((row: any) => {
+      const trip = row.trip;
+      return {
+        id: trip.id,
+        title: trip.title,
+        name: trip.title,
+        coordinators: coordinatorsByTrip.get(trip.id) || [],
+        description: trip.description,
+        category: row.categoryName ?? null,
+        type: row.categoryName ?? null,
+        startDate: trip.startDate,
+        endDate: trip.endDate,
+        status: trip.status,
+        approvalStatus: trip.approvalStatus,
+        coverImage: trip.coverImage,
+        location: row.locationName ?? null,
+        locationId: trip.locationId,
+        duration: trip.duration,
+        groupSize: trip.groupSize,
+        perHeadPrice: trip.perHeadPrice,
+        shortDesc: trip.shortDesc,
+      };
+    });
 
     const counts = {
       all: tripsWithCoordinators.length,

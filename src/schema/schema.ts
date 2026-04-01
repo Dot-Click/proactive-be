@@ -67,6 +67,9 @@ export const achievementsBadgesEnum = pgEnum("achievements_badges", [
   "Leader",
 ]);
 
+export const sportLevelEnum = pgEnum("sport_level", ["bajo", "medio", "alto"]);
+
+
 export const applicationStatusEnum = pgEnum("application_status", [
   "pending",
   "approved",
@@ -257,8 +260,7 @@ export const trips = pgTable("trips", {
   duration: varchar({ length: 100 }).notNull(),
   longDesc: text("long_desc").notNull(),
   groupSize: varchar({ length: 50 }).notNull(),
-  rhythm: varchar({ length: 100 }).notNull(),
-  sportLvl: varchar({ length: 100 }).notNull(),
+  sportLvl: sportLevelEnum("sportLvl").default("medio").notNull(),
   weekendTt: varchar({ length: 100 }).notNull(),
   included: jsonb("included"),
   status: tripStatusEnum("status").default("pending").notNull(),

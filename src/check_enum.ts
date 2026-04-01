@@ -4,11 +4,11 @@ import { sql } from "drizzle-orm";
 async function check() {
   const db = await database();
   const res = await db.execute(sql`
-    SELECT column_name, data_type 
-    FROM information_schema.columns 
-    WHERE table_name = 'trips'
+    SELECT enumlabel 
+    FROM pg_enum 
+    WHERE enumtypid = 'trip_status'::regtype
   `);
-  console.log('Columns in trips:', JSON.stringify(res, null, 2));
+  console.log('Enum labels in trip_status:', JSON.stringify(res, null, 2));
 }
 
 check();

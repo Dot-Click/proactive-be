@@ -92,7 +92,7 @@ export const createTrip = async (
       return sendError(res, "Authentication required", status.UNAUTHORIZED);
     }
 
-    const { id } = req.user as any;
+    const { userId: id } = req.user as any;
 
     // Parse the payload from FormData - frontend sends JSON string in 'payload' field
     let payload: any = {};
@@ -346,58 +346,53 @@ export const createTrip = async (
     }
 
     const map_coord = await mapPromise;
-    const mapCoordinates = `${map_coord.lat},${map_coord.lon}`;
+    const latVal = String(map_coord.lat).trim();
+    const lonVal = String(map_coord.lon).trim();
+    const finalMapCoordinates = `${latVal},${lonVal}`;
 
-    // Create trip - map validated data to database schema
+    // EXPLICIT MAPPING - DO NOT USE SHORTHAND OR SPREAD
     const tripValues: any = {
-      title: validatedPayload.title,
-      description: validatedPayload.description,
-      coverImage: validatedPayload.coverImage || "",
-      categoryId: validatedPayload.categoryId,
-      locationId: validatedPayload.locationId,
-      mapCoordinates,
+      title: String(validatedPayload.title),
+      description: String(validatedPayload.description),
+      coverImage: String(validatedPayload.coverImage || ""),
+      categoryId: String(validatedPayload.categoryId),
+      locationId: String(validatedPayload.locationId),
+      mapCoordinates: String(finalMapCoordinates),
       startDate: validatedPayload.startDate,
       endDate: validatedPayload.endDate,
-      duration: validatedPayload.duration,
-      longDesc: validatedPayload.longDesc || "",
-      groupSize: validatedPayload.groupSize || "",
-      sportLvl: validatedPayload.sportLvl || "",
-      weekendTt: validatedPayload.weekendTt || "",
+      duration: String(validatedPayload.duration),
+      longDesc: String(validatedPayload.longDesc || ""),
+      groupSize: String(validatedPayload.groupSize || ""),
+      sportLvl: String(validatedPayload.sportLvl || "medio"),
+      weekendTt: String(validatedPayload.weekendTt || ""),
       included: validatedPayload.included || null,
       notIncluded: validatedPayload.notIncluded || null,
-      shortDesc: validatedPayload.shortDesc || "",
+      shortDesc: String(validatedPayload.shortDesc || ""),
       instaLink: validatedPayload.instaLink || null,
       likedinLink: validatedPayload.likedinLink || null,
-      promotionalVideo: validatedPayload.promotionalVideo || "",
+      promotionalVideo: String(validatedPayload.promotionalVideo || ""),
       galleryImages: validatedPayload.galleryImages || [],
-      bestPriceMsg: validatedPayload.bestPriceMsg || "",
-      perHeadPrice: validatedPayload.perHeadPrice || "",
-      status: validatedPayload.status || "active",
+      bestPriceMsg: String(validatedPayload.bestPriceMsg || ""),
+      perHeadPrice: String(validatedPayload.perHeadPrice || ""),
+      status: String(validatedPayload.status || "active"),
       approvalStatus: "approved",
-      // Store days itinerary data (using existing daysItenary column in DB)
       daysItenary: validatedPayload.daysItinerary || [],
-      /* dynamic sections */
       highlights: validatedPayload.highlights || [],
       mood: validatedPayload.mood || [],
-      commonFund: validatedPayload.commonFund || "",
-      commonFundDescription: validatedPayload.commonFundDescription || "",
-      commonFundCount: validatedPayload.commonFundCount || 0,
+      commonFund: String(validatedPayload.commonFund || ""),
+      commonFundDescription: String(validatedPayload.commonFundDescription || ""),
+      commonFundCount: Number(validatedPayload.commonFundCount || 0),
       thingsToKnow: validatedPayload.thingsToKnow || [],
-      applicationType: validatedPayload.applicationType || "video",
-      depositAmount: validatedPayload.depositAmount || "",
-      rating: validatedPayload.rating || "4.9",
-      reviewsCount: validatedPayload.reviewsCount || 92,
-      reviewLink: validatedPayload.reviewLink || "https://www.google.com/maps/place/Proactive+Future/@35.67445,-6.8143,2933475m/data=!3m2!1e3!4b1!4m6!3m5!1s0x65e285d9dffa46ab:0x3dd1b18e867e6183!8m2!3d35.67445!4d-6.8143!16s%2Fg%2F11t6yzt6vh?entry=ttu&g_ep=EgoyMDI2MDMyOS4wIKXMDSoASAFQAw%3D%3D",
+      applicationType: String(validatedPayload.applicationType || "video"),
+      depositAmount: String(validatedPayload.depositAmount || ""),
+      rating: String(validatedPayload.rating || "4.9"),
+      reviewsCount: Number(validatedPayload.reviewsCount || 92),
+      reviewLink: String(validatedPayload.reviewLink || ""),
     };
 
-    console.log("💾 Saving Dynamic Fields to DB:", {
-      highlights: tripValues.highlights,
-      mood: tripValues.mood,
-      commonFund: tripValues.commonFund,
-      commonFundDescription: tripValues.commonFundDescription,
-      commonFundCount: tripValues.commonFundCount,
-      thingsToKnow: tripValues.thingsToKnow,
-    });
+    console.log("🔍 DEEP DEBUG - tripValues keys:", Object.keys(tripValues));
+    console.log("🔍 DEEP DEBUG - mapCoordinates value:", tripValues.mapCoordinates);
+    console.log("🔍 DEEP DEBUG - sportLvl value:", tripValues.sportLvl);
 
     const newTrip = await db.insert(trips).values(tripValues).returning();
 

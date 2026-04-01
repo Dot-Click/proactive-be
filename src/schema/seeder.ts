@@ -74,298 +74,185 @@ const seed = async () => {
       throw connectionError;
     }
 
-    // Clear existing data (in reverse order of dependencies)
-    console.log("🧹 Clearing existing data...");
-    try {
-      try {
-        await db.delete(notifications);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(achievements);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(reviews);
-    await db.delete(googleReviews);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(applications);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(discounts);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(payments);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(tripCoordinators);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(messages);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(chatParticipants);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(chats);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(faqs);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(categories);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(trips);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(locations);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(globalSettings);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(banner);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(coordinatorDetails);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(newsletterSubscribers);
-      } catch (e) {
-        /* table may not exist */
-      }
-      try {
-        await db.delete(users);
-      } catch (e) {
-        /* table may not exist */
-      }
-    } catch (deleteError: any) {
-      const errorMessage =
-        deleteError?.message || deleteError?.toString() || "Unknown error";
-      const isNetworkError =
-        errorMessage.includes("fetch failed") ||
-        errorMessage.includes("ECONNREFUSED") ||
-        errorMessage.includes("ENOTFOUND") ||
-        errorMessage.includes("ETIMEDOUT") ||
-        deleteError?.cause?.message?.includes("fetch failed");
-
-      if (isNetworkError) {
-        throw new Error(
-          "❌ Database connection failed during data clearing!\n\n" +
-            "Possible issues:\n" +
-            "1. Network connectivity - Check your internet connection\n" +
-            "2. Database URL - Verify your CONNECTION_URL is correct and accessible\n" +
-            "3. Database status - Check if your Supabase database is active\n" +
-            "   → Go to https://supabase.com/dashboard and ensure your project is running\n" +
-            "4. Firewall/VPN - Ensure your network allows connections to Supabase\n" +
-            "5. Connection string format - Ensure it starts with 'postgresql://' or 'postgres://'\n" +
-            "6. Use direct connection - Use the direct connection string, not the pooler URL\n\n" +
-            `Error details: ${errorMessage}\n` +
-            (deleteError?.cause?.message
-              ? `Cause: ${deleteError.cause.message}\n`
-              : "")
-        );
-      }
-      throw deleteError;
-    }
+    // Skip clearing data as per USER_REQUEST to avoid affecting existing data
+    console.log("⏭️ Skipping data clearing. Seeding will perform safe inserts...");
 
     // Seed Users
     console.log("👥 Seeding users...");
     const hashedPassword = await hashPassword("Password123!");
 
-    const [
-      adminUser,
-      coordinatorUser,
-      regularUser1,
-      regularUser2,
-      regularUser3,
-    ] = await db
-      .insert(users)
-      .values([
-        {
-          firstName: "Admin",
-          lastName: "User",
-          nickName: "Admin User",
-          address: "123 Admin Street, City, Country",
-          phoneNumber: "+1234567890",
-          dob: "1990-01-01",
-          gender: "Male",
-          password: hashedPassword,
-          email: "admin@example.com",
-          emailVerified: true,
-          userStatus: "active",
-          userRoles: "admin",
-          provider: "email",
-          lastActive: new Date().toISOString(),
-        },
-        {
-          firstName: "Coordinator",
-          lastName: "Smith",
-          nickName: "Coordinator Smith",
-          address: "456 Coordinator Ave, City, Country",
-          phoneNumber: "+1234567891",
-          dob: "1985-05-15",
-          gender: "Female",
-          password: hashedPassword,
-          email: "coordinator@example.com",
-          emailVerified: true,
-          userStatus: "active",
-          userRoles: "coordinator",
-          provider: "email",
-          lastActive: new Date().toISOString(),
-        },
-        {
-          firstName: "John",
-          lastName: "Doe",
-          nickName: "John Doe",
-          address: "789 User Lane, City, Country",
-          phoneNumber: "+1234567892",
-          dob: "1992-08-20",
-          gender: "Male",
-          password: hashedPassword,
-          email: "user1@example.com",
-          emailVerified: true,
-          userStatus: "active",
-          userRoles: "user",
-          emergencyContact: "+1234567892",
-          dni: "123456789",
-          dietaryRestrictions: "None",
-          provider: "email",
-          lastActive: new Date().toISOString(),
-        },
-        {
-          firstName: "Jane",
-          lastName: "Wilson",
-          nickName: "Jane Wilson",
-          address: "321 User Road, City, Country",
-          phoneNumber: "+1234567893",
-          dob: "1995-12-10",
-          gender: "Female",
-          password: hashedPassword,
-          email: "user2@example.com",
-          emergencyContact: "+1234567892",
-          dni: "123456789",
-          dietaryRestrictions: "None",
-          emailVerified: true,
-          userStatus: "active",
-          userRoles: "user",
-          provider: "email",
-          lastActive: new Date().toISOString(),
-        },
-        {
-          firstName: "Robert",
-          lastName: "Johnson",
-          nickName: "Rob Johnson",
-          address: "555 Adventure Court, City, Country",
-          phoneNumber: "+1234567894",
-          dob: "1988-03-25",
-          gender: "Male",
-          password: hashedPassword,
-          email: "user3@example.com",
-          emailVerified: true,
-          userStatus: "active",
-          userRoles: "user",
-          emergencyContact: "+1234567892",
-          dni: "123456789",
-          dietaryRestrictions: "None",
-          provider: "email",
-          lastActive: new Date().toISOString(),
-        },
-      ])
-      .returning();
+    const userList = [
+      {
+        firstName: "Admin",
+        lastName: "User",
+        nickName: "Admin User",
+        address: "123 Admin Street, City, Country",
+        phoneNumber: "+1234567890",
+        dob: "1990-01-01",
+        gender: "Male",
+        password: hashedPassword,
+        email: "admin@example.com",
+        emailVerified: true,
+        userStatus: "active" as const,
+        userRoles: "admin",
+        provider: "email",
+        lastActive: new Date().toISOString(),
+      },
+      {
+        firstName: "Coordinator",
+        lastName: "Smith",
+        nickName: "Coordinator Smith",
+        address: "456 Coordinator Ave, City, Country",
+        phoneNumber: "+1234567891",
+        dob: "1985-05-15",
+        gender: "Female",
+        password: hashedPassword,
+        email: "coordinator@example.com",
+        emailVerified: true,
+        userStatus: "active" as const,
+        userRoles: "coordinator",
+        provider: "email",
+        lastActive: new Date().toISOString(),
+      },
+      {
+        firstName: "John",
+        lastName: "Doe",
+        nickName: "John Doe",
+        address: "789 User Lane, City, Country",
+        phoneNumber: "+1234567892",
+        dob: "1992-08-20",
+        gender: "Male",
+        password: hashedPassword,
+        email: "user1@example.com",
+        emailVerified: true,
+        userStatus: "active" as const,
+        userRoles: "user",
+        emergencyContact: "+1234567892",
+        dni: "123456789",
+        dietaryRestrictions: "None",
+        provider: "email",
+        lastActive: new Date().toISOString(),
+      },
+      {
+        firstName: "Jane",
+        lastName: "Wilson",
+        nickName: "Jane Wilson",
+        address: "321 User Road, City, Country",
+        phoneNumber: "+1234567893",
+        dob: "1995-12-10",
+        gender: "Female",
+        password: hashedPassword,
+        email: "user2@example.com",
+        emergencyContact: "+1234567892",
+        dni: "123456789",
+        dietaryRestrictions: "None",
+        emailVerified: true,
+        userStatus: "active" as const,
+        userRoles: "user",
+        provider: "email",
+        lastActive: new Date().toISOString(),
+      },
+      {
+        firstName: "Robert",
+        lastName: "Johnson",
+        nickName: "Rob Johnson",
+        address: "555 Adventure Court, City, Country",
+        phoneNumber: "+1234567894",
+        dob: "1988-03-25",
+        gender: "Male",
+        password: hashedPassword,
+        email: "user3@example.com",
+        emailVerified: true,
+        userStatus: "active" as const,
+        userRoles: "user",
+        emergencyContact: "+1234567892",
+        dni: "123456789",
+        dietaryRestrictions: "None",
+        provider: "email",
+        lastActive: new Date().toISOString(),
+      },
+    ];
+
+    const seededUsers = [];
+    for (const userData of userList) {
+      let [existingUser] = await db
+        .select()
+        .from(users)
+        .where(sql`${users.email} = ${userData.email}`);
+      if (!existingUser) {
+        [existingUser] = await db.insert(users).values(userData).returning();
+        console.log(`   ✅ Created user: ${userData.email}`);
+      } else {
+        console.log(`   ℹ️ User already exists: ${userData.email}`);
+      }
+      seededUsers.push(existingUser);
+    }
+    const [adminUser, coordinatorUser, regularUser1, regularUser2, regularUser3] = seededUsers;
 
     // Seed Coordinator Details
     console.log("👤 Seeding coordinator details...");
-    await db.insert(coordinatorDetails).values([
-      {
-        userId: coordinatorUser.id,
-        fullName: "Sarah Smith",
-        phoneNumber: "+1234567891",
-        bio: "Experienced travel coordinator with 10 years of expertise in adventure tours.",
-        specialities: [
-          "Mountain Hiking",
-          "Cultural Tours",
-          "Adventure Activities",
-        ],
-        languages: ["English", "Spanish", "French"],
-        certificateLvl: "Advanced",
-        yearsOfExperience: 10,
-        type: "Professional",
-        accessLvl: "Full",
-        location: "San Francisco, CA",
-        successRate: "98.5",
-        repeatCustomers: 156,
-        totalRevenue: "250000",
-        isActive: true,
-        notificationPref: {
-          emailNotf: true,
-          appAlert: true,
-          reviewNotf: true,
+    const [existingCoordDetail] = await db
+      .select()
+      .from(coordinatorDetails)
+      .where(sql`${coordinatorDetails.userId} = ${coordinatorUser.id}`);
+
+    if (!existingCoordDetail) {
+      await db.insert(coordinatorDetails).values([
+        {
+          userId: coordinatorUser.id,
+          fullName: "Sarah Smith",
+          phoneNumber: "+1234567891",
+          bio: "Experienced travel coordinator with 10 years of expertise in adventure tours.",
+          specialities: [
+            "Mountain Hiking",
+            "Cultural Tours",
+            "Adventure Activities",
+          ],
+          languages: ["English", "Spanish", "French"],
+          certificateLvl: "Advanced",
+          yearsOfExperience: 10,
+          type: "Professional",
+          accessLvl: "Full",
+          location: "San Francisco, CA",
+          successRate: "98.5",
+          repeatCustomers: 156,
+          totalRevenue: "250000",
+          isActive: true,
+          notificationPref: {
+            emailNotf: true,
+            appAlert: true,
+            reviewNotf: true,
+          },
         },
-      },
-    ]);
+      ]);
+      console.log("   ✅ Created coordinator details");
+    } else {
+      console.log("   ℹ️ Coordinator details already exist");
+    }
 
     // Seed Categories
     console.log("📁 Seeding categories...");
-    const seededCategories = await db
-      .insert(categories)
-      .values([
-        {
-          name: "Wild Trips",
-          isActive: true,
-        },
-        {
-          name: "Wild Weekends",
-          isActive: true,
-        },
-        {
-          name: "Erasmus+ Experience",
-          isActive: true,
-        },
-        {
-          name: "Internal Events",
-          isActive: true,
-        },
-        // {
-        //   name: "Urban Discovery",
-        //   isActive: true,
-        // },
-      ])
-      .returning({ id: categories.id, name: categories.name });
+    const categoryList = [
+      { name: "Wild Trips", isActive: true },
+      { name: "Wild Weekends", isActive: true },
+      { name: "Erasmus+ Experience", isActive: true },
+      { name: "Internal Events", isActive: true },
+    ];
+
+    const seededCategories = [];
+    for (const catData of categoryList) {
+      let [existingCat] = await db
+        .select()
+        .from(categories)
+        .where(sql`${categories.name} = ${catData.name}`);
+      if (!existingCat) {
+        [existingCat] = await db.insert(categories).values(catData).returning();
+        console.log(`   ✅ Created category: ${catData.name}`);
+      } else {
+        console.log(`   ℹ️ Category already exists: ${catData.name}`);
+      }
+      seededCategories.push(existingCat);
+    }
 
     const categoryByName = new Map(
       seededCategories.map((c) => [c.name.trim().toLowerCase(), c.id])
@@ -403,30 +290,36 @@ const seed = async () => {
 
     // Seed Settings
     console.log("⚙️ Seeding settings...");
-    await db.insert(globalSettings).values({
-      platformName: "Proactive Travel",
-      timeZone: "UTC",
-      logo: "/logo.png",
-      defaultLanguage: "en",
-      currency: "USD",
-      chatWidget: true,
-      tripCategories: ["Mountain", "Beach", "Culture", "Adventure", "Wellness"],
-      defaultApproval: "pending",
-      defaultMaxParticipants: 20,
-      defaultMinParticipants: 2,
-      emailNotification: true,
-      reminderDays: 3,
-      sendSms: false,
-      twoFactorEnabled: false,
-      sessionTimeout: 30,
-      maxLogins: 5,
-      minPasswordLength: 8,
-      contactAddress: "123 Travel Street, San Francisco, CA 94102, USA",
-      contactPhone: "+1-800-TRAVEL-1",
-      contactEmail: "contact@proactivetravel.com",
-      mapLat: "40.7128",
-      mapLng: "-74.0060",
-    });
+    const [existingSettings] = await db.select().from(globalSettings).limit(1);
+    if (!existingSettings) {
+      await db.insert(globalSettings).values({
+        platformName: "Proactive Travel",
+        timeZone: "UTC",
+        logo: "/logo.png",
+        defaultLanguage: "en",
+        currency: "USD",
+        chatWidget: true,
+        tripCategories: ["Mountain", "Beach", "Culture", "Adventure", "Wellness"],
+        defaultApproval: "pending",
+        defaultMaxParticipants: 20,
+        defaultMinParticipants: 2,
+        emailNotification: true,
+        reminderDays: 3,
+        sendSms: false,
+        twoFactorEnabled: false,
+        sessionTimeout: 30,
+        maxLogins: 5,
+        minPasswordLength: 8,
+        contactAddress: "123 Travel Street, San Francisco, CA 94102, USA",
+        contactPhone: "+1-800-TRAVEL-1",
+        contactEmail: "contact@proactivetravel.com",
+        mapLat: "40.7128",
+        mapLng: "-74.0060",
+      });
+      console.log("   ✅ Created global settings");
+    } else {
+      console.log("   ℹ️ Global settings already exist");
+    }
 
     // Seed Banner (single platform banner row)
     console.log("🖼️ Seeding banner...");
@@ -442,572 +335,279 @@ const seed = async () => {
 
     // Seed Locations
     console.log("📍 Seeding locations...");
-    const [locColorado, locHawaii, locParis, locThailand, locBarcelona] = await db
-      .insert(locations)
-      .values([
-        { name: "Colorado, USA" },
-        { name: "Honolulu, Hawaii" },
-        { name: "Paris, France" },
-        { name: "Bangkok & Phuket, Thailand" },
-        { name: "Barcelona, Spain" },
-      ])
-      .returning();
+    const locationList = [
+      { name: "Colorado, USA" },
+      { name: "Honolulu, Hawaii" },
+      { name: "Paris, France" },
+      { name: "Bangkok & Phuket, Thailand" },
+      { name: "Barcelona, Spain" },
+    ];
+
+    const seededLocations = [];
+    for (const locData of locationList) {
+      let [existingLoc] = await db
+        .select()
+        .from(locations)
+        .where(sql`${locations.name} = ${locData.name}`);
+      if (!existingLoc) {
+        [existingLoc] = await db.insert(locations).values(locData).returning();
+        console.log(`   ✅ Created location: ${locData.name}`);
+      } else {
+        console.log(`   ℹ️ Location already exists: ${locData.name}`);
+      }
+      seededLocations.push(existingLoc);
+    }
+    const [locColorado, locHawaii, locParis, locThailand, locBarcelona] = seededLocations;
 
     // Seed Trips
     console.log("🚗 Seeding trips...");
     const now = new Date();
-    const [trip1, trip2, trip3, trip4, trip5, trip6, trip7, trip8, trip9, trip10] = await db
-      .insert(trips)
-      .values([
-        {
-          title: "Rocky Mountains Adventure",
-          description:
-            "An exciting week exploring the majestic Rocky Mountains",
-          coverImage:
-            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          categoryId: categoryByName.get("wild trips")!,
-          daysItenary: {
-            day1: {
-              title: "Day 1",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 1",
-            },
-            day2: {
-              title: "Day 2",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 2",
-            },
-            day3: {
-              title: "Day 3",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 3",
-            },
-            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          },
-          locationId: locColorado.id,
-          mapCoordinates: "39.7392,-104.9903",
-          startDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
-          endDate: new Date(now.getTime() + 37 * 24 * 60 * 60 * 1000),
-          duration: "7 days",
-          longDesc:
-            "Experience the breathtaking beauty of the Rocky Mountains with guided hikes, camping, and stunning views.",
-          groupSize: "15",
-          rhythm: "Active",
-          sportLvl: "Intermediate",
-          weekendTt: "Mountain",
-          included: { hiking: true, camping: true, meals: true, guide: true },
-          notIncluded: { flights: true, insurance: true },
-          shortDesc: "Explore the majestic Rocky Mountains",
-          instaLink: "https://www.instagram.com/rockymountains",
-          likedinLink: "https://www.linkedin.com/company/rockymountains",
-          promotionalVideo: "https://www.youtube.com/watch?v=rockymountains",
-          galleryImages: [
-            "https://example.com/img1.jpg",
-            "https://example.com/img2.jpg",
-            "https://example.com/img3.jpg",
-          ],
-          bestPriceMsg: "Book now and save 20%",
-          perHeadPrice: "1500",
-          status: "open",
-          approvalStatus: "approved",
+    const tripList = [
+      {
+        title: "Rocky Mountains Adventure",
+        description: "An exciting week exploring the majestic Rocky Mountains",
+        coverImage: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+        categoryId: categoryByName.get("wild trips")!,
+        daysItenary: {
+          day1: { title: "Day 1", img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg", description: "Day 1" },
+          day2: { title: "Day 2", img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg", description: "Day 2" },
+          day3: { title: "Day 3", img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg", description: "Day 3" },
+          map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
         },
-        {
-          title: "Hawaii Beach Paradise",
-          description: "Relax on pristine beaches and explore tropical islands",
-          coverImage:
-            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          categoryId: categoryByName.get("erasmus+ experience")!,
-          daysItenary: {
-            day1: {
-              title: "Day 1",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 1",
-            },
-            day2: {
-              title: "Day 2",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 2",
-            },
-            day3: {
-              title: "Day 3",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 3",
-            },
-            day4: {
-              title: "Day 4",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 4",
-            },
-            day5: {
-              title: "Day 5",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 5",
-            },
-            day6: {
-              title: "Day 6",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 6",
-            },
-            day7: {
-              title: "Day 7",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 7",
-            },
-            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          },
-          locationId: locHawaii.id,
-          mapCoordinates: "21.3099,-157.8581",
-          startDate: new Date(now.getTime() + 45 * 24 * 60 * 60 * 1000),
-          endDate: new Date(now.getTime() + 52 * 24 * 60 * 60 * 1000),
-          duration: "7 days",
-          longDesc:
-            "Enjoy world-class beaches, water sports, local cuisine, and unforgettable sunsets in beautiful Hawaii.",
-          groupSize: "20",
-          rhythm: "Relaxed",
-          sportLvl: "Easy",
-          weekendTt: "Beach",
-          included: {
-            accommodation: true,
-            meals: true,
-            waterSports: true,
-            guide: true,
-          },
-          notIncluded: { flights: true, activities: true },
-          shortDesc: "Tropical beach paradise in Hawaii",
-          instaLink: "https://www.instagram.com/hawaiibeach",
-          likedinLink: "https://www.linkedin.com/company/hawaiitravel",
-          promotionalVideo: "https://www.youtube.com/watch?v=hawaiibeach",
-          galleryImages: [
-            "https://example.com/beach1.jpg",
-            "https://example.com/beach2.jpg",
-          ],
-          bestPriceMsg: "Early bird discount 15%",
-          perHeadPrice: "2000",
-          status: "live",
-          approvalStatus: "approved",
+        locationId: locColorado.id,
+        mapCoordinates: "39.7392,-104.9903",
+        startDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+        endDate: new Date(now.getTime() + 37 * 24 * 60 * 60 * 1000),
+        duration: "7 days",
+        longDesc: "Experience the breathtaking beauty of the Rocky Mountains with guided hikes, camping, and stunning views.",
+        groupSize: "15",
+        sportLvl: "medio" as const,
+        weekendTt: "Mountain",
+        included: { hiking: true, camping: true, meals: true, guide: true },
+        notIncluded: { flights: true, insurance: true },
+        shortDesc: "Explore the majestic Rocky Mountains",
+        instaLink: "https://www.instagram.com/rockymountains",
+        likedinLink: "https://www.linkedin.com/company/rockymountains",
+        promotionalVideo: "https://www.youtube.com/watch?v=rockymountains",
+        galleryImages: ["https://example.com/img1.jpg", "https://example.com/img2.jpg", "https://example.com/img3.jpg"],
+        bestPriceMsg: "Book now and save 20%",
+        perHeadPrice: "1500",
+        status: "open",
+        approvalStatus: "approved",
+      },
+      {
+        title: "Hawaii Beach Paradise",
+        description: "Relax on pristine beaches and explore tropical islands",
+        coverImage: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+        categoryId: categoryByName.get("erasmus+ experience")!,
+        daysItenary: {
+          day1: { title: "Day 1", img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg", description: "Day 1" },
+          map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
         },
-        {
-          title: "Paris Cultural Tour",
-          description:
-            "Immerse yourself in art, history, and cuisine in the City of Light",
-          coverImage:
-            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          categoryId: categoryByName.get("wild weekends")!,
-          locationId: locParis.id,
-          daysItenary: {
-            day1: {
-              title: "Day 1",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 1",
-            },
-            day2: {
-              title: "Day 2",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 2",
-            },
-            day3: {
-              title: "Day 3",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 3",
-            },
-            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          },
-          mapCoordinates: "48.8566,2.3522",
-          startDate: new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000),
-          endDate: new Date(now.getTime() + 67 * 24 * 60 * 60 * 1000),
-          duration: "7 days",
-          longDesc:
-            "Visit iconic landmarks, world-class museums, enjoy fine dining, and experience authentic Parisian culture.",
-          groupSize: "12",
-          rhythm: "Moderate",
-          sportLvl: "Easy",
-          weekendTt: "Culture",
-          included: {
-            accommodation: true,
-            tours: true,
-            meals: true,
-            guide: true,
-          },
-          notIncluded: { flights: true },
-          shortDesc: "Experience the magic of Paris",
-          instaLink: "https://www.instagram.com/paristours",
-          likedinLink: "https://www.linkedin.com/company/parisculture",
-          promotionalVideo: "https://www.youtube.com/watch?v=paris",
-          galleryImages: [
-            "https://example.com/paris1.jpg",
-            "https://example.com/paris2.jpg",
-          ],
-          bestPriceMsg: "Limited spots available",
-          perHeadPrice: "2500",
-          status: "open",
-          approvalStatus: "approved",
-        },
-        {
-          title: "Thai Wellness Retreat",
-          description:
-            "Rejuvenate body and mind with yoga, meditation, and spa treatments",
-          coverImage:
-            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          categoryId: categoryByName.get("internal events")!,
-          locationId: locThailand.id,
-          mapCoordinates: "13.7563,100.5018",
-          startDate: new Date(now.getTime() + 75 * 24 * 60 * 60 * 1000),
-          endDate: new Date(now.getTime() + 82 * 24 * 60 * 60 * 1000),
-          duration: "7 days",
-          longDesc:
-            "Complete wellness package including yoga classes, spa treatments, healthy cuisine, and meditation sessions.",
-          groupSize: "10",
-          daysItenary: {
-            day1: {
-              title: "Day 1",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 1",
-            },
-            day2: {
-              title: "Day 2",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 2",
-            },
-            day3: {
-              title: "Day 3",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 3",
-            },
-            day4: {
-              title: "Day 4",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 4",
-            },
-            day5: {
-              title: "Day 5",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Day 5",
-            },
-            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          },
-          rhythm: "Relaxed",
-          sportLvl: "Easy",
-          weekendTt: "Wellness",
-          included: { accommodation: true, yoga: true, spa: true, meals: true },
-          notIncluded: { flights: true },
-          shortDesc: "Wellness and relaxation in Thailand",
-          instaLink: "https://www.instagram.com/thaiwellness",
-          likedinLink: "https://www.linkedin.com/company/wellnessretreats",
-          promotionalVideo: "https://www.youtube.com/watch?v=wellness",
-          galleryImages: [
-            "https://example.com/wellness1.jpg",
-            "https://example.com/wellness2.jpg",
-          ],
-          bestPriceMsg: "All-inclusive package",
-          perHeadPrice: "1800",
-          status: "active",
-          approvalStatus: "approved",
-        },
-        // Past Trips (endDate < now)
-        {
-          title: "Alpine Adventure 2024",
-          description:
-            "A memorable journey through the Swiss Alps with breathtaking mountain views",
-          coverImage:
-            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          categoryId: categoryByName.get("wild trips")!,
-          locationId: locColorado.id,
-          daysItenary: {
-            day1: {
-              title: "Day 1",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Arrival and welcome dinner",
-            },
-            day2: {
-              title: "Day 2",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Mountain hiking and exploration",
-            },
-            day3: {
-              title: "Day 3",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Summit climb and descent",
-            },
-            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          },
-          mapCoordinates: "39.7392,-104.9903",
-          startDate: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000),
-          endDate: new Date(now.getTime() - 83 * 24 * 60 * 60 * 1000),
-          duration: "7 days",
-          longDesc:
-            "An unforgettable alpine adventure that took place last season, featuring challenging hikes and stunning vistas.",
-          groupSize: "18",
-          rhythm: "Active",
-          sportLvl: "Advanced",
-          weekendTt: "Mountain",
-          included: { hiking: true, accommodation: true, meals: true, guide: true },
-          notIncluded: { flights: true, equipment: true },
-          shortDesc: "Completed alpine adventure",
-          instaLink: "https://www.instagram.com/alpineadventure",
-          likedinLink: "https://www.linkedin.com/company/alpineadventure",
-          promotionalVideo: "https://www.youtube.com/watch?v=alpine",
-          galleryImages: [
-            "https://example.com/alpine1.jpg",
-            "https://example.com/alpine2.jpg",
-          ],
-          bestPriceMsg: "Trip completed successfully",
-          perHeadPrice: "1700",
-          status: "completed",
-          approvalStatus: "approved",
-        },
-        {
-          title: "Mediterranean Cruise Experience",
-          description:
-            "Sailed through the beautiful Mediterranean Sea visiting multiple countries",
-          coverImage:
-            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          categoryId: categoryByName.get("wild weekends")!,
-          locationId: locHawaii.id,
-          daysItenary: {
-            day1: {
-              title: "Day 1",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Embarkation and welcome",
-            },
-            day2: {
-              title: "Day 2",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Island exploration",
-            },
-            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          },
-          mapCoordinates: "21.3099,-157.8581",
-          startDate: new Date(now.getTime() - 120 * 24 * 60 * 60 * 1000),
-          endDate: new Date(now.getTime() - 113 * 24 * 60 * 60 * 1000),
-          duration: "7 days",
-          longDesc:
-            "A wonderful cruise experience that brought together travelers from around the world.",
-          groupSize: "25",
-          rhythm: "Relaxed",
-          sportLvl: "Easy",
-          weekendTt: "Cruise",
-          included: { accommodation: true, meals: true, activities: true, guide: true },
-          notIncluded: { flights: true },
-          shortDesc: "Completed Mediterranean cruise",
-          instaLink: "https://www.instagram.com/medcruise",
-          likedinLink: "https://www.linkedin.com/company/medcruise",
-          promotionalVideo: "https://www.youtube.com/watch?v=medcruise",
-          galleryImages: [
-            "https://example.com/cruise1.jpg",
-            "https://example.com/cruise2.jpg",
-          ],
-          bestPriceMsg: "Trip completed",
-          perHeadPrice: "2200",
-          status: "completed",
-          approvalStatus: "approved",
-        },
-        {
-          title: "Barcelona City Break",
-          description:
-            "Explored the vibrant city of Barcelona with its rich culture and architecture",
-          coverImage:
-            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          categoryId: categoryByName.get("erasmus+ experience")!,
-          locationId: locBarcelona.id,
-          daysItenary: {
-            day1: {
-              title: "Day 1",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "City tour and tapas",
-            },
-            day2: {
-              title: "Day 2",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Sagrada Familia and Park Güell",
-            },
-            day3: {
-              title: "Day 3",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Beach day and farewell",
-            },
-            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          },
-          mapCoordinates: "41.3851,2.1734",
-          startDate: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000),
-          endDate: new Date(now.getTime() - 53 * 24 * 60 * 60 * 1000),
-          duration: "3 days",
-          longDesc:
-            "A fantastic city break that showcased the best of Barcelona's architecture, food, and culture.",
-          groupSize: "15",
-          rhythm: "Moderate",
-          sportLvl: "Easy",
-          weekendTt: "City",
-          included: { accommodation: true, tours: true, meals: true, guide: true },
-          notIncluded: { flights: true },
-          shortDesc: "Completed Barcelona city break",
-          instaLink: "https://www.instagram.com/barcelonatrip",
-          likedinLink: "https://www.linkedin.com/company/barcelonatrip",
-          promotionalVideo: "https://www.youtube.com/watch?v=barcelona",
-          galleryImages: [
-            "https://example.com/barcelona1.jpg",
-            "https://example.com/barcelona2.jpg",
-          ],
-          bestPriceMsg: "Trip completed",
-          perHeadPrice: "1200",
-          status: "completed",
-          approvalStatus: "approved",
-        },
-        // Additional Closed Trips
-        {
-          title: "Tokyo Cultural Immersion",
-          description:
-            "Explored the vibrant streets of Tokyo, experiencing traditional and modern Japanese culture",
-          coverImage:
-            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          categoryId: categoryByName.get("erasmus+ experience")!,
-          locationId: locParis.id, // Using existing location, can be updated if Tokyo location is added
-          daysItenary: {
-            day1: {
-              title: "Day 1",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Arrival and city exploration",
-            },
-            day2: {
-              title: "Day 2",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Temple visits and traditional experiences",
-            },
-            day3: {
-              title: "Day 3",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Modern Tokyo and farewell",
-            },
-            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          },
-          mapCoordinates: "35.6762,139.6503",
-          startDate: new Date(now.getTime() - 150 * 24 * 60 * 60 * 1000),
-          endDate: new Date(now.getTime() - 143 * 24 * 60 * 60 * 1000),
-          duration: "7 days",
-          longDesc:
-            "A completed journey through Tokyo's unique blend of ancient traditions and cutting-edge modernity.",
-          groupSize: "14",
-          rhythm: "Moderate",
-          sportLvl: "Easy",
-          weekendTt: "Culture",
-          included: { accommodation: true, tours: true, meals: true, guide: true },
-          notIncluded: { flights: true },
-          shortDesc: "Completed Tokyo cultural journey",
-          instaLink: "https://www.instagram.com/tokyotrip",
-          likedinLink: "https://www.linkedin.com/company/tokyotrip",
-          promotionalVideo: "https://www.youtube.com/watch?v=tokyo",
-          galleryImages: [
-            "https://example.com/tokyo1.jpg",
-            "https://example.com/tokyo2.jpg",
-          ],
-          bestPriceMsg: "Trip completed",
-          perHeadPrice: "2800",
-          status: "completed",
-          approvalStatus: "approved",
-        },
-        {
-          title: "Safari Adventure Kenya",
-          description:
-            "Witnessed the incredible wildlife of Kenya's national parks and reserves",
-          coverImage:
-            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          categoryId: categoryByName.get("wild trips")!,
-          locationId: locThailand.id, // Using existing location
-          daysItenary: {
-            day1: {
-              title: "Day 1",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Arrival and first game drive",
-            },
-            day2: {
-              title: "Day 2",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Full day safari experience",
-            },
-            day3: {
-              title: "Day 3",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Wildlife photography and departure",
-            },
-            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          },
-          mapCoordinates: "-1.2921,36.8219",
-          startDate: new Date(now.getTime() - 200 * 24 * 60 * 60 * 1000),
-          endDate: new Date(now.getTime() - 193 * 24 * 60 * 60 * 1000),
-          duration: "7 days",
-          longDesc:
-            "An unforgettable safari adventure that showcased Kenya's magnificent wildlife and natural beauty.",
-          groupSize: "12",
-          rhythm: "Active",
-          sportLvl: "Intermediate",
-          weekendTt: "Safari",
-          included: { accommodation: true, safari: true, meals: true, guide: true },
-          notIncluded: { flights: true, insurance: true },
-          shortDesc: "Completed Kenya safari adventure",
-          instaLink: "https://www.instagram.com/kenyasafari",
-          likedinLink: "https://www.linkedin.com/company/kenyasafari",
-          promotionalVideo: "https://www.youtube.com/watch?v=kenyasafari",
-          galleryImages: [
-            "https://example.com/safari1.jpg",
-            "https://example.com/safari2.jpg",
-          ],
-          bestPriceMsg: "Trip completed",
-          perHeadPrice: "3500",
-          status: "completed",
-          approvalStatus: "approved",
-        },
-        {
-          title: "Iceland Northern Lights Expedition",
-          description:
-            "Chased the aurora borealis across Iceland's stunning landscapes",
-          coverImage:
-            "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          categoryId: categoryByName.get("wild weekends")!,
-          locationId: locColorado.id, // Using existing location
-          daysItenary: {
-            day1: {
-              title: "Day 1",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Arrival and Reykjavik exploration",
-            },
-            day2: {
-              title: "Day 2",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Golden Circle tour",
-            },
-            day3: {
-              title: "Day 3",
-              img: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-              description: "Northern lights hunting",
-            },
-            map: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
-          },
-          mapCoordinates: "64.1466,-21.9426",
-          startDate: new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000),
-          endDate: new Date(now.getTime() - 173 * 24 * 60 * 60 * 1000),
-          duration: "7 days",
-          longDesc:
-            "A magical journey through Iceland's otherworldly landscapes, culminating in breathtaking northern lights displays.",
-          groupSize: "16",
-          rhythm: "Moderate",
-          sportLvl: "Easy",
-          weekendTt: "Adventure",
-          included: { accommodation: true, tours: true, meals: true, guide: true },
-          notIncluded: { flights: true },
-          shortDesc: "Completed Iceland northern lights trip",
-          instaLink: "https://www.instagram.com/icelandlights",
-          likedinLink: "https://www.linkedin.com/company/icelandlights",
-          promotionalVideo: "https://www.youtube.com/watch?v=icelandlights",
-          galleryImages: [
-            "https://example.com/iceland1.jpg",
-            "https://example.com/iceland2.jpg",
-          ],
-          bestPriceMsg: "Trip completed",
-          perHeadPrice: "3200",
-          status: "completed",
-          approvalStatus: "approved",
-        },
-      ])
-      .returning();
+        locationId: locHawaii.id,
+        mapCoordinates: "21.3099,-157.8581",
+        startDate: new Date(now.getTime() + 45 * 24 * 60 * 60 * 1000),
+        endDate: new Date(now.getTime() + 52 * 24 * 60 * 60 * 1000),
+        duration: "7 days",
+        longDesc: "Enjoy world-class beaches, water sports, local cuisine, and unforgettable sunsets in beautiful Hawaii.",
+        groupSize: "20",
+        sportLvl: "bajo" as const,
+        weekendTt: "Beach",
+        included: { accommodation: true, meals: true, waterSports: true, guide: true },
+        notIncluded: { flights: true, activities: true },
+        shortDesc: "Tropical beach paradise in Hawaii",
+        promotionalVideo: "https://www.youtube.com/watch?v=hawaii",
+        galleryImages: [],
+        bestPriceMsg: "Summer offer",
+        status: "live",
+        approvalStatus: "approved",
+        perHeadPrice: "2000",
+      },
+      {
+        title: "Paris Cultural Tour",
+        description: "Art and history in Paris",
+        coverImage: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+        categoryId: categoryByName.get("wild weekends")!,
+        locationId: locParis.id,
+        startDate: new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000),
+        endDate: new Date(now.getTime() + 67 * 24 * 60 * 60 * 1000),
+        duration: "7 days",
+        longDesc: "Experience the magic of Paris.",
+        groupSize: "12",
+        sportLvl: "bajo" as const,
+        weekendTt: "Culture",
+        promotionalVideo: "https://www.youtube.com/watch?v=paris",
+        galleryImages: [],
+        bestPriceMsg: "Book now",
+        shortDesc: "Paris tour",
+        perHeadPrice: "2500",
+        status: "open",
+        approvalStatus: "approved",
+      },
+      {
+        title: "Thai Wellness Retreat",
+        description: "Wellness and relaxation in Thailand",
+        coverImage: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+        categoryId: categoryByName.get("internal events")!,
+        locationId: locThailand.id,
+        startDate: new Date(now.getTime() + 75 * 24 * 60 * 60 * 1000),
+        endDate: new Date(now.getTime() + 82 * 24 * 60 * 60 * 1000),
+        duration: "7 days",
+        longDesc: "Rejuvenate in Thailand.",
+        groupSize: "10",
+        sportLvl: "bajo" as const,
+        weekendTt: "Wellness",
+        promotionalVideo: "https://www.youtube.com/watch?v=wellness",
+        galleryImages: [],
+        bestPriceMsg: "All inclusive",
+        shortDesc: "Thai retreat",
+        perHeadPrice: "1800",
+        status: "active",
+        approvalStatus: "approved",
+      },
+      {
+        title: "Alpine Adventure 2024",
+        description: "Mountain adventure",
+        coverImage: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+        categoryId: categoryByName.get("wild trips")!,
+        locationId: locColorado.id,
+        startDate: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000),
+        endDate: new Date(now.getTime() - 83 * 24 * 60 * 60 * 1000),
+        duration: "7 days",
+        longDesc: "Alpine expedition.",
+        groupSize: "18",
+        sportLvl: "alto" as const,
+        weekendTt: "Mountain",
+        promotionalVideo: "https://www.youtube.com/watch?v=alpine",
+        galleryImages: [],
+        bestPriceMsg: "Completed",
+        shortDesc: "Alpine trip",
+        perHeadPrice: "1700",
+        status: "completed",
+        approvalStatus: "approved",
+      },
+      {
+        title: "Mediterranean Cruise Experience",
+        description: "Cruise",
+        coverImage: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+        categoryId: categoryByName.get("wild weekends")!,
+        locationId: locHawaii.id,
+        startDate: new Date(now.getTime() - 120 * 24 * 60 * 60 * 1000),
+        endDate: new Date(now.getTime() - 113 * 24 * 60 * 60 * 1000),
+        duration: "7 days",
+        longDesc: "Mediterranean journey.",
+        groupSize: "25",
+        sportLvl: "bajo" as const,
+        weekendTt: "Cruise",
+        promotionalVideo: "https://www.youtube.com/watch?v=med",
+        galleryImages: [],
+        bestPriceMsg: "Completed",
+        shortDesc: "Cruise trip",
+        perHeadPrice: "2200",
+        status: "completed",
+        approvalStatus: "approved",
+      },
+      {
+        title: "Barcelona City Break",
+        description: "Barcelona",
+        coverImage: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+        categoryId: categoryByName.get("erasmus+ experience")!,
+        locationId: locBarcelona.id,
+        startDate: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000),
+        endDate: new Date(now.getTime() - 53 * 24 * 60 * 60 * 1000),
+        duration: "3 days",
+        longDesc: "City break.",
+        groupSize: "15",
+        sportLvl: "bajo" as const,
+        weekendTt: "City",
+        promotionalVideo: "https://www.youtube.com/watch?v=bcn",
+        galleryImages: [],
+        bestPriceMsg: "Completed",
+        shortDesc: "BCN trip",
+        perHeadPrice: "1200",
+        status: "completed",
+        approvalStatus: "approved",
+      },
+      {
+        title: "Tokyo Cultural Immersion",
+        description: "Tokyo",
+        coverImage: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+        categoryId: categoryByName.get("erasmus+ experience")!,
+        locationId: locParis.id,
+        startDate: new Date(now.getTime() - 150 * 24 * 60 * 60 * 1000),
+        endDate: new Date(now.getTime() - 143 * 24 * 60 * 60 * 1000),
+        duration: "7 days",
+        longDesc: "Japanese culture.",
+        groupSize: "14",
+        sportLvl: "bajo" as const,
+        weekendTt: "Culture",
+        promotionalVideo: "https://www.youtube.com/watch?v=tokyo",
+        galleryImages: [],
+        bestPriceMsg: "Completed",
+        shortDesc: "Tokyo trip",
+        perHeadPrice: "2800",
+        status: "completed",
+        approvalStatus: "approved",
+      },
+      {
+        title: "Safari Adventure Kenya",
+        description: "Kenya",
+        coverImage: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+        categoryId: categoryByName.get("wild trips")!,
+        locationId: locThailand.id,
+        startDate: new Date(now.getTime() - 200 * 24 * 60 * 60 * 1000),
+        endDate: new Date(now.getTime() - 193 * 24 * 60 * 60 * 1000),
+        duration: "7 days",
+        longDesc: "Safari adventure.",
+        groupSize: "12",
+        sportLvl: "medio" as const,
+        weekendTt: "Safari",
+        promotionalVideo: "https://www.youtube.com/watch?v=kenya",
+        galleryImages: [],
+        bestPriceMsg: "Completed",
+        shortDesc: "Safari trip",
+        perHeadPrice: "3500",
+        status: "completed",
+        approvalStatus: "approved",
+      },
+      {
+        title: "Iceland Northern Lights Expedition",
+        description: "Iceland",
+        coverImage: "https://media.wired.com/photos/5d9b855e28aa8800084348a8/1:1/w_1920,h_1920,c_limit/photo_kim_jingyeong-sansu_1.jpg",
+        categoryId: categoryByName.get("wild weekends")!,
+        locationId: locColorado.id,
+        startDate: new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000),
+        endDate: new Date(now.getTime() - 173 * 24 * 60 * 60 * 1000),
+        duration: "7 days",
+        longDesc: "Aurora expedition.",
+        groupSize: "16",
+        sportLvl: "bajo" as const,
+        weekendTt: "Adventure",
+        promotionalVideo: "https://www.youtube.com/watch?v=iceland",
+        galleryImages: [],
+        bestPriceMsg: "Completed",
+        shortDesc: "Iceland trip",
+        perHeadPrice: "3200",
+        status: "completed",
+        approvalStatus: "approved",
+      },
+    ];
+
+    const seededTrips = [];
+    for (const tripData of tripList) {
+      let [existingTrip] = await db
+        .select()
+        .from(trips)
+        .where(sql`${trips.title} = ${tripData.title}`);
+      if (!existingTrip) {
+        [existingTrip] = await db.insert(trips).values(tripData as any).returning();
+        console.log(`   ✅ Created trip: ${tripData.title}`);
+      } else {
+        console.log(`   ℹ️ Trip already exists: ${tripData.title}`);
+      }
+      seededTrips.push(existingTrip);
+    }
+    const [trip1, trip2, trip3, trip4, trip5, trip6, trip7, trip8, trip9, trip10] = seededTrips;
 
     // Seed Trip Coordinators
     console.log("👥 Seeding trip coordinators...");
@@ -1056,31 +656,44 @@ const seed = async () => {
 
     // Seed Chats
     console.log("💬 Seeding chats...");
-    const [chat1, chat2, chat3] = await db
-      .insert(chats)
-      .values([
-        {
-          name: "General Discussion",
-          description: "A general discussion chat for all users",
-          coordinatorId: coordinatorUser.id,
-          createdBy: coordinatorUser.id,
-        },
-        {
-          name: "Rocky Mountains Group",
-          description: "Chat for Rocky Mountains Adventure trip participants",
-          coordinatorId: coordinatorUser.id,
-          createdBy: coordinatorUser.id,
-          tripId: trip1.id,
-        },
-        {
-          name: "Hawaii Beach Lovers",
-          description: "Chat for Hawaii Beach Paradise trip",
-          coordinatorId: coordinatorUser.id,
-          createdBy: coordinatorUser.id,
-          tripId: trip2.id,
-        },
-      ])
-      .returning();
+    const chatList = [
+      {
+        name: "General Discussion",
+        description: "A general discussion chat for all users",
+        coordinatorId: coordinatorUser.id,
+        createdBy: coordinatorUser.id,
+      },
+      {
+        name: "Rocky Mountains Group",
+        description: "Chat for Rocky Mountains Adventure trip participants",
+        coordinatorId: coordinatorUser.id,
+        createdBy: coordinatorUser.id,
+        tripId: trip1.id,
+      },
+      {
+        name: "Hawaii Beach Lovers",
+        description: "Chat for Hawaii Beach Paradise trip",
+        coordinatorId: coordinatorUser.id,
+        createdBy: coordinatorUser.id,
+        tripId: trip2.id,
+      },
+    ];
+
+    const seededChats = [];
+    for (const chatData of chatList) {
+      let [existingChat] = await db
+        .select()
+        .from(chats)
+        .where(sql`${chats.name} = ${chatData.name}`);
+      if (!existingChat) {
+        [existingChat] = await db.insert(chats).values(chatData).returning();
+        console.log(`   ✅ Created chat: ${chatData.name}`);
+      } else {
+        console.log(`   ℹ️ Chat already exists: ${chatData.name}`);
+      }
+      seededChats.push(existingChat);
+    }
+    const [chat1, chat2, chat3] = seededChats;
 
     // Seed Chat Participants
     console.log("👤 Seeding chat participants...");

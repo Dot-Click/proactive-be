@@ -78,7 +78,20 @@ export const createTripSchema = z.object({
     .min(1, "Group size is required")
     .max(50, "Group size must be less than 50 characters")
     .optional(),
-  sportLvl: z.enum(["Bajo", "Medio", "Alto"]).optional(),
+  sportLvl: z.preprocess((val) => {
+    if (!val) return val;
+    const s = String(val).toLowerCase().trim();
+    // Support numeric mapping if frontend sends numbers
+    if (s === "1") return "bajo";
+    if (s === "2") return "medio";
+    if (s === "3") return "alto";
+    // Support common synonyms
+    if (s === "low") return "bajo";
+    if (s === "medium") return "medio";
+    if (s === "high") return "alto";
+    return s;
+  }, z.enum(["bajo", "medio", "alto"]).optional()),
+
   weekendTt: z
     .string()
     .min(1, "Weekend timetable is required")
@@ -266,7 +279,20 @@ export const updateTripSchema = z.object({
     .min(1, "Group size is required")
     .max(50, "Group size must be less than 50 characters")
     .optional(),
-  sportLvl: z.enum(["Bajo", "Medio", "Alto"]).optional(),
+  sportLvl: z.preprocess((val) => {
+    if (!val) return val;
+    const s = String(val).toLowerCase().trim();
+    // Support numeric mapping if frontend sends numbers
+    if (s === "1") return "bajo";
+    if (s === "2") return "medio";
+    if (s === "3") return "alto";
+    // Support common synonyms
+    if (s === "low") return "bajo";
+    if (s === "medium") return "medio";
+    if (s === "high") return "alto";
+    return s;
+  }, z.enum(["bajo", "medio", "alto"]).optional()),
+
   weekendTt: z
     .string()
     .min(1, "Weekend timetable is required")
