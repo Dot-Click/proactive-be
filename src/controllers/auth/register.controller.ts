@@ -440,12 +440,25 @@ export const verifyGoogleToken = async (_req:Request, res: Response) => {
 export const googleSignupCallback = async (req: Request, res: Response) => {
   try {
     const token = req.body.token as string;
-    if (!token) return sendError(res, "Missing access token", status.BAD_REQUEST);
+    if (!token) {
+      console.error("[Google Callback] Missing token in request body");
+      return sendError(res, "Missing access token", status.BAD_REQUEST);
+    }
+
+    // Diagnostic log for analysis
+    console.log("[Google Callback] Verifying token, length:", token.length);
 
     const { data, error } = await supabase.auth.getUser(token);
+    
     if (error || !data.user || !data.user.email) {
+      if (error) {
+        console.error("[Google Callback] Supabase verification error:", error.message, "| Status:", error.status);
+      }
       return sendError(res, "Invalid or expired token", status.UNAUTHORIZED);
     }
+
+    console.log("[Google Callback] Token verified for:", data.user.email);
+
 
     const db = await database();
 
@@ -476,10 +489,14 @@ export const googleSignupCallback = async (req: Request, res: Response) => {
           .where(eq(users.id, existingUser[0].id))
           .limit(1);
         
-        return sendSuccess(res, "User already exists", updatedUser[0], status.OK);
+        const user = updatedUser[0];
+        return sendSuccess(res, "User already exists", {
+          ...user,
+          role: user.userRoles || "user"
+        }, status.OK);
       }
       
-      // Update lastActive even if no avatar update
+      // Update lastActive
       await db
         .update(users)
         .set({ 
@@ -488,35 +505,44 @@ export const googleSignupCallback = async (req: Request, res: Response) => {
         })
         .where(eq(users.id, existingUser[0].id));
       
-      return sendSuccess(res, "User already exists", existingUser[0], status.OK);
+      const user = existingUser[0];
+      return sendSuccess(res, "User already exists", {
+        ...user,
+        role: user.userRoles || "user" // Normalize for frontend
+      }, status.OK);
     }
 
-    const fullName = data.user.user_metadata.full_name || "";
+    const fullName = data.user.user_metadata?.full_name || "";
     const [firstName, ...lastParts] = fullName.split(" ");
     const lastName = lastParts.join(" ") || null;
 
     // Create user in DB
-    const newUser = await db.insert(users).values({
+    const newUserResult = await db.insert(users).values({
       id: createId(),
       email: data.user.email,
       firstName,
       lastName,
       nickName: firstName,
-      avatar: data.user.user_metadata.avatar_url || data.user.user_metadata.picture || null,
-      provider: data.user.app_metadata.provider || "google",
+      avatar: data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture || null,
+      provider: data.user.app_metadata?.provider || "google",
       password: "", // Supabase handles auth
-      emailVerified: data.user.user_metadata.email_verified || false,
+      emailVerified: data.user.user_metadata?.email_verified || false,
       userRoles: "user",
-      phoneNumber: data.user.user_metadata.phone || null,
+      phoneNumber: data.user.user_metadata?.phone || null,
       gender: null,
       dob: null,
       address: null,
       lastActive: new Date().toISOString(),
     }).returning();
 
-    return sendSuccess(res, "User registered successfully", newUser, status.CREATED);
+    const newUser = newUserResult[0];
+
+    return sendSuccess(res, "User registered successfully", {
+      ...newUser,
+      role: newUser.userRoles || "user" // Normalize for frontend
+    }, status.CREATED);
   } catch (err: any) {
-    console.log(err)
+    console.error("[Google Callback] Critical error:", err);
     return sendError(res, err.message, status.INTERNAL_SERVER_ERROR);
   }
-};
+};
