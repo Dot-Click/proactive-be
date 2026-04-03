@@ -19,23 +19,17 @@ import { createTripSchema } from "@/types/trip.types";
 import { eq, inArray } from "drizzle-orm";
 import { createNotification } from "@/services/notifications.services";
 
-// Type augmentation for file uploads with multer
-declare global {
-  namespace Express {
-    interface Request {
-      files?: {
-        promotional_video?: Array<{ path: string }>;
-        cover_img?: Array<{ path: string }>;
-        tt_img?: Array<{ path: string }>;
-        gallery_images?: Array<{ path: string }>;
-        image?: Array<{ path: string }>;
-        logo?: Array<{ path: string }>;
-        prof_pic?: Array<{ path: string }>;
-        file4?: Array<{ path: string }>;
-        day_images?: Array<{ path: string }>;
-      };
-    }
-  }
+// Define an interface for the files expected from Multer's fields()
+interface TripFiles {
+  promotional_video?: Express.Multer.File[];
+  cover_img?: Express.Multer.File[];
+  tt_img?: Express.Multer.File[];
+  gallery_images?: Express.Multer.File[];
+  image?: Express.Multer.File[];
+  logo?: Express.Multer.File[];
+  prof_pic?: Express.Multer.File[];
+  file4?: Express.Multer.File[];
+  day_images?: Express.Multer.File[];
 }
 
 /**
@@ -172,14 +166,13 @@ export const createTrip = async (
 
     const uploadPromises: Promise<void>[] = [];
     if (req.files) {
-      const files = req.files as any;
+      const files = req.files as unknown as TripFiles;
 
       if (files.promotional_video && files.promotional_video[0]) {
+        const videoFile = files.promotional_video[0];
         uploadPromises.push(
           (async () => {
-            const video = (await cloudinaryUploader(
-              files.promotional_video[0].path
-            )) as any;
+            const video = (await cloudinaryUploader(videoFile.path)) as any;
             payload.promotionalVideo = video.secure_url;
           })()
         );
@@ -196,22 +189,20 @@ export const createTrip = async (
       }
 
       if (files.cover_img && files.cover_img[0]) {
+        const coverFile = files.cover_img[0];
         uploadPromises.push(
           (async () => {
-            const cover_image = (await cloudinaryUploader(
-              files.cover_img[0].path
-            )) as any;
+            const cover_image = (await cloudinaryUploader(coverFile.path)) as any;
             payload.coverImage = cover_image.secure_url;
           })()
         );
       }
 
       if (files.tt_img && files.tt_img[0]) {
+        const ttFile = files.tt_img[0];
         uploadPromises.push(
           (async () => {
-            const weekend_tt = (await cloudinaryUploader(
-              files.tt_img[0].path
-            )) as any;
+            const weekend_tt = (await cloudinaryUploader(ttFile.path)) as any;
             payload.weekendTt = weekend_tt.secure_url;
           })()
         );
