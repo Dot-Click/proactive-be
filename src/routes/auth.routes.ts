@@ -10,7 +10,9 @@ import { forgotPassword } from "@/controllers/auth/forgot-password.controller";
 import { resetPassword } from "@/controllers/auth/reset-password.controller";
 import { changePassword } from "@/controllers/auth/change-password.controller";
 import { updateProfile } from "@/controllers/auth/update-profile.controller";
+import { updateAvatar } from "@/controllers/auth/update-avatar.controller";
 import { authenticate } from "@/middlewares/auth.middleware";
+import { singleUpload } from "@/middlewares/multer.middleware";
 
 const authRoutes = Router();
 
@@ -167,6 +169,29 @@ authRoutes.post("/change-password", authenticate, changePassword);
  *       - bearerAuth: []
  */
 authRoutes.patch("/update-profile", authenticate, updateProfile);
+
+/**
+ * @swagger
+ * /api/auth/update-avatar:
+ *   patch:
+ *     tags:
+ *       - Authentication
+ *     summary: Update profile avatar
+ *     description: Upload and update the authenticated user's profile image
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ */
+authRoutes.patch("/update-avatar", authenticate, singleUpload("avatar"), updateAvatar);
 
 /**
  * @swagger
