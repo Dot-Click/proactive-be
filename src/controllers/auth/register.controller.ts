@@ -470,45 +470,38 @@ export const googleSignupCallback = async (req: Request, res: Response) => {
       .limit(1);
 
     if (existingUser.length) {
-      // Always update avatar from Google if available (Google photos are always up-to-date)
+      const user = existingUser[0];
       const googleAvatar = data.user.user_metadata.avatar_url || data.user.user_metadata.picture;
-      if (googleAvatar) {
-        await db
-          .update(users)
-          .set({ 
-            avatar: googleAvatar,
-            provider: "google",
-            lastActive: new Date().toISOString()
-          })
-          .where(eq(users.id, existingUser[0].id));
-        
-        // Fetch updated user
-        const updatedUser = await db
-          .select()
-          .from(users)
-          .where(eq(users.id, existingUser[0].id))
-          .limit(1);
-        
-        const user = updatedUser[0];
-        return sendSuccess(res, "User already exists", {
-          ...user,
-          role: user.userRoles || "user"
-        }, status.OK);
-      }
       
-      // Update lastActive
+      // Update avatar ONLY if user doesn't have one or has a default placeholder
+      // This prevents overwriting user-uploaded images (e.g., from Cloudinary)
+      const isDefaultAvatar = !user.avatar || user.avatar.includes("ui-avatars.com");
+      
+      const updateData: any = {
+        provider: "google",
+        lastActive: new Date().toISOString()
+      };
+      
+      if (googleAvatar && isDefaultAvatar) {
+        updateData.avatar = googleAvatar;
+      }
+
       await db
         .update(users)
-        .set({ 
-          provider: "google",
-          lastActive: new Date().toISOString()
-        })
-        .where(eq(users.id, existingUser[0].id));
+        .set(updateData)
+        .where(eq(users.id, user.id));
       
-      const user = existingUser[0];
+      // Fetch updated user to return latest state
+      const updatedUserResult = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, user.id))
+        .limit(1);
+      
+      const updatedUser = updatedUserResult[0];
       return sendSuccess(res, "User already exists", {
-        ...user,
-        role: user.userRoles || "user" // Normalize for frontend
+        ...updatedUser,
+        role: updatedUser.userRoles || "user"
       }, status.OK);
     }
 
